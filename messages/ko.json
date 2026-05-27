@@ -80,6 +80,8 @@
   "appRunner": {
     "liveRunning": "실시간 실행 중",
     "openInTab": "새 탭에서 열기",
+    "enterFullscreen": "전체화면",
+    "exitFullscreen": "전체화면 닫기",
     "embedBlocked": "이 앱은 현재 창에서 임베드할 수 없습니다.",
     "embedBlockedHint": "외부 보안 설정으로 인해 직접 실행이 차단되었습니다.",
     "nativeDemoTitle": "라이브 데모",
@@ -336,6 +338,7 @@
     "handle": "사용자 ID",
     "handlePlaceholder": "영문 소문자, 숫자, 하이픈, 언더스코어 (3~20자)",
     "handleHint": "프로필 URL: launchings.io/ko/makers/",
+    "handleAvailable": "사용 가능한 아이디예요",
     "bio": "소개 (선택)",
     "bioPlaceholder": "나를 소개하는 한두 문장 (최대 500자)",
     "websiteUrl": "웹사이트 (선택)",

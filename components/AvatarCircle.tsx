@@ -14,6 +14,8 @@ interface Props {
 export default function AvatarCircle({ profile, size = 52, fontSize = 22 }: Props) {
   return (
     <div
+      role="img"
+      aria-label={profile.display_name}
       style={{
         width: size,
         height: size,
@@ -30,7 +32,9 @@ export default function AvatarCircle({ profile, size = 52, fontSize = 22 }: Prop
         flexShrink: 0,
       }}
     >
-      {profile.avatar_initial ?? profile.display_name[0]}
+      <span aria-hidden="true">
+        {profile.avatar_initial ?? profile.display_name[0]}
+      </span>
     </div>
   );
 }

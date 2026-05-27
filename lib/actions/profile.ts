@@ -92,6 +92,55 @@ export async function updateProfile(
 }
 
 /**
+ * handle 사용 가능 여부 즉시 확인 (실시간 검증용).
+ * - 형식 오류: validateHandle 결과 반환
+ * - DB 조회: 동일 handle 존재 여부 (본인 제외)
+ */
+export async function checkHandleAvailable(
+  handle: string
+): Promise<{ available: boolean; reason?: string }> {
+  const trimmed = handle?.trim().toLowerCase();
+
+  // 1단계: 형식 검증
+  const formatError = validateHandle(trimmed ?? '');
+  if (formatError) {
+    return { available: false, reason: formatError };
+  }
+
+  // 2단계: DB 중복 확인
+  const supabase = await createClient();
+
+  // 현재 로그인 사용자 조회 (본인 제외용)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let query = supabase
+    .from('profiles')
+    .select('id')
+    .eq('handle', trimmed)
+    .limit(1);
+
+  // 로그인된 경우 본인 제외
+  if (user) {
+    query = query.neq('id', user.id);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    // DB 오류 시 사용 불가로 처리 (안전한 방향)
+    return { available: false, reason: '확인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' };
+  }
+
+  if (data && data.length > 0) {
+    return { available: false, reason: '이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요.' };
+  }
+
+  return { available: true };
+}
+
+/**
  * 현재 로그인 사용자의 프로필 조회.
  */
 export async function getMyProfile() {

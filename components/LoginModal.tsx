@@ -6,12 +6,14 @@
  * 구글 미설정 시 이메일/비밀번호 로그인은 정상 동작.
  * 로그인 탭: 비밀번호 찾기 링크 → 이메일 입력 → 재설정 메일 전송.
  * 회원가입 탭: 사이트 아이디(handle) 입력 (3~20자 영문/숫자/-/_).
+ *             handle 입력 시 400ms 디바운스 실시간 중복 확인.
  */
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useRef, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { signInWithPassword, signUpWithPassword, requestPasswordReset } from '@/lib/actions/auth';
+import { checkHandleAvailable } from '@/lib/actions/profile';
 import { createClient } from '@/lib/supabase/client';
 import Modal from './Modal';
 
@@ -23,6 +25,15 @@ interface Props {
 type Tab = 'login' | 'signup';
 // 로그인 탭 내 모드: 일반 로그인 / 비밀번호 찾기
 type LoginMode = 'normal' | 'forgot';
+
+/** handle 실시간 체크 상태 */
+type HandleStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'available' }
+  | { state: 'unavailable'; reason: string };
+
+const DEBOUNCE_MS = 400;
 
 export default function LoginModal({ isOpen, onClose }: Props) {
   const t = useTranslations();
@@ -42,6 +53,38 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   const [handleConflict, setHandleConflict] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [handleStatus, setHandleStatus] = useState<HandleStatus>({ state: 'idle' });
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleDescId = useId();
+
+  // 디바운스 handle 실시간 체크 (회원가입 탭에서만)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    // 회원가입 탭이 아니거나 입력값 없으면 idle (비동기로 처리해 cascading render 방지)
+    if (tab !== 'signup' || !handle) {
+      debounceRef.current = setTimeout(() => {
+        setHandleStatus({ state: 'idle' });
+      }, 0);
+      return () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+      };
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setHandleStatus({ state: 'checking' });
+      const result = await checkHandleAvailable(handle);
+      if (result.available) {
+        setHandleStatus({ state: 'available' });
+      } else {
+        setHandleStatus({ state: 'unavailable', reason: result.reason ?? '사용할 수 없는 아이디예요.' });
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [handle, tab]);
 
   function resetForm() {
     setEmail('');
@@ -55,6 +98,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setForgotSent(false);
     setForgotEmail('');
     setHandleConflict(false);
+    setHandleStatus({ state: 'idle' });
     setLoginMode('normal');
   }
 
@@ -63,6 +107,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setError(null);
     setLoginMode('normal');
     setHandleConflict(false);
+    setHandleStatus({ state: 'idle' });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -450,14 +495,41 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                           maxLength={20}
                           pattern="[a-z0-9_-]{3,20}"
                           autoComplete="username"
+                          aria-invalid={handleStatus.state === 'unavailable' || handleConflict}
+                          aria-describedby={handleDescId}
                           style={{
                             ...inputStyle,
-                            borderColor: handleConflict ? '#ff6b6b' : 'var(--line)',
+                            borderColor:
+                              handleConflict || handleStatus.state === 'unavailable'
+                                ? '#ff6b6b'
+                                : handleStatus.state === 'available'
+                                  ? 'var(--accent)'
+                                  : 'var(--line)',
                           }}
                         />
-                        <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 5, marginBottom: 0 }}>
-                          {t('signup.handleHint')}
-                        </p>
+                        {/* handle 실시간 피드백 */}
+                        <div id={handleDescId} style={{ marginTop: 5 }}>
+                          {handleStatus.state === 'checking' && (
+                            <p style={{ fontSize: 12, color: 'var(--muted-strong)', marginBottom: 0 }}>
+                              확인 중...
+                            </p>
+                          )}
+                          {handleStatus.state === 'available' && (
+                            <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 0 }}>
+                              사용 가능한 아이디예요 ✓
+                            </p>
+                          )}
+                          {handleStatus.state === 'unavailable' && (
+                            <p style={{ fontSize: 12, color: '#ff6b6b', marginBottom: 0 }} role="alert">
+                              {handleStatus.reason}
+                            </p>
+                          )}
+                          {(handleStatus.state === 'idle' || handleStatus.state === 'checking') && (
+                            <p style={{ fontSize: 12, color: 'var(--muted-strong)', marginBottom: 0, marginTop: handleStatus.state === 'checking' ? 2 : 0 }}>
+                              {t('signup.handleHint')}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </>

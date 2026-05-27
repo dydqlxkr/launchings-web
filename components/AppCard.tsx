@@ -31,6 +31,8 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
       {/* Thumbnail */}
       <Link href={`/ko/apps/${app.slug}`} className="block">
         <div
+          role="img"
+          aria-label={`${app.title} 썸네일`}
           style={{
             height: 128,
             position: 'relative',
@@ -44,7 +46,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
             flexShrink: 0,
           }}
         >
-          {app.thumbnail_emoji}
+          <span aria-hidden="true">{app.thumbnail_emoji}</span>
 
           {/* Type badge — LIVE 배지 유지 */}
           {isNative ? (
@@ -65,7 +67,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
                 gap: 5,
               }}
             >
-              📦 {t('native')}
+              <span aria-hidden="true">📦</span> {t('native')}
             </span>
           ) : (
             <span
@@ -86,6 +88,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
               }}
             >
               <span
+                aria-hidden="true"
                 style={{
                   width: 6,
                   height: 6,

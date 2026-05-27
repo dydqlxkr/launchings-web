@@ -3,11 +3,12 @@
 /**
  * 프로필 설정 폼 — 클라이언트 컴포넌트.
  * display_name, handle, bio, website_url 편집.
+ * handle 입력 시 400ms 디바운스 실시간 중복 확인.
  */
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useRef, useId } from 'react';
 import { useTranslations } from 'next-intl';
-import { updateProfile } from '@/lib/actions/profile';
+import { updateProfile, checkHandleAvailable } from '@/lib/actions/profile';
 import { useToast } from '@/components/Toast';
 
 interface Props {
@@ -38,6 +39,15 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 6,
 };
 
+/** handle 실시간 체크 상태 */
+type HandleStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'available' }
+  | { state: 'unavailable'; reason: string };
+
+const DEBOUNCE_MS = 400;
+
 export default function SettingsForm({
   initialDisplayName,
   initialHandle,
@@ -53,11 +63,53 @@ export default function SettingsForm({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [handleStatus, setHandleStatus] = useState<HandleStatus>({ state: 'idle' });
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleDescId = useId();
+
+  // 디바운스 handle 실시간 체크
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    // 초기값과 동일하거나 비어있으면 idle 상태로 전환 (비동기로 처리해 cascading render 방지)
+    if (handle === initialHandle || !handle) {
+      debounceRef.current = setTimeout(() => {
+        setHandleStatus({ state: 'idle' });
+      }, 0);
+      return () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+      };
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setHandleStatus({ state: 'checking' });
+      const result = await checkHandleAvailable(handle);
+      if (result.available) {
+        setHandleStatus({ state: 'available' });
+      } else {
+        setHandleStatus({ state: 'unavailable', reason: result.reason ?? '사용할 수 없는 아이디예요.' });
+      }
+    }, DEBOUNCE_MS);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [handle, initialHandle]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
+
+    // handle 체크 중이거나 사용 불가면 제출 차단
+    if (handleStatus.state === 'checking') {
+      setError('사용자 ID 확인 중입니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+    if (handleStatus.state === 'unavailable') {
+      setError(handleStatus.reason);
+      return;
+    }
 
     startTransition(async () => {
       const result = await updateProfile({
@@ -73,9 +125,12 @@ export default function SettingsForm({
       }
 
       setSaved(true);
+      setHandleStatus({ state: 'idle' });
       toast.show(t('saved'), 'success');
     });
   }
+
+  const isHandleInvalid = handleStatus.state === 'unavailable';
 
   return (
     <form onSubmit={handleSubmit}>
@@ -97,9 +152,10 @@ export default function SettingsForm({
 
         {/* handle */}
         <div>
-          <label style={labelStyle}>{t('handle')}</label>
+          <label htmlFor="settings-handle" style={labelStyle}>{t('handle')}</label>
           <div style={{ position: 'relative' }}>
             <input
+              id="settings-handle"
               type="text"
               value={handle}
               onChange={(e) => {
@@ -111,20 +167,49 @@ export default function SettingsForm({
               minLength={3}
               maxLength={20}
               pattern="[a-z0-9_-]{3,20}"
-              style={inputStyle}
+              aria-invalid={isHandleInvalid}
+              aria-describedby={handleDescId}
+              style={{
+                ...inputStyle,
+                borderColor: isHandleInvalid
+                  ? 'var(--red)'
+                  : handleStatus.state === 'available'
+                    ? 'var(--accent)'
+                    : 'var(--line)',
+              }}
             />
           </div>
-          <p
-            style={{
-              fontSize: 12,
-              color: 'var(--muted)',
-              marginTop: 6,
-              marginBottom: 0,
-            }}
-          >
-            {t('handleHint')}
-            <strong style={{ color: 'var(--brand)' }}>{handle || '...'}</strong>
-          </p>
+          {/* 상태별 handle 피드백 */}
+          <div id={handleDescId}>
+            {handleStatus.state === 'checking' && (
+              <p style={{ fontSize: 12, color: 'var(--muted-strong)', marginTop: 6, marginBottom: 0 }}>
+                확인 중...
+              </p>
+            )}
+            {handleStatus.state === 'available' && (
+              <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 6, marginBottom: 0 }}>
+                {t('handleAvailable')} ✓
+              </p>
+            )}
+            {handleStatus.state === 'unavailable' && (
+              <p style={{ fontSize: 12, color: 'var(--red)', marginTop: 6, marginBottom: 0 }} role="alert">
+                {handleStatus.reason}
+              </p>
+            )}
+            {(handleStatus.state === 'idle' || handleStatus.state === 'checking') && (
+              <p
+                style={{
+                  fontSize: 12,
+                  color: 'var(--muted-strong)',
+                  marginTop: handleStatus.state === 'checking' ? 2 : 6,
+                  marginBottom: 0,
+                }}
+              >
+                {t('handleHint')}
+                <strong style={{ color: 'var(--brand)' }}>{handle || '...'}</strong>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* 소개 */}
@@ -200,12 +285,22 @@ export default function SettingsForm({
       {/* 저장 버튼 */}
       <button
         type="submit"
-        disabled={isPending || !displayName || !handle}
+        disabled={
+          isPending ||
+          !displayName ||
+          !handle ||
+          handleStatus.state === 'checking' ||
+          handleStatus.state === 'unavailable'
+        }
         style={{
           marginTop: 24,
           width: '100%',
           background:
-            isPending || !displayName || !handle
+            isPending ||
+            !displayName ||
+            !handle ||
+            handleStatus.state === 'checking' ||
+            handleStatus.state === 'unavailable'
               ? 'var(--chip)'
               : 'linear-gradient(135deg,var(--brand),var(--brand2))',
           border: 'none',
@@ -213,8 +308,16 @@ export default function SettingsForm({
           padding: '13px 0',
           fontSize: 14,
           fontWeight: 700,
-          color: isPending || !displayName || !handle ? 'var(--muted)' : '#fff',
-          cursor: isPending ? 'not-allowed' : 'pointer',
+          color:
+            isPending ||
+            !displayName ||
+            !handle ||
+            handleStatus.state === 'checking' ||
+            handleStatus.state === 'unavailable'
+              ? 'var(--muted)'
+              : '#fff',
+          cursor:
+            isPending || handleStatus.state === 'checking' ? 'not-allowed' : 'pointer',
           fontFamily: 'inherit',
           transition: 'opacity .12s',
         }}

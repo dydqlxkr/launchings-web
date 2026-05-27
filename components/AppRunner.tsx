@@ -16,9 +16,17 @@
  *   - 외부 URL: sandbox="allow-scripts allow-forms allow-popups"
  *     (allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여, referrerpolicy="no-referrer")
  *   - 임베드 실패 감지: onLoad 후 blank 여부 → 폴백 버튼 표시
+ *
+ * 반응형 높이:
+ *   - 데스크톱: 540px
+ *   - 모바일: min(70vh, 540px) — CSS clamp 적용
+ *
+ * 전체화면:
+ *   - 툴바 "전체화면" 버튼 → Fullscreen API requestFullscreen()
+ *   - 미지원 브라우저: 화면 꽉 채우는 오버레이 fallback (position: fixed)
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import { isSafeHttpUrl } from '@/lib/validations';
@@ -214,11 +222,79 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
 /** 외부 URL iframe 로딩 타임아웃 (ms) */
 const EMBED_TIMEOUT_MS = 2500;
 
+/**
+ * 전체화면 오버레이 fallback (Fullscreen API 미지원 시)
+ * position: fixed로 뷰포트 전체 커버
+ */
+function FullscreenOverlay({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  // ESC 키 닫기
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        background: '#000',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* 닫기 버튼 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: '8px 12px',
+          background: 'var(--card)',
+          borderBottom: '1px solid var(--line)',
+          flexShrink: 0,
+        }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="전체화면 닫기"
+          style={{
+            background: 'var(--chip)',
+            border: '1px solid var(--line)',
+            color: 'var(--ink)',
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          ✕ 닫기
+        </button>
+      </div>
+      <div style={{ flex: 1, overflow: 'hidden' }}>{children}</div>
+    </div>
+  );
+}
+
 function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | null }) {
   const t = useTranslations('appRunner');
   const [embedFailed, setEmbedFailed] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [useOverlay, setUseOverlay] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasExternalUrl = !srcDoc && !!app.live_url;
@@ -242,6 +318,52 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [hasExternalUrl, embedFailed, iframeLoaded]);
+
+  // Fullscreen API 이벤트 동기화
+  useEffect(() => {
+    function onFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    if (isFullscreen) {
+      // 전체화면 해제
+      if (useOverlay) {
+        setIsFullscreen(false);
+        setUseOverlay(false);
+      } else {
+        try {
+          await document.exitFullscreen();
+        } catch {
+          setIsFullscreen(false);
+        }
+      }
+      return;
+    }
+
+    // 전체화면 진입
+    const el = containerRef.current;
+    if (el && el.requestFullscreen) {
+      try {
+        await el.requestFullscreen();
+        setIsFullscreen(true);
+        setUseOverlay(false);
+      } catch {
+        // Fullscreen API 실패 → 오버레이 fallback
+        setIsFullscreen(true);
+        setUseOverlay(true);
+      }
+    } else {
+      // Fullscreen API 미지원
+      setIsFullscreen(true);
+      setUseOverlay(true);
+    }
+  }, [isFullscreen, useOverlay]);
 
   function handleLoad() {
     if (!hasExternalUrl) return;
@@ -325,77 +447,175 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
     );
   }
 
-  return (
-    <div
-      style={{
-        background: 'var(--card)',
-        border: '1px solid var(--line)',
-        borderRadius: 16,
-        overflow: 'hidden',
-      }}
-    >
-      {/* 툴바 */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '8px 14px',
-          background: 'var(--card)',
-          borderBottom: '1px solid var(--line)',
-          fontSize: 12,
-          color: 'var(--muted)',
-        }}
-      >
-        <span
-          style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            background: 'var(--accent)',
-            boxShadow: '0 0 8px var(--accent)',
-            flexShrink: 0,
-            display: 'inline-block',
-          }}
+  // iframe 영역 (전체화면/오버레이 여부에 상관없이 재사용)
+  const iframeArea = (
+    <div style={{ position: 'relative', height: '100%', background: '#fff' }}>
+      {srcDoc ? (
+        <iframe
+          ref={iframeRef}
+          srcDoc={srcDoc}
+          sandbox={srcdocSandbox}
+          title={app.title}
+          style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
+          loading="lazy"
         />
-        <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 11 }}>
-          {t('liveRunning')}
-        </span>
+      ) : app.live_url ? (
+        <>
+          {/* 로딩 스켈레톤 — iframe 로드 전 표시 */}
+          {!iframeLoaded && (
+            <div
+              aria-live="polite"
+              aria-label={t('loadingLabel')}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 2,
+                background: 'var(--bg2)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 16,
+              }}
+            >
+              {/* 펄스 스켈레톤 바 */}
+              <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="lp-skeleton" style={{ height: 18, width: '60%', borderRadius: 8 }} />
+                <div className="lp-skeleton" style={{ height: 14, width: '80%', borderRadius: 8 }} />
+                <div className="lp-skeleton" style={{ height: 14, width: '50%', borderRadius: 8 }} />
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+                {t('loadingLabel')}
+              </div>
+            </div>
+          )}
+          <iframe
+            ref={iframeRef}
+            src={app.live_url}
+            sandbox={externalSandbox}
+            referrerPolicy="no-referrer"
+            title={app.title}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 0,
+              display: 'block',
+              opacity: iframeLoaded ? 1 : 0,
+              transition: 'opacity .3s',
+            }}
+            loading="lazy"
+            onLoad={handleLoad}
+            onError={() => setEmbedFailed(true)}
+          />
+        </>
+      ) : (
         <div
           style={{
-            flex: 1,
-            background: 'var(--bg)',
-            border: '1px solid var(--line)',
-            borderRadius: 7,
-            padding: '4px 10px',
-            color: '#7f8aa0',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            fontSize: 11,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: 'var(--muted)',
+            fontSize: 14,
+            background: 'var(--bg2)',
           }}
         >
-          {displayUrl}
+          실행 URL이 없습니다.
         </div>
-        {/* 외부 URL 폴백 버튼 — C-1 렌더 가드 */}
-        {app.live_url && isSafeHttpUrl(app.live_url) && (
-          <a
-            href={app.live_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={t('openInTab')}
-            style={{
-              color: 'var(--muted)',
-              fontSize: 14,
-              textDecoration: 'none',
-              flexShrink: 0,
-              lineHeight: 1,
-            }}
-          >
-            ↗
-          </a>
-        )}
+      )}
+    </div>
+  );
+
+  const toolbar = (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 14px',
+        background: 'var(--card)',
+        borderBottom: '1px solid var(--line)',
+        fontSize: 12,
+        color: 'var(--muted)',
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: 'var(--accent)',
+          boxShadow: '0 0 8px var(--accent)',
+          flexShrink: 0,
+          display: 'inline-block',
+        }}
+      />
+      <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 11 }}>
+        {t('liveRunning')}
+      </span>
+      <div
+        style={{
+          flex: 1,
+          background: 'var(--bg)',
+          border: '1px solid var(--line)',
+          borderRadius: 7,
+          padding: '4px 10px',
+          color: '#7f8aa0',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+          fontSize: 11,
+        }}
+      >
+        {displayUrl}
       </div>
+      {/* 전체화면 토글 버튼 */}
+      <button
+        onClick={handleToggleFullscreen}
+        aria-label={isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
+        title={isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
+        style={{
+          background: 'transparent',
+          border: '1px solid var(--line)',
+          color: 'var(--muted)',
+          borderRadius: 6,
+          padding: '3px 8px',
+          fontSize: 11,
+          cursor: 'pointer',
+          flexShrink: 0,
+          lineHeight: 1.4,
+          fontFamily: 'inherit',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {isFullscreen ? '⊡ ' : '⊞ '}
+        {isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
+      </button>
+      {/* 외부 URL 폴백 버튼 — C-1 렌더 가드 */}
+      {app.live_url && isSafeHttpUrl(app.live_url) && (
+        <a
+          href={app.live_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={t('openInTab')}
+          aria-label={t('openInTab')}
+          style={{
+            color: 'var(--muted)',
+            fontSize: 14,
+            textDecoration: 'none',
+            flexShrink: 0,
+            lineHeight: 1,
+          }}
+        >
+          ↗
+        </a>
+      )}
+    </div>
+  );
+
+  const mainContent = (
+    <>
+      {toolbar}
 
       {/* 외부 사이트 경고 (외부 URL 경로만) */}
       {hasExternalUrl && (
@@ -416,81 +636,15 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
         </div>
       )}
 
-      {/* iframe */}
-      <div style={{ position: 'relative', height: 520, background: '#fff' }}>
-        {srcDoc ? (
-          <iframe
-            ref={iframeRef}
-            srcDoc={srcDoc}
-            sandbox={srcdocSandbox}
-            title={app.title}
-            style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
-            loading="lazy"
-          />
-        ) : app.live_url ? (
-          <>
-            {/* 로딩 스켈레톤 — iframe 로드 전 표시 */}
-            {!iframeLoaded && (
-              <div
-                aria-live="polite"
-                aria-label={t('loadingLabel')}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  zIndex: 2,
-                  background: 'var(--bg2)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 16,
-                }}
-              >
-                {/* 펄스 스켈레톤 바 */}
-                <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div className="lp-skeleton" style={{ height: 18, width: '60%', borderRadius: 8 }} />
-                  <div className="lp-skeleton" style={{ height: 14, width: '80%', borderRadius: 8 }} />
-                  <div className="lp-skeleton" style={{ height: 14, width: '50%', borderRadius: 8 }} />
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
-                  {t('loadingLabel')}
-                </div>
-              </div>
-            )}
-            <iframe
-              ref={iframeRef}
-              src={app.live_url}
-              sandbox={externalSandbox}
-              referrerPolicy="no-referrer"
-              title={app.title}
-              style={{
-                width: '100%',
-                height: '100%',
-                border: 0,
-                display: 'block',
-                opacity: iframeLoaded ? 1 : 0,
-                transition: 'opacity .3s',
-              }}
-              loading="lazy"
-              onLoad={handleLoad}
-              onError={() => setEmbedFailed(true)}
-            />
-          </>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'var(--muted)',
-              fontSize: 14,
-              background: 'var(--bg2)',
-            }}
-          >
-            실행 URL이 없습니다.
-          </div>
-        )}
+      {/* iframe — 반응형 높이: 모바일 min(70vh,540px), 데스크톱 540px */}
+      <div
+        style={{
+          position: 'relative',
+          height: 'clamp(300px, 70vh, 540px)',
+          background: '#fff',
+        }}
+      >
+        {iframeArea}
       </div>
 
       {/* 임베드 실패 수동 신고 버튼 (외부 URL 경로) */}
@@ -519,6 +673,72 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
           </button>
         </div>
       )}
+    </>
+  );
+
+  // 오버레이 fallback 전체화면
+  if (isFullscreen && useOverlay) {
+    return (
+      <>
+        <div
+          ref={containerRef}
+          style={{
+            background: 'var(--card)',
+            border: '1px solid var(--line)',
+            borderRadius: 16,
+            overflow: 'hidden',
+          }}
+        >
+          {mainContent}
+        </div>
+        <FullscreenOverlay onClose={() => { setIsFullscreen(false); setUseOverlay(false); }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* 오버레이 내 툴바는 간소화 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 14px',
+                background: 'var(--card)',
+                borderBottom: '1px solid var(--line)',
+                fontSize: 12,
+                color: 'var(--muted)',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 11 }}>
+                {t('liveRunning')}
+              </span>
+              <div style={{ flex: 1, fontSize: 11, color: '#7f8aa0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {displayUrl}
+              </div>
+              {app.live_url && isSafeHttpUrl(app.live_url) && (
+                <a href={app.live_url} target="_blank" rel="noopener noreferrer" aria-label={t('openInTab')} style={{ color: 'var(--muted)', fontSize: 14, textDecoration: 'none' }}>
+                  ↗
+                </a>
+              )}
+            </div>
+            <div style={{ flex: 1, background: '#fff', overflow: 'hidden' }}>
+              {iframeArea}
+            </div>
+          </div>
+        </FullscreenOverlay>
+      </>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        background: 'var(--card)',
+        border: '1px solid var(--line)',
+        borderRadius: 16,
+        overflow: 'hidden',
+      }}
+    >
+      {mainContent}
     </div>
   );
 }

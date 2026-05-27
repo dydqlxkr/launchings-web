@@ -102,7 +102,7 @@ function MakerMiniCard({
       {profile.bio && (
         <div
           style={{
-            color: 'var(--muted)',
+            color: 'var(--muted-strong)',
             fontSize: 12.5,
             marginBottom: 4,
             overflow: 'hidden',
@@ -149,13 +149,13 @@ function MakerMiniCard({
           <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>
             {apps.length}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{t('appCount')}</div>
+          <div style={{ fontSize: 11, color: 'var(--muted-strong)' }}>{t('appCount')}</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>
             {voteDisplay}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{t('voteCount')}</div>
+          <div style={{ fontSize: 11, color: 'var(--muted-strong)' }}>{t('voteCount')}</div>
         </div>
       </div>
     </Link>
@@ -259,8 +259,28 @@ function RecruitCTA() {
               border: '1px solid var(--line)',
               borderRadius: 16,
               padding: 18,
+              position: 'relative',
             }}
           >
+            {/* 예시 라벨 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'var(--muted-strong)',
+                background: 'var(--chip)',
+                border: '1px solid var(--line)',
+                borderRadius: 5,
+                padding: '2px 6px',
+                letterSpacing: '.4px',
+              }}
+            >
+              예시
+            </div>
+
             {/* 프로필 행 */}
             <div
               style={{
@@ -291,7 +311,7 @@ function RecruitCTA() {
                   {t('visualName')}{' '}
                   <span style={{ color: 'var(--accent)', fontSize: 12 }}>✓</span>
                 </div>
-                <div style={{ color: 'var(--muted)', fontSize: 12.5 }}>
+                <div style={{ color: 'var(--muted-strong)', fontSize: 12.5 }}>
                   {t('visualRole')}
                 </div>
               </div>
@@ -309,7 +329,7 @@ function RecruitCTA() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     fontSize: 12,
-                    color: 'var(--muted)',
+                    color: 'var(--muted-strong)',
                     marginTop: 10,
                   }}
                 >
@@ -635,18 +655,7 @@ function HomeInner({
                 {tm('subtitle')}
               </p>
             </div>
-            <Link
-              href="/ko"
-              style={{
-                color: 'var(--brand)',
-                fontSize: 14,
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                textDecoration: 'none',
-              }}
-            >
-              {tm('viewAll')}
-            </Link>
+            {/* 메이커 전용 목록 페이지 없음 → 링크 숨김 */}
           </div>
 
           {/* 메이커 4열 그리드 */}
