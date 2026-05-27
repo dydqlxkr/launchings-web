@@ -213,7 +213,7 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* ── 메인 섹션들 (검색 · 그리드 · How · Makers · Recruit) ── */}
+      {/* ── 메인 섹션들 (트렌딩 그리드 · 주목받는 메이커) ── */}
       <HomeWrapper
         apps={apps}
         profiles={profiles}

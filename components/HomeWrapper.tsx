@@ -6,9 +6,7 @@
  * 섹션 순서:
  *   1. 큐레이션 맛보기 — 트렌딩 상위 6~9개 그리드 + "전체 둘러보기 →" 링크
  *      (검색바·정렬은 홈에서 제거, 정식 카탈로그는 /ko/apps)
- *   2. 어떻게 작동하나요 — 3-step (#how)
- *   3. 주목받는 메이커 — 4열 그리드 (#makers)
- *   4. 채용 CTA 밴드 (#recruit)
+ *   2. 주목받는 메이커 — 4열 그리드 (#makers)
  */
 
 import { useMemo } from 'react';
@@ -18,7 +16,6 @@ import type { AppWithRelations, Profile, Category } from '@/lib/types';
 import AppCard from './AppCard';
 import { CompareProvider } from './CompareContext';
 import CompareBar from './CompareBar';
-import { useToast } from '@/components/Toast';
 
 interface Props {
   apps: AppWithRelations[];
@@ -163,227 +160,6 @@ function MakerMiniCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RecruitCTA — 시안의 #recruit 밴드 (v1: 버튼은 토스트만)
-// ─────────────────────────────────────────────────────────────────────────────
-function RecruitCTA() {
-  const t = useTranslations('recruitSection');
-  const toast = useToast();
-
-  function handleInterest() {
-    toast.show(t('ctaToast'), 'success');
-  }
-
-  return (
-    <section id="recruit" style={{ position: 'relative', overflow: 'hidden' }}>
-      <div className="lp-container" style={{ paddingBottom: 64 }}>
-        <div
-          style={{
-            background:
-              'linear-gradient(135deg,rgba(108,140,255,.16),rgba(155,108,255,.12))',
-            border: '1px solid rgba(108,140,255,.35)',
-            borderRadius: 24,
-            padding: '48px',
-            display: 'flex',
-            gap: 40,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
-        >
-          {/* 텍스트 */}
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <h2
-              style={{
-                fontSize: 30,
-                letterSpacing: '-.8px',
-                marginBottom: 14,
-                lineHeight: 1.2,
-                fontWeight: 800,
-              }}
-            >
-              {t('title')}
-            </h2>
-            <p
-              style={{
-                color: 'var(--muted)',
-                fontSize: 15.5,
-                marginBottom: 22,
-                maxWidth: 440,
-              }}
-            >
-              {t('desc')}
-            </p>
-
-            {/* 태그 */}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
-              {[t('tag1'), t('tag2'), t('tag3')].map((tag) => (
-                <span
-                  key={tag}
-                  style={{
-                    background: 'var(--card2)',
-                    border: '1px solid var(--line)',
-                    borderRadius: 999,
-                    padding: '7px 14px',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                  }}
-                >
-                  ✓ {tag}
-                </span>
-              ))}
-            </div>
-
-            <button
-              onClick={handleInterest}
-              style={{
-                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-                color: '#fff',
-                border: 0,
-                borderRadius: 12,
-                padding: '13px 24px',
-                fontSize: 15.5,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {t('ctaButton')}
-            </button>
-          </div>
-
-          {/* 비주얼 카드 */}
-          <div
-            style={{
-              flex: '0 0 300px',
-              background: 'var(--card)',
-              border: '1px solid var(--line)',
-              borderRadius: 16,
-              padding: 18,
-              position: 'relative',
-            }}
-          >
-            {/* 예시 라벨 */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                fontSize: 10,
-                fontWeight: 700,
-                color: 'var(--muted-strong)',
-                background: 'var(--chip)',
-                border: '1px solid var(--line)',
-                borderRadius: 5,
-                padding: '2px 6px',
-                letterSpacing: '.4px',
-              }}
-            >
-              예시
-            </div>
-
-            {/* 프로필 행 */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                marginBottom: 14,
-              }}
-            >
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg,#6c8cff,#9b6cff)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  color: '#fff',
-                  flexShrink: 0,
-                }}
-              >
-                지
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  {t('visualName')}{' '}
-                  <span style={{ color: 'var(--accent)', fontSize: 12 }}>✓</span>
-                </div>
-                <div style={{ color: 'var(--muted-strong)', fontSize: 12.5 }}>
-                  {t('visualRole')}
-                </div>
-              </div>
-            </div>
-
-            {/* 스탯 바 목록 */}
-            {[
-              { label: t('visualStat1Label'), val: t('visualStat1Val'), pct: '92%' },
-              { label: t('visualStat2Label'), val: t('visualStat2Val'), pct: '88%' },
-              { label: t('visualStat3Label'), val: t('visualStat3Val'), pct: '95%' },
-            ].map(({ label, val, pct }) => (
-              <div key={label}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: 12,
-                    color: 'var(--muted-strong)',
-                    marginTop: 10,
-                  }}
-                >
-                  <span>{label}</span>
-                  <span style={{ color: 'var(--ink)' }}>{val}</span>
-                </div>
-                <div
-                  style={{
-                    height: 6,
-                    background: 'var(--chip)',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    margin: '8px 0',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'block',
-                      height: '100%',
-                      width: pct,
-                      background: 'linear-gradient(90deg,var(--brand),var(--accent))',
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button
-              onClick={handleInterest}
-              style={{
-                width: '100%',
-                marginTop: 16,
-                background: 'transparent',
-                border: '1px solid var(--line)',
-                color: 'var(--ink)',
-                borderRadius: 10,
-                padding: '9px 16px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {t('visualBtn')}
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // HomeInner — 핵심 클라이언트 레이아웃 (CompareContext 안에서 렌더)
 // ─────────────────────────────────────────────────────────────────────────────
 function HomeInner({
@@ -394,7 +170,6 @@ function HomeInner({
 }: Omit<Props, 'categories'>) {
   const t = useTranslations();
   const td = useTranslations('discover');
-  const th = useTranslations('howItWorks');
   const tm = useTranslations('makersSection');
 
   // 트렌딩 상위 앱 (추천순, 최대 HOME_PREVIEW_COUNT개)
@@ -514,121 +289,7 @@ function HomeInner({
         </div>
       </section>
 
-      {/* ── 3. 어떻게 작동하나요 ─────────────────────────────────── */}
-      <section
-        id="how"
-        style={{
-          background: 'var(--bg2)',
-          borderTop: '1px solid var(--line)',
-          borderBottom: '1px solid var(--line)',
-          padding: '46px 0',
-        }}
-      >
-        <div className="lp-container">
-          {/* 헤더 — 중앙 정렬 */}
-          <div
-            style={{
-              textAlign: 'center',
-              marginBottom: 32,
-            }}
-          >
-            <h2
-              style={{
-                fontSize: 26,
-                letterSpacing: '-.6px',
-                fontWeight: 800,
-                marginBottom: 8,
-              }}
-            >
-              {th('sectionTitle')}
-            </h2>
-            <p style={{ color: 'var(--muted)', fontSize: 14.5 }}>
-              {th('sectionSubtitle')}
-            </p>
-          </div>
-
-          {/* 3-step 그리드 */}
-          <div className="lp-steps-grid">
-            {[
-              {
-                num: th('step1Num'),
-                ic: '🔍',
-                title: th('step1Title'),
-                desc: th('step1Desc'),
-                arrow: true,
-              },
-              {
-                num: th('step2Num'),
-                ic: '🪪',
-                title: th('step2Title'),
-                desc: th('step2Desc'),
-                arrow: true,
-              },
-              {
-                num: th('step3Num'),
-                ic: '💼',
-                title: th('step3Title'),
-                desc: th('step3Desc'),
-                arrow: false,
-              },
-            ].map((step) => (
-              <div
-                key={step.num}
-                style={{
-                  background: 'var(--card)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 16,
-                  padding: '26px 22px',
-                  position: 'relative',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: 'var(--brand)',
-                    marginBottom: 12,
-                  }}
-                >
-                  {step.num}
-                </div>
-                <div style={{ fontSize: 30, marginBottom: 14 }}>{step.ic}</div>
-                <h3
-                  style={{
-                    fontSize: 18,
-                    marginBottom: 8,
-                    letterSpacing: '-.3px',
-                    fontWeight: 700,
-                  }}
-                >
-                  {step.title}
-                </h3>
-                <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-                  {step.desc}
-                </p>
-                {step.arrow && (
-                  <div
-                    className="lp-step-arrow"
-                    style={{
-                      position: 'absolute',
-                      right: -22,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--line)',
-                      fontSize: 22,
-                      zIndex: 2,
-                    }}
-                  >
-                    →
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. 주목받는 메이커 ───────────────────────────────────── */}
+      {/* ── 2. 주목받는 메이커 ───────────────────────────────────── */}
       <section id="makers" style={{ padding: '46px 0' }}>
         <div className="lp-container">
           {/* 헤더 */}
@@ -683,9 +344,6 @@ function HomeInner({
           )}
         </div>
       </section>
-
-      {/* ── 5. 채용 CTA 밴드 ─────────────────────────────────────── */}
-      <RecruitCTA />
 
       {/* ── 비교 플로팅 바 ───────────────────────────────────────── */}
       <CompareBar apps={apps} />
