@@ -194,7 +194,21 @@
     "visualBtn": "프로필 보기 / 연락하기"
   },
   "footer": {
-    "tagline": "작동 제품으로 증명하는 한국 0→1 빌더 쇼케이스"
+    "tagline": "작동 제품으로 증명하는 한국 0→1 빌더 쇼케이스",
+    "contact": "문의하기"
+  },
+  "contact": {
+    "title": "문의하기",
+    "description": "궁금한 점이나 제안이 있으시면 언제든지 남겨주세요.",
+    "namePlaceholder": "이름 (선택)",
+    "emailPlaceholder": "이메일 (선택)",
+    "messagePlaceholder": "문의 내용을 입력해 주세요. (최대 2000자)",
+    "submit": "문의 보내기",
+    "submitting": "전송 중...",
+    "success": "문의가 접수됐어요! 검토 후 연락드리겠습니다.",
+    "emailError": "이메일 형식이 올바르지 않습니다.",
+    "messageRequired": "문의 내용을 입력해 주세요.",
+    "messageTooLong": "문의 내용은 2000자 이내로 작성해 주세요."
   },
   "auth": {
     "login": "로그인",

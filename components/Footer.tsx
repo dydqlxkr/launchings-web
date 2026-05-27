@@ -58,6 +58,9 @@ export default function Footer() {
             <Link href="/ko/apps" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               앱 둘러보기
             </Link>
+            <Link href="/ko/contact" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
+              {t('footer.contact')}
+            </Link>
             <Link href="/ko/terms" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               이용약관
             </Link>
