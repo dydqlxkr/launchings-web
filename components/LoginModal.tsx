@@ -1,0 +1,367 @@
+'use client';
+
+/**
+ * 로그인 모달 — 이메일/비밀번호 + 구글 OAuth.
+ * 탭: [로그인 | 회원가입]
+ * 구글 미설정 시 이메일/비밀번호 로그인은 정상 동작.
+ */
+
+import { useState, useTransition } from 'react';
+import { signInWithPassword, signUpWithPassword } from '@/lib/actions/auth';
+import { createClient } from '@/lib/supabase/client';
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+type Tab = 'login' | 'signup';
+
+export default function LoginModal({ isOpen, onClose }: Props) {
+  const [tab, setTab] = useState<Tab>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [confirmSent, setConfirmSent] = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  function resetForm() {
+    setEmail('');
+    setPassword('');
+    setPasswordConfirm('');
+    setError(null);
+    setConfirmSent(false);
+    setConfirmEmail('');
+  }
+
+  function handleTabChange(t: Tab) {
+    setTab(t);
+    setError(null);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    const fd = new FormData();
+    fd.set('email', email);
+    fd.set('password', password);
+    if (tab === 'signup') fd.set('passwordConfirm', passwordConfirm);
+
+    startTransition(async () => {
+      const result =
+        tab === 'login'
+          ? await signInWithPassword(fd)
+          : await signUpWithPassword(fd);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if ('confirmSent' in result && result.confirmSent) {
+        setConfirmSent(true);
+        setConfirmEmail(email);
+        return;
+      }
+
+      // 로그인/가입 성공 — 페이지 새로고침으로 세션 반영
+      onClose();
+      window.location.reload();
+    });
+  }
+
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (oauthError) {
+        setError('구글 로그인 초기화에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        setGoogleLoading(false);
+      }
+      // 성공 시 브라우저가 Google 동의화면으로 이동하므로 로딩 상태 유지
+    } catch {
+      setError('구글 로그인 중 오류가 발생했습니다.');
+      setGoogleLoading(false);
+    }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    background: 'rgba(255,255,255,.05)',
+    border: '1px solid var(--line)',
+    borderRadius: 10,
+    padding: '12px 14px',
+    fontSize: 14,
+    color: 'var(--ink)',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+    outline: 'none',
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,.6)',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'var(--card)',
+          border: '1px solid var(--line)',
+          borderRadius: 18,
+          padding: '32px 28px',
+          width: '100%',
+          maxWidth: 400,
+          position: 'relative',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 닫기 버튼 */}
+        <button
+          onClick={() => { resetForm(); onClose(); }}
+          style={{
+            position: 'absolute',
+            top: 14,
+            right: 16,
+            background: 'none',
+            border: 'none',
+            color: 'var(--muted)',
+            fontSize: 20,
+            cursor: 'pointer',
+            lineHeight: 1,
+          }}
+          aria-label="닫기"
+        >
+          ×
+        </button>
+
+        {/* 로고 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+              boxShadow: '0 0 14px var(--brand)',
+              display: 'inline-block',
+            }}
+          />
+          <span style={{ fontWeight: 800, fontSize: 16 }}>런칭스</span>
+        </div>
+
+        {/* 이메일 확인 화면 */}
+        {confirmSent ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📧</div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>
+              이메일을 확인하세요
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
+              <strong style={{ color: 'var(--ink)' }}>{confirmEmail}</strong>로<br />
+              가입 확인 링크를 보냈습니다.<br />
+              링크를 클릭하면 가입이 완료됩니다.
+            </p>
+            <button
+              onClick={() => { resetForm(); onClose(); }}
+              style={{
+                marginTop: 20,
+                background: 'var(--chip)',
+                border: '1px solid var(--line)',
+                borderRadius: 10,
+                padding: '10px 20px',
+                fontSize: 14,
+                color: 'var(--muted)',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              닫기
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* 탭 */}
+            <div
+              style={{
+                display: 'flex',
+                gap: 0,
+                marginBottom: 22,
+                background: 'var(--chip)',
+                borderRadius: 10,
+                padding: 3,
+              }}
+            >
+              {(['login', 'signup'] as Tab[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleTabChange(t)}
+                  style={{
+                    flex: 1,
+                    background: tab === t
+                      ? 'linear-gradient(135deg,rgba(108,140,255,.22),rgba(155,108,255,.22))'
+                      : 'transparent',
+                    border: tab === t ? '1px solid var(--brand)' : '1px solid transparent',
+                    borderRadius: 8,
+                    padding: '8px 0',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: tab === t ? '#fff' : 'var(--muted)',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: '.12s',
+                  }}
+                >
+                  {t === 'login' ? '로그인' : '회원가입'}
+                </button>
+              ))}
+            </div>
+
+            {/* 구글 로그인 버튼 */}
+            <button
+              type="button"
+              onClick={handleGoogle}
+              disabled={googleLoading || isPending}
+              style={{
+                width: '100%',
+                background: 'rgba(255,255,255,.06)',
+                border: '1px solid var(--line)',
+                borderRadius: 10,
+                padding: '11px 14px',
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--ink)',
+                cursor: googleLoading ? 'wait' : 'pointer',
+                fontFamily: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                marginBottom: 16,
+                transition: 'border-color .12s',
+              }}
+            >
+              {/* Google 로고 SVG */}
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="none" d="M0 0h48v48H0z"/>
+              </svg>
+              {googleLoading ? '연결 중...' : 'Google로 계속하기'}
+            </button>
+
+            {/* 구분선 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+              <span style={{ fontSize: 12, color: 'var(--muted)' }}>또는 이메일로</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+            </div>
+
+            {/* 이메일/비밀번호 폼 */}
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="이메일 주소"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  style={inputStyle}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="비밀번호 (6자 이상)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                  style={inputStyle}
+                />
+                {tab === 'signup' && (
+                  <input
+                    type="password"
+                    name="passwordConfirm"
+                    placeholder="비밀번호 확인"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                    style={inputStyle}
+                  />
+                )}
+              </div>
+
+              {error && (
+                <p style={{ color: '#ff6b6b', fontSize: 13, marginTop: 10, marginBottom: 0 }}>
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isPending || !email || !password}
+                style={{
+                  width: '100%',
+                  background:
+                    isPending || !email || !password
+                      ? 'var(--chip)'
+                      : 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '12px 0',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: isPending || !email || !password ? 'var(--muted)' : '#fff',
+                  cursor: isPending ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'opacity .12s',
+                  marginTop: 14,
+                }}
+              >
+                {isPending
+                  ? tab === 'login' ? '로그인 중...' : '가입 중...'
+                  : tab === 'login' ? '로그인' : '회원가입'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
