@@ -272,6 +272,21 @@ export default function Navbar({ user }: Props) {
                       {t('mySubmit')}
                     </Link>
                     <Link
+                      href="/ko/my-apps"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('myApps')}
+                    </Link>
+                    <Link
                       href="/ko/settings"
                       onClick={() => setShowUserMenu(false)}
                       style={{
@@ -388,6 +403,21 @@ export default function Navbar({ user }: Props) {
                   }}
                 >
                   {t('myProfile')}
+                </Link>
+                <Link
+                  href="/ko/my-apps"
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    display: 'block',
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: 'var(--ink)',
+                    padding: '14px 4px',
+                    borderBottom: '1px solid var(--line)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  {t('myApps')}
                 </Link>
                 <Link
                   href="/ko/settings"

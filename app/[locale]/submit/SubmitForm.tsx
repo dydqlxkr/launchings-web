@@ -13,6 +13,7 @@
 import { useState, useTransition, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { submitApp } from '@/lib/actions/submit';
+import { updateApp } from '@/lib/actions/app';
 import { createClient } from '@/lib/supabase/client';
 import type { Category } from '@/lib/types';
 import { detectStacks } from '@/lib/stackKeywords';
@@ -34,40 +35,77 @@ function isAllowedImageType(file: File): boolean {
   return ALLOWED_IMAGE_TYPES.has(file.type);
 }
 
+export interface SubmitFormInitialData {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string;
+  description: string;
+  app_type: 'webapp' | 'native' | 'link';
+  live_url: string;
+  store_url_ios: string;
+  store_url_android: string;
+  thumbnail_path: string | null;
+  categories: string[];
+  stacks: string[];
+}
+
 interface Props {
   categories: Category[];
   userId: string;
+  mode?: 'create' | 'edit';
+  initialData?: SubmitFormInitialData;
 }
 
-export default function SubmitForm({ categories, userId }: Props) {
+export default function SubmitForm({
+  categories,
+  userId,
+  mode = 'create',
+  initialData,
+}: Props) {
+  const isEdit = mode === 'edit';
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   // 카테고리 다중 선택
-  const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [selectedCats, setSelectedCats] = useState<string[]>(
+    initialData?.categories ?? []
+  );
 
   // 제목·설명 — 스택 자동 추천을 위해 제어
-  const [titleValue, setTitleValue] = useState('');
-  const [descValue, setDescValue] = useState('');
+  const [titleValue, setTitleValue] = useState(initialData?.title ?? '');
+  const [descValue, setDescValue] = useState(initialData?.description ?? '');
 
   // 기술 스택 태그 입력
-  const [stacks, setStacks] = useState<string[]>([]);
+  const [stacks, setStacks] = useState<string[]>(initialData?.stacks ?? []);
   const [stackInput, setStackInput] = useState('');
   const stackInputRef = useRef<HTMLInputElement>(null);
 
   // 이미지 업로드 상태
-  const [thumbnailPath, setThumbnailPath] = useState<string | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [thumbnailPath, setThumbnailPath] = useState<string | null>(
+    initialData?.thumbnail_path ?? null
+  );
+  // edit 모드일 때 기존 썸네일 URL 미리보기
+  const existingThumbnailUrl =
+    isEdit && initialData?.thumbnail_path
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/app-images/${initialData.thumbnail_path}`
+      : null;
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
+    existingThumbnailUrl
+  );
   const [screenshotPaths, setScreenshotPaths] = useState<string[]>([]);
   const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([]);
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
 
   // 앱 타입
-  const [appType, setAppType] = useState<'webapp' | 'native' | 'link'>('webapp');
+  const [appType, setAppType] = useState<'webapp' | 'native' | 'link'>(
+    initialData?.app_type ?? 'webapp'
+  );
 
-  // 동의 체크박스
-  const [agreed, setAgreed] = useState(false);
+  // 동의 체크박스 (edit 모드에서는 이미 동의한 것으로 간주 — 기존 제품)
+  const [agreed, setAgreed] = useState(isEdit);
 
   // 제목+설명 텍스트에서 감지된 추천 스택 (이미 추가된 것 제외)
   const suggestedStacks = useMemo(
@@ -194,11 +232,19 @@ export default function SubmitForm({ categories, userId }: Props) {
     fd.set('app_type', appType);
 
     startTransition(async () => {
-      const result = await submitApp(fd);
-      if (result?.error) {
-        setError(result.error);
+      if (isEdit && initialData) {
+        const result = await updateApp(initialData.id, fd);
+        if (result?.error) {
+          setError(result.error);
+        }
+        // 성공 시 updateApp이 redirect를 호출
+      } else {
+        const result = await submitApp(fd);
+        if (result?.error) {
+          setError(result.error);
+        }
+        // 성공 시 submitApp이 redirect를 호출
       }
-      // 성공 시 submitApp이 redirect를 호출하므로 여기서 별도 처리 불필요
     });
   }
 
@@ -287,6 +333,7 @@ export default function SubmitForm({ categories, userId }: Props) {
         type="text"
         maxLength={80}
         placeholder="AI가 회의 메모를 읽고 할 일을 자동 정리해주는 앱"
+        defaultValue={initialData?.tagline ?? ''}
         style={inputStyle}
       />
 
@@ -321,6 +368,7 @@ export default function SubmitForm({ categories, userId }: Props) {
             name="live_url"
             type="url"
             placeholder="https://my-app.com"
+            defaultValue={initialData?.live_url ?? ''}
             style={inputStyle}
           />
         </>
@@ -337,6 +385,7 @@ export default function SubmitForm({ categories, userId }: Props) {
             name="store_url_ios"
             type="url"
             placeholder="https://apps.apple.com/..."
+            defaultValue={initialData?.store_url_ios ?? ''}
             style={inputStyle}
           />
           <label style={labelStyle} htmlFor="store_url_android">
@@ -347,6 +396,7 @@ export default function SubmitForm({ categories, userId }: Props) {
             name="store_url_android"
             type="url"
             placeholder="https://play.google.com/store/apps/..."
+            defaultValue={initialData?.store_url_android ?? ''}
             style={{ ...inputStyle, marginTop: 8 }}
           />
         </>
@@ -679,59 +729,61 @@ export default function SubmitForm({ categories, userId }: Props) {
         </div>
       )}
 
-      {/* 동의 체크박스 */}
-      <div
-        style={{
-          marginTop: 28,
-          background: 'rgba(255,255,255,.03)',
-          border: `1px solid ${agreed ? 'var(--brand)' : 'var(--line)'}`,
-          borderRadius: 12,
-          padding: '16px',
-          transition: 'border-color .15s',
-        }}
-      >
-        <label
+      {/* 동의 체크박스 (등록 모드에서만 표시) */}
+      {!isEdit && (
+        <div
           style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 12,
-            cursor: 'pointer',
+            marginTop: 28,
+            background: 'rgba(255,255,255,.03)',
+            border: `1px solid ${agreed ? 'var(--brand)' : 'var(--line)'}`,
+            borderRadius: 12,
+            padding: '16px',
+            transition: 'border-color .15s',
           }}
         >
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
+          <label
             style={{
-              width: 18,
-              height: 18,
-              marginTop: 2,
-              accentColor: 'var(--brand)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
               cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontSize: 13,
-              color: agreed ? 'var(--ink)' : 'var(--muted)',
-              lineHeight: 1.6,
-              transition: 'color .15s',
             }}
           >
-            본인이 직접 만들었거나 게시할 권리가 있는 콘텐츠임을 확인하며,
-            제3자 저작권을 침해하지 않음을 보증합니다. 또한{' '}
-            <Link
-              href="/ko/terms"
-              target="_blank"
-              style={{ color: 'var(--brand)', textDecoration: 'underline' }}
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              style={{
+                width: 18,
+                height: 18,
+                marginTop: 2,
+                accentColor: 'var(--brand)',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{
+                fontSize: 13,
+                color: agreed ? 'var(--ink)' : 'var(--muted)',
+                lineHeight: 1.6,
+                transition: 'color .15s',
+              }}
             >
-              이용약관
-            </Link>
-            에 동의합니다. *
-          </span>
-        </label>
-      </div>
+              본인이 직접 만들었거나 게시할 권리가 있는 콘텐츠임을 확인하며,
+              제3자 저작권을 침해하지 않음을 보증합니다. 또한{' '}
+              <Link
+                href="/ko/terms"
+                target="_blank"
+                style={{ color: 'var(--brand)', textDecoration: 'underline' }}
+              >
+                이용약관
+              </Link>
+              에 동의합니다. *
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* 제출 */}
       <div style={{ marginTop: 16 }}>
@@ -757,16 +809,20 @@ export default function SubmitForm({ categories, userId }: Props) {
             transition: 'background .15s, color .15s',
           }}
         >
-          {isPending ? '등록 중...' : '제품 등록하기'}
+          {isPending
+            ? (isEdit ? '수정 중...' : '등록 중...')
+            : (isEdit ? '수정 완료' : '제품 등록하기')}
         </button>
 
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 12 }}>
-          제출하면 즉시 공개됩니다.{' '}
-          <Link href="/ko/privacy" target="_blank" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>
-            개인정보처리방침
-          </Link>
-          도 확인해 주세요.
-        </p>
+        {!isEdit && (
+          <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 12 }}>
+            제출하면 즉시 공개됩니다.{' '}
+            <Link href="/ko/privacy" target="_blank" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>
+              개인정보처리방침
+            </Link>
+            도 확인해 주세요.
+          </p>
+        )}
       </div>
     </form>
   );
