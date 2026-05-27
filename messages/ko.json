@@ -227,7 +227,10 @@
     "desc": "직접 만든 앱·도구를 런칭스 커뮤니티에 공개하세요.",
     "submit": "제품 등록하기",
     "submitting": "등록 중...",
-    "disclaimer": "제출하면 즉시 공개됩니다. 런칭스 이용약관에 동의한 것으로 간주합니다."
+    "disclaimer": "제출하면 즉시 공개됩니다. 런칭스 이용약관에 동의한 것으로 간주합니다.",
+    "loginRequired": "제품을 등록하려면 로그인이 필요해요",
+    "loginRequiredDesc": "로그인하고 직접 만든 앱·도구를 공개하세요.",
+    "loginButton": "로그인 / 회원가입"
   },
   "meta": {
     "siteName": "Launchings",

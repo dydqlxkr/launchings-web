@@ -103,7 +103,66 @@ export default function Navbar({ user }: Props) {
           borderBottom: '1px solid var(--line)',
         }}
       >
-        <div className="lp-container" style={{ display: 'flex', alignItems: 'center', gap: 24, height: 62 }}>
+        <div className="lp-container" style={{ display: 'flex', alignItems: 'center', gap: 16, height: 62 }}>
+          {/* 모바일 햄버거 버튼 (<768px) — 가장 왼쪽 */}
+          <button
+            ref={hamburgerRef}
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
+            aria-controls="mobile-nav-menu"
+            className="md:hidden"
+            style={{
+              width: 44,
+              height: 44,
+              background: 'none',
+              border: '1px solid var(--line)',
+              borderRadius: 10,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 5,
+              flexShrink: 0,
+            }}
+          >
+            {/* 햄버거 아이콘 */}
+            <span
+              style={{
+                display: 'block',
+                width: 18,
+                height: 2,
+                background: 'var(--ink)',
+                borderRadius: 2,
+                transition: 'transform .2s, opacity .2s',
+                transform: mobileOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
+              }}
+            />
+            <span
+              style={{
+                display: 'block',
+                width: 18,
+                height: 2,
+                background: 'var(--ink)',
+                borderRadius: 2,
+                transition: 'opacity .2s',
+                opacity: mobileOpen ? 0 : 1,
+              }}
+            />
+            <span
+              style={{
+                display: 'block',
+                width: 18,
+                height: 2,
+                background: 'var(--ink)',
+                borderRadius: 2,
+                transition: 'transform .2s, opacity .2s',
+                transform: mobileOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
+              }}
+            />
+          </button>
+
           {/* Logo */}
           <Link
             href="/ko"
@@ -139,67 +198,8 @@ export default function Navbar({ user }: Props) {
             ))}
           </div>
 
-          {/* 오른쪽 영역 */}
+          {/* 오른쪽 영역 — 로그인/프로필 */}
           <div className="ml-auto flex gap-3 items-center">
-            {/* 모바일 햄버거 버튼 (<768px) */}
-            <button
-              ref={hamburgerRef}
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-expanded={mobileOpen}
-              aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
-              aria-controls="mobile-nav-menu"
-              className="md:hidden"
-              style={{
-                width: 44,
-                height: 44,
-                background: 'none',
-                border: '1px solid var(--line)',
-                borderRadius: 10,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                gap: 5,
-                flexShrink: 0,
-              }}
-            >
-              {/* 햄버거 아이콘 */}
-              <span
-                style={{
-                  display: 'block',
-                  width: 18,
-                  height: 2,
-                  background: 'var(--ink)',
-                  borderRadius: 2,
-                  transition: 'transform .2s, opacity .2s',
-                  transform: mobileOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
-                }}
-              />
-              <span
-                style={{
-                  display: 'block',
-                  width: 18,
-                  height: 2,
-                  background: 'var(--ink)',
-                  borderRadius: 2,
-                  transition: 'opacity .2s',
-                  opacity: mobileOpen ? 0 : 1,
-                }}
-              />
-              <span
-                style={{
-                  display: 'block',
-                  width: 18,
-                  height: 2,
-                  background: 'var(--ink)',
-                  borderRadius: 2,
-                  transition: 'transform .2s, opacity .2s',
-                  transform: mobileOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
-                }}
-              />
-            </button>
-
             {/* 로그인/프로필 */}
             {user ? (
               <div style={{ position: 'relative' }}>

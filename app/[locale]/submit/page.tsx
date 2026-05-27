@@ -1,14 +1,14 @@
 /**
  * 앱 등록 페이지 — /ko/submit
- * 로그인 필수. 비로그인 접근 시 홈으로 리다이렉트.
+ * 비로그인 시 로그인 안내 화면을 렌더. 로그인 후 새로고침하면 폼이 보인다.
  */
 
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { getRepo } from '@/lib/repo';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
+import LoginPrompt from '@/components/LoginPrompt';
 import SubmitForm from './SubmitForm';
 
 export const metadata: Metadata = {
@@ -22,13 +22,6 @@ export default async function SubmitPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/ko');
-  }
-
-  const repo = getRepo();
-  const categories = await repo.listCategories();
-
   return (
     <>
       <NavbarServer />
@@ -40,24 +33,35 @@ export default async function SubmitPage() {
             paddingBottom: 60,
           }}
         >
-          <h1
-            style={{
-              fontSize: 26,
-              fontWeight: 800,
-              letterSpacing: '-.5px',
-              marginBottom: 8,
-            }}
-          >
-            제품 등록
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 32 }}>
-            직접 만든 앱·도구를 런칭스 커뮤니티에 공개하세요.
-          </p>
-
-          <SubmitForm categories={categories} userId={user.id} />
+          {user ? (
+            <>
+              <h1
+                style={{
+                  fontSize: 26,
+                  fontWeight: 800,
+                  letterSpacing: '-.5px',
+                  marginBottom: 8,
+                }}
+              >
+                제품 등록
+              </h1>
+              <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 32 }}>
+                직접 만든 앱·도구를 런칭스 커뮤니티에 공개하세요.
+              </p>
+              <SubmitFormWithCategories userId={user.id} />
+            </>
+          ) : (
+            <LoginPrompt />
+          )}
         </div>
       </main>
       <Footer />
     </>
   );
+}
+
+async function SubmitFormWithCategories({ userId }: { userId: string }) {
+  const repo = getRepo();
+  const categories = await repo.listCategories();
+  return <SubmitForm categories={categories} userId={userId} />;
 }
