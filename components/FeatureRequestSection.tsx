@@ -332,7 +332,9 @@ export default function FeatureRequestSection({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {requests.map((req) => {
             const isVoted = votedIds.has(req.id);
-            const barPct = maxVotes > 0 ? (req.vote_count / maxVotes) * 100 : 0;
+            const rawPct = maxVotes > 0 ? (req.vote_count / maxVotes) * 100 : 0;
+            // 0표여도 막대가 보이도록 최소 8% 보장; 상대 비교는 rawPct 기준 유지
+            const barPct = Math.max(rawPct, 8);
             const isOwner = userId === req.author_id;
 
             return (
@@ -347,7 +349,20 @@ export default function FeatureRequestSection({
                   overflow: 'hidden',
                 }}
               >
-                {/* 막대 도표 배경 */}
+                {/* 막대 도표 트랙 (항상 표시) */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '100%',
+                    background: 'rgba(255,255,255,.025)',
+                    borderRadius: 12,
+                  }}
+                />
+                {/* 막대 도표 채움 */}
                 <div
                   aria-hidden="true"
                   style={{
@@ -357,7 +372,7 @@ export default function FeatureRequestSection({
                     bottom: 0,
                     width: `${barPct}%`,
                     background:
-                      'linear-gradient(90deg,rgba(108,140,255,.10),rgba(155,108,255,.06))',
+                      'linear-gradient(90deg,rgba(108,140,255,.18),rgba(155,108,255,.10))',
                     transition: 'width .3s ease',
                     borderRadius: '12px 0 0 12px',
                   }}

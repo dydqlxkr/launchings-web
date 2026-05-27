@@ -52,11 +52,7 @@ export default function Navbar({ user }: Props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // 모바일 메뉴 열릴 때 바디 스크롤 잠금
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
+  // (드롭다운 방식으로 변경됨 — body 스크롤 잠금 불필요)
 
   // 모바일 메뉴 바깥 클릭 닫기
   useEffect(() => {
@@ -347,7 +343,7 @@ export default function Navbar({ user }: Props) {
         </div>
       </nav>
 
-      {/* 모바일 슬라이드 메뉴 */}
+      {/* 모바일 드롭다운 메뉴 */}
       {mobileOpen && (
         <div
           ref={mobileMenuRef}
@@ -356,18 +352,28 @@ export default function Navbar({ user }: Props) {
           aria-label="모바일 내비게이션"
           style={{
             position: 'fixed',
-            top: 62,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 49,
-            background: 'var(--bg)',
-            borderTop: '1px solid var(--line)',
-            overflowY: 'auto',
-            padding: '24px 24px 40px',
+            top: 62 + 6,
+            left: 10,
+            width: 'min(260px, calc(100vw - 20px))',
+            zIndex: 200,
+            background: 'var(--card)',
+            border: '1px solid var(--line)',
+            borderRadius: 12,
+            boxShadow: 'var(--shadow-pop)',
+            padding: 8,
+            animation: 'mobileMenuFadeIn .15s ease',
           }}
         >
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <style>{`
+            @keyframes mobileMenuFadeIn {
+              from { opacity: 0; transform: translateY(-6px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              @keyframes mobileMenuFadeIn { from { opacity: 1; } to { opacity: 1; } }
+            }
+          `}</style>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {NAV_LINKS.map(({ href, labelKey }) => (
               <Link
                 key={href}
@@ -375,12 +381,13 @@ export default function Navbar({ user }: Props) {
                 onClick={() => setMobileOpen(false)}
                 style={{
                   display: 'block',
-                  fontSize: 18,
-                  fontWeight: 700,
+                  fontSize: 14,
+                  fontWeight: 600,
                   color: isActive(href) ? 'var(--brand)' : 'var(--ink)',
-                  padding: '14px 4px',
-                  borderBottom: '1px solid var(--line)',
+                  padding: '9px 10px',
+                  borderRadius: 8,
                   textDecoration: 'none',
+                  background: isActive(href) ? 'rgba(108,140,255,.08)' : 'transparent',
                 }}
               >
                 {t(labelKey)}
@@ -389,16 +396,17 @@ export default function Navbar({ user }: Props) {
 
             {user ? (
               <>
+                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
                 <Link
                   href={`/ko/makers/${user.id}`}
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: 'block',
-                    fontSize: 18,
-                    fontWeight: 700,
+                    fontSize: 14,
+                    fontWeight: 600,
                     color: 'var(--ink)',
-                    padding: '14px 4px',
-                    borderBottom: '1px solid var(--line)',
+                    padding: '9px 10px',
+                    borderRadius: 8,
                     textDecoration: 'none',
                   }}
                 >
@@ -409,11 +417,11 @@ export default function Navbar({ user }: Props) {
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: 'block',
-                    fontSize: 18,
-                    fontWeight: 700,
+                    fontSize: 14,
+                    fontWeight: 600,
                     color: 'var(--ink)',
-                    padding: '14px 4px',
-                    borderBottom: '1px solid var(--line)',
+                    padding: '9px 10px',
+                    borderRadius: 8,
                     textDecoration: 'none',
                   }}
                 >
@@ -424,17 +432,18 @@ export default function Navbar({ user }: Props) {
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: 'block',
-                    fontSize: 18,
-                    fontWeight: 700,
+                    fontSize: 14,
+                    fontWeight: 600,
                     color: 'var(--ink)',
-                    padding: '14px 4px',
-                    borderBottom: '1px solid var(--line)',
+                    padding: '9px 10px',
+                    borderRadius: 8,
                     textDecoration: 'none',
                   }}
                 >
                   {t('profileSettings')}
                 </Link>
-                <form action={signOut} style={{ marginTop: 4 }}>
+                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
+                <form action={signOut}>
                   <button
                     type="submit"
                     style={{
@@ -442,13 +451,13 @@ export default function Navbar({ user }: Props) {
                       background: 'none',
                       border: 'none',
                       color: '#ff6b6b',
-                      fontSize: 18,
-                      fontWeight: 700,
-                      padding: '14px 4px',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      padding: '9px 10px',
                       cursor: 'pointer',
                       textAlign: 'left',
                       fontFamily: 'inherit',
-                      borderBottom: '1px solid var(--line)',
+                      borderRadius: 8,
                     }}
                   >
                     {t('logout')}
@@ -456,26 +465,27 @@ export default function Navbar({ user }: Props) {
                 </form>
               </>
             ) : (
-              <button
-                onClick={() => { setMobileOpen(false); setShowLogin(true); }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  marginTop: 20,
-                  background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '14px 24px',
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  textAlign: 'center',
-                }}
-              >
-                {t('login')}
-              </button>
+              <>
+                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
+                <button
+                  onClick={() => { setMobileOpen(false); setShowLogin(true); }}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '9px 10px',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                  }}
+                >
+                  {t('login')}
+                </button>
+              </>
             )}
           </nav>
         </div>
