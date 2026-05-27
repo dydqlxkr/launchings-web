@@ -18,7 +18,7 @@
  *   - 임베드 실패 감지: onLoad 후 blank 여부 → 폴백 버튼 표시
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 
@@ -210,10 +210,15 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
   );
 }
 
+/** 외부 URL iframe 로딩 타임아웃 (ms) */
+const EMBED_TIMEOUT_MS = 2500;
+
 function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | null }) {
   const t = useTranslations('appRunner');
   const [embedFailed, setEmbedFailed] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasExternalUrl = !srcDoc && !!app.live_url;
 
@@ -222,13 +227,25 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   // 외부 URL용 sandbox: allow-same-origin 미부여 (ADR-0004)
   const externalSandbox = 'allow-scripts allow-forms allow-popups-to-escape-sandbox';
 
-  // 외부 URL 임베드 실패 감지 (간단한 타임아웃 방식 — 실제로는 X-Frame-Options 거부 시 onLoad가 발생하지 않거나 blank 로드됨)
+  // 외부 URL 경로: 타임아웃 내 로드 신호 없으면 폴백 전환
+  useEffect(() => {
+    if (!hasExternalUrl || embedFailed) return;
+
+    timeoutRef.current = setTimeout(() => {
+      if (!iframeLoaded) {
+        setEmbedFailed(true);
+      }
+    }, EMBED_TIMEOUT_MS);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [hasExternalUrl, embedFailed, iframeLoaded]);
+
   function handleLoad() {
     if (!hasExternalUrl) return;
-    // onLoad가 발생했다는 것은 어느 정도 로드됐다는 의미
-    // 실제 거부 감지는 COEP/crossOriginIsolation 없이는 어렵지만,
-    // embed_status='blocked' 인 앱은 서버에서 미리 판별해 srcDoc이 null이고 live_url도 막힐 수 있음
-    // 여기서는 UI 폴백 버튼만 제공
+    setIframeLoaded(true);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }
 
   const displayUrl = app.live_url ?? `https://${app.slug}.launchings.app`;
@@ -240,36 +257,69 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
           background: 'var(--card)',
           border: '1px solid var(--line)',
           borderRadius: 16,
-          padding: '48px 24px',
-          textAlign: 'center',
-          color: 'var(--muted)',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
-        <div style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
-          {t('embedBlocked')}
+        {/* 스크린샷 폴백 카드 — 앱 썸네일 배경 */}
+        <div
+          style={{
+            background: app.thumbnail_gradient
+              ? `linear-gradient(${app.thumbnail_gradient})`
+              : 'linear-gradient(135deg,#13161f,#1a1f2b)',
+            minHeight: 200,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 24px',
+            gap: 16,
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: 56 }}>{app.thumbnail_emoji}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{app.title}</div>
+          {app.tagline && (
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,.7)', maxWidth: 400 }}>
+              {app.tagline}
+            </div>
+          )}
         </div>
-        <p style={{ fontSize: 13, marginBottom: 20 }}>{t('embedBlockedHint')}</p>
-        {app.live_url && (
-          <a
-            href={app.live_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-              color: '#fff',
-              padding: '10px 20px',
-              borderRadius: 10,
-              fontWeight: 700,
-              fontSize: 14,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            ↗ {t('openInTab')}
-          </a>
-        )}
+
+        {/* 폴백 안내 + 버튼 */}
+        <div
+          style={{
+            padding: '28px 24px',
+            textAlign: 'center',
+            background: 'var(--card)',
+          }}
+        >
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.6 }}>
+            {t('embedBlocked')}
+            <br />
+            <span style={{ fontSize: 12 }}>{t('embedBlockedHint')}</span>
+          </div>
+          {app.live_url && (
+            <a
+              href={app.live_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                color: '#fff',
+                padding: '13px 28px',
+                borderRadius: 12,
+                fontWeight: 700,
+                fontSize: 15,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                textDecoration: 'none',
+              }}
+            >
+              ↗ {t('openInTab')}
+            </a>
+          )}
+        </div>
       </div>
     );
   }
@@ -377,17 +427,54 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
             loading="lazy"
           />
         ) : app.live_url ? (
-          <iframe
-            ref={iframeRef}
-            src={app.live_url}
-            sandbox={externalSandbox}
-            referrerPolicy="no-referrer"
-            title={app.title}
-            style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
-            loading="lazy"
-            onLoad={handleLoad}
-            onError={() => setEmbedFailed(true)}
-          />
+          <>
+            {/* 로딩 스켈레톤 — iframe 로드 전 표시 */}
+            {!iframeLoaded && (
+              <div
+                aria-live="polite"
+                aria-label={t('loadingLabel')}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 2,
+                  background: 'var(--bg2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 16,
+                }}
+              >
+                {/* 펄스 스켈레톤 바 */}
+                <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div className="lp-skeleton" style={{ height: 18, width: '60%', borderRadius: 8 }} />
+                  <div className="lp-skeleton" style={{ height: 14, width: '80%', borderRadius: 8 }} />
+                  <div className="lp-skeleton" style={{ height: 14, width: '50%', borderRadius: 8 }} />
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+                  {t('loadingLabel')}
+                </div>
+              </div>
+            )}
+            <iframe
+              ref={iframeRef}
+              src={app.live_url}
+              sandbox={externalSandbox}
+              referrerPolicy="no-referrer"
+              title={app.title}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+                display: 'block',
+                opacity: iframeLoaded ? 1 : 0,
+                transition: 'opacity .3s',
+              }}
+              loading="lazy"
+              onLoad={handleLoad}
+              onError={() => setEmbedFailed(true)}
+            />
+          </>
         ) : (
           <div
             style={{

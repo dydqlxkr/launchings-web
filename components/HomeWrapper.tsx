@@ -1,16 +1,14 @@
 'use client';
 
 /**
- * HomeWrapper — 시안(런칭스_홈페이지_시안.html)의 섹션 구조를 그대로 재현.
+ * HomeWrapper — 홈 발견 영역 리팩터(P0-4).
  *
  * 섹션 순서:
- *   1. 검색바 + 카테고리 칩 (#discover)
- *   2. 트렌딩/제품 그리드
- *   3. 어떻게 작동하나요 — 3-step (#how)
- *   4. 주목받는 메이커 — 4열 그리드 (#makers)
- *   5. 채용 CTA 밴드 (#recruit)
- *
- * 상태: 검색어(query) · 카테고리(selectedCat) · 정렬(sort) · 비교(CompareContext)
+ *   1. 큐레이션 맛보기 — 트렌딩 상위 6~9개 그리드 + "전체 둘러보기 →" 링크
+ *      (검색바·정렬은 홈에서 제거, 정식 카탈로그는 /ko/apps)
+ *   2. 어떻게 작동하나요 — 3-step (#how)
+ *   3. 주목받는 메이커 — 4열 그리드 (#makers)
+ *   4. 채용 CTA 밴드 (#recruit)
  */
 
 import { useState, useMemo } from 'react';
@@ -29,7 +27,8 @@ interface Props {
   isLoggedIn: boolean;
 }
 
-type AppSort = 'votes' | 'newest';
+/** 홈 맛보기 최대 표시 수 */
+const HOME_PREVIEW_COUNT = 9;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MakerMiniCard — 시안의 .mcard (텍스트 중앙정렬, 통계 2개)
@@ -393,70 +392,24 @@ function RecruitCTA() {
 function HomeInner({
   apps,
   profiles,
-  categories,
   makerApps,
   isLoggedIn,
-}: Props) {
+}: Omit<Props, 'categories'>) {
   const t = useTranslations();
   const td = useTranslations('discover');
   const th = useTranslations('howItWorks');
   const tm = useTranslations('makersSection');
 
-  const [query, setQuery] = useState('');
-  const [selectedCat, setSelectedCat] = useState('all');
-  const [sort, setSort] = useState<AppSort>('votes');
+  // 트렌딩 상위 앱 (추천순, 최대 HOME_PREVIEW_COUNT개)
+  const trendingApps = useMemo(
+    () =>
+      [...apps]
+        .sort((a, b) => b.vote_count - a.vote_count)
+        .slice(0, HOME_PREVIEW_COUNT),
+    [apps]
+  );
 
-  // 카테고리 칩 목록 (시안과 동일)
-  const chips = [
-    { k: 'all', label: '🔥 트렌딩' },
-    { k: 'newest', label: '🆕 새로 나온' },
-    ...categories.map((c) => ({ k: c.slug, label: `${c.emoji} ${c.label_ko}` })),
-  ];
-
-  // 앱 필터/정렬
-  const filteredApps = useMemo(() => {
-    let list = [...apps];
-
-    if (selectedCat === 'newest') {
-      // '새로 나온' 칩은 정렬만 변경
-      list.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    } else {
-      if (selectedCat !== 'all') {
-        list = list.filter((a) => a.categories.includes(selectedCat));
-      }
-      if (sort === 'votes') {
-        list.sort((a, b) => b.vote_count - a.vote_count);
-      } else {
-        list.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      }
-    }
-
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
-      list = list.filter((a) => {
-        const hay = [
-          a.title,
-          a.tagline ?? '',
-          a.description,
-          ...(a.stacks ?? []),
-          a.author?.display_name ?? '',
-        ]
-          .join(' ')
-          .toLowerCase();
-        return hay.includes(q);
-      });
-    }
-
-    return list;
-  }, [apps, selectedCat, sort, query]);
-
-  // 표시할 메이커 (최대 8명, 앱 수 기준 정렬)
+  // 표시할 메이커 (최대 8명, 추천 합계 기준 정렬)
   const featuredMakers = useMemo(() => {
     return [...profiles]
       .sort(
@@ -467,102 +420,10 @@ function HomeInner({
       .slice(0, 8);
   }, [profiles, makerApps]);
 
-  function handleChipClick(k: string) {
-    if (k === 'newest') {
-      setSelectedCat('newest');
-      setSort('newest');
-    } else {
-      setSelectedCat(k);
-      setSort('votes');
-    }
-    // 그리드 영역으로 부드럽게 스크롤
-    const el = document.getElementById('trending-grid');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
   return (
     <>
-      {/* ── 1. 검색바 + 카테고리 칩 ───────────────────────────── */}
-      <section id="discover" style={{ paddingTop: 10 }}>
-        <div className="lp-container" style={{ paddingBottom: 0 }}>
-          {/* 검색바 */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 10,
-              background: 'var(--card)',
-              border: '1px solid var(--line)',
-              borderRadius: 14,
-              padding: 8,
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ paddingLeft: 8, fontSize: 18 }}>🔍</span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={td('searchPlaceholder')}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 0,
-                outline: 0,
-                color: 'var(--ink)',
-                fontSize: 15,
-                padding: '8px 10px',
-                fontFamily: 'inherit',
-              }}
-            />
-            <button
-              style={{
-                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-                color: '#fff',
-                border: 0,
-                borderRadius: 10,
-                padding: '9px 16px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {td('searchButton')}
-            </button>
-          </div>
-
-          {/* 카테고리 칩 가로 스크롤 행 */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '18px 0 8px' }}>
-            {chips.map((c) => {
-              const isActive = selectedCat === c.k;
-              return (
-                <button
-                  key={c.k}
-                  onClick={() => handleChipClick(c.k)}
-                  style={{
-                    background: isActive
-                      ? 'linear-gradient(135deg,rgba(108,140,255,.25),rgba(155,108,255,.25))'
-                      : 'var(--chip)',
-                    border: `1px solid ${isActive ? 'transparent' : 'var(--line)'}`,
-                    color: isActive ? '#fff' : 'var(--muted)',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    padding: '7px 14px',
-                    borderRadius: 999,
-                    cursor: 'pointer',
-                    transition: '.15s',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2. 트렌딩/제품 그리드 ────────────────────────────────── */}
-      <section id="trending-grid" style={{ paddingTop: 14 }}>
+      {/* ── 1. 큐레이션 맛보기 그리드 ─────────────────────────── */}
+      <section id="discover" style={{ paddingTop: 14 }}>
         <div className="lp-container" style={{ paddingBottom: 46 }}>
           {/* 섹션 헤더 */}
           <div
@@ -583,58 +444,16 @@ function HomeInner({
                   fontWeight: 800,
                 }}
               >
-                🔥{' '}
-                {query
-                  ? `"${query}" 검색 결과 · ${filteredApps.length}`
-                  : td('title')}
+                🔥 {td('title')}
               </h2>
               <p style={{ color: 'var(--muted)', fontSize: 14.5, marginTop: 4 }}>
                 {td('subtitle')}
               </p>
             </div>
-
-            {/* 정렬 버튼 */}
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 0,
-                  background: 'var(--card)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 10,
-                  padding: 4,
-                }}
-              >
-                {(
-                  [
-                    { k: 'votes' as AppSort, label: t('sort.votes') },
-                    { k: 'newest' as AppSort, label: t('sort.newest') },
-                  ]
-                ).map(({ k, label }) => (
-                  <button
-                    key={k}
-                    onClick={() => setSort(k)}
-                    style={{
-                      background: sort === k ? 'var(--chip)' : 'transparent',
-                      border: 0,
-                      color: sort === k ? '#fff' : 'var(--muted)',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      padding: '6px 12px',
-                      borderRadius: 7,
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* 앱 그리드 */}
-          {filteredApps.length === 0 ? (
+          {trendingApps.length === 0 ? (
             <div
               style={{
                 textAlign: 'center',
@@ -643,14 +462,57 @@ function HomeInner({
                 fontSize: 15,
               }}
             >
-              {t('empty.message')}
+              <p style={{ marginBottom: 16 }}>{t('empty.message')}</p>
+              <Link
+                href="/ko/submit"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                  color: '#fff',
+                  padding: '10px 20px',
+                  borderRadius: 12,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: 'none',
+                }}
+              >
+                {t('empty.searchCta')}
+              </Link>
             </div>
           ) : (
-            <div className="lp-grid">
-              {filteredApps.map((app) => (
-                <AppCard key={app.id} app={app} isLoggedIn={isLoggedIn} />
-              ))}
-            </div>
+            <>
+              <div className="lp-grid">
+                {trendingApps.map((app) => (
+                  <AppCard key={app.id} app={app} isLoggedIn={isLoggedIn} />
+                ))}
+              </div>
+
+              {/* 전체 둘러보기 링크 */}
+              <div style={{ textAlign: 'center', marginTop: 32 }}>
+                <Link
+                  href="/ko/apps"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: 'transparent',
+                    border: '1px solid var(--line)',
+                    color: 'var(--ink)',
+                    padding: '11px 24px',
+                    borderRadius: 12,
+                    fontWeight: 700,
+                    fontSize: 15,
+                    textDecoration: 'none',
+                    transition: 'border-color .15s, color .15s',
+                  }}
+                  className="hover:border-[var(--brand)] hover:text-[var(--brand)]"
+                >
+                  {td('viewAll')} →
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </section>

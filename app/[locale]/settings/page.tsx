@@ -40,13 +40,8 @@ export default async function SettingsPage() {
       <NavbarServer />
       <main style={{ flex: 1, width: '100%' }}>
         <div
+          className="lp-container--sm"
           style={{
-            maxWidth: 560,
-            width: '100%',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            paddingLeft: 24,
-            paddingRight: 24,
             paddingTop: 40,
             paddingBottom: 60,
           }}

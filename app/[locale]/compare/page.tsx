@@ -88,7 +88,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
     <>
       <NavbarServer />
       <main style={{ flex: 1 }}>
-        <div className="max-w-[1120px] mx-auto px-6 py-10" style={{ maxWidth: 1000 }}>
+        <div className="lp-container--md" style={{ paddingTop: 40, paddingBottom: 40 }}>
           {/* Header */}
           <div
             style={{

@@ -168,7 +168,7 @@ export default async function HomePage() {
               </a>
             </div>
 
-            {/* 통계 행 */}
+            {/* 통계 행 — 실제 카운트 기반, 가짜 통계 제거 */}
             <div
               style={{
                 display: 'flex',
@@ -179,9 +179,8 @@ export default async function HomePage() {
               }}
             >
               {[
-                { n: `${apps.length}+`, l: t('hero.statApps') },
-                { n: `${profiles.length}+`, l: t('hero.statBuilders') },
-                { n: '86', l: t('hero.statHires') },
+                { n: String(apps.length), l: t('hero.statApps') },
+                { n: String(profiles.length), l: t('hero.statBuilders') },
               ].map(({ n, l }) => (
                 <div key={l}>
                   <div

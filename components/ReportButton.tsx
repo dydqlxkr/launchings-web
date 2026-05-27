@@ -9,6 +9,7 @@
 import { useState, useTransition } from 'react';
 import { reportApp, type ReportReason } from '@/lib/actions/report';
 import LoginModal from './LoginModal';
+import Modal from './Modal';
 
 interface Props {
   appId: string;
@@ -98,32 +99,8 @@ export default function ReportButton({ appId, isLoggedIn }: Props) {
       />
 
       {/* 신고 모달 */}
-      {modalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,.6)',
-            backdropFilter: 'blur(4px)',
-          }}
-          onClick={handleClose}
-        >
-          <div
-            style={{
-              background: 'var(--card)',
-              border: '1px solid var(--line)',
-              borderRadius: 18,
-              padding: '28px 24px',
-              width: '100%',
-              maxWidth: 420,
-              position: 'relative',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+      <Modal isOpen={modalOpen} onClose={handleClose} labelId="report-modal-title" maxWidth={420}>
+        <div style={{ padding: '28px 24px', position: 'relative' }}>
             {/* 닫기 */}
             <button
               onClick={handleClose}
@@ -144,6 +121,7 @@ export default function ReportButton({ appId, isLoggedIn }: Props) {
             </button>
 
             <h2
+              id="report-modal-title"
               style={{
                 fontSize: 17,
                 fontWeight: 800,
@@ -292,9 +270,8 @@ export default function ReportButton({ appId, isLoggedIn }: Props) {
                 </button>
               </form>
             )}
-          </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

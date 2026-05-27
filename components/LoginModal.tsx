@@ -10,6 +10,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { signInWithPassword, signUpWithPassword } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/client';
+import Modal from './Modal';
 
 interface Props {
   isOpen: boolean;
@@ -30,8 +31,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   const [confirmEmail, setConfirmEmail] = useState('');
   const [isPending, startTransition] = useTransition();
   const [googleLoading, setGoogleLoading] = useState(false);
-
-  if (!isOpen) return null;
 
   function resetForm() {
     setEmail('');
@@ -118,33 +117,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(0,0,0,.6)',
-        backdropFilter: 'blur(4px)',
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: 'var(--card)',
-          border: '1px solid var(--line)',
-          borderRadius: 18,
-          padding: '32px 28px',
-          width: '100%',
-          maxWidth: 400,
-          position: 'relative',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal isOpen={isOpen} onClose={() => { resetForm(); onClose(); }} labelId="login-modal-title" maxWidth={400}>
+      <div style={{ padding: '32px 28px', position: 'relative' }}>
         {/* 닫기 버튼 */}
         <button
           onClick={() => { resetForm(); onClose(); }}
@@ -176,7 +150,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               display: 'inline-block',
             }}
           />
-          <span style={{ fontWeight: 800, fontSize: 16 }}>런칭스</span>
+          <span id="login-modal-title" style={{ fontWeight: 800, fontSize: 16 }}>런칭스</span>
         </div>
 
         {/* 이메일 확인 화면 */}
@@ -387,6 +361,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
           </>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }

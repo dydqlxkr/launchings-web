@@ -7,6 +7,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations, Category } from '@/lib/types';
 import AppCard from './AppCard';
@@ -214,7 +215,26 @@ function AppsPageInner({ apps, categories, isLoggedIn }: Props) {
             fontSize: 15,
           }}
         >
-          결과가 없어요. 다른 키워드를 입력해보세요.
+          <p style={{ marginBottom: 16 }}>
+            {t('searchEmpty', { query })}
+          </p>
+          <Link
+            href="/ko/submit"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+              color: '#fff',
+              padding: '10px 20px',
+              borderRadius: 12,
+              fontWeight: 700,
+              fontSize: 14,
+              textDecoration: 'none',
+            }}
+          >
+            {t('searchEmptyCta')}
+          </Link>
         </div>
       )}
 

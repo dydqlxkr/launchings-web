@@ -4,9 +4,13 @@
     "brandSub": "BuildPool",
     "findMakers": "빌더 찾기",
     "apps": "작동 제품",
+    "browse": "둘러보기",
     "submit": "제품 등록",
     "mySubmit": "내 제품 등록",
-    "profileSettings": "프로필 설정"
+    "myProfile": "내 프로필",
+    "profileSettings": "프로필 설정",
+    "login": "로그인",
+    "logout": "로그아웃"
   },
   "hero": {
     "pill": "한국 0→1 빌더 · 작동 제품으로 검증",
@@ -83,7 +87,8 @@
     "nativeDemoMvpNote": "네이티브 앱은 영상·스크린샷·스토어 링크로 미리봅니다. 브라우저 에뮬레이터(분당 과금·보안)는 MVP에서 제외했습니다.",
     "playDemo": "데모 영상 재생",
     "externalSiteNotice": "외부 사이트 · 런칭스가 아닙니다",
-    "screenshotAlt": "스크린샷 {n}"
+    "screenshotAlt": "스크린샷 {n}",
+    "loadingLabel": "실행 환경 불러오는 중"
   },
   "compare": {
     "barTitle": "비교 중",
@@ -121,7 +126,9 @@
     "joinedAt": "합류"
   },
   "empty": {
-    "message": "결과가 없어요. 다른 키워드나 필터를 눌러보세요."
+    "message": "곧 멋진 제품들이 채워집니다. 1호가 되어보세요.",
+    "searchMessage": "아직 \"{query}\" 결과가 없어요. 첫 번째로 올려보세요!",
+    "searchCta": "내 제품 등록하기"
   },
   "discover": {
     "title": "이번 주 트렌딩",
@@ -234,7 +241,9 @@
     "popularTitle": "이번 주 인기 앱",
     "popularSubtitle": "가장 많이 추천받은 작동 제품",
     "searchPlaceholder": "앱 이름, 기능, 기술 스택으로 검색...",
-    "noApps": "아직 등록된 앱이 없어요.",
+    "noApps": "곧 멋진 제품들이 채워집니다. 1호가 되어보세요.",
+    "searchEmpty": "아직 \"{query}\" 결과가 없어요. 첫 번째로 올려보세요!",
+    "searchEmptyCta": "내 제품 등록하기",
     "backToHome": "홈으로",
     "submitCta": "+ 내 제품 등록"
   },
