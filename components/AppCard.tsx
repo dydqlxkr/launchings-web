@@ -46,7 +46,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
         >
           {app.thumbnail_emoji}
 
-          {/* Type badge */}
+          {/* Type badge — LIVE 배지 유지 */}
           {isNative ? (
             <span
               style={{
@@ -110,16 +110,22 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
         }}
       >
         <Link href={`/ko/apps/${app.slug}`}>
+          {/* 제목: 1줄 클램프 (다국어 긴 제목 대비) */}
           <div
             style={{
               fontWeight: 700,
               fontSize: 16,
               marginBottom: 4,
               color: 'var(--ink)',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: 'vertical',
             }}
           >
             {app.title}
           </div>
+          {/* 설명: 2줄 클램프 유지 */}
           <div
             style={{
               color: 'var(--muted)',
@@ -161,7 +167,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
           <UpvoteButton appId={app.id} initialCount={app.vote_count} isLoggedIn={isLoggedIn} />
         </div>
 
-        {/* Bottom row: try link + compare toggle */}
+        {/* Bottom row: detail link + compare toggle (비교 담기는 시각 비중 낮춤) */}
         <div
           style={{
             display: 'flex',
@@ -182,6 +188,7 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
           >
             {isNative ? t('tryDemo') : t('tryNow')}
           </Link>
+          {/* 비교 담기: 아이콘 중심 소형 버튼으로 시각 비중 낮춤 */}
           <CompareToggle appId={app.id} />
         </div>
       </div>

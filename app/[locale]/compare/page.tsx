@@ -6,6 +6,7 @@ import { CATEGORIES } from '@/data/seed';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import AvatarCircle from '@/components/AvatarCircle';
+import CompareRemoveButton from '@/components/CompareRemoveButton';
 import type { AppWithRelations } from '@/lib/types';
 
 export const metadata: Metadata = {
@@ -205,60 +206,65 @@ export default async function ComparePage({ searchParams }: PageProps) {
                           verticalAlign: 'top',
                         }}
                       >
-                        <Link
-                          href={`/ko/apps/${app.slug}`}
-                          style={{ display: 'block' }}
-                          className="hover:opacity-80 transition-opacity"
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div
-                              style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 12,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: 24,
-                                background: app.thumbnail_gradient
-                                  ? `linear-gradient(${app.thumbnail_gradient})`
-                                  : 'var(--card2)',
-                                flexShrink: 0,
-                              }}
-                            >
-                              {app.thumbnail_emoji}
-                            </div>
-                            <div style={{ minWidth: 0 }}>
+                        {/* 헤더: 앱 정보 + ✕ 제거 버튼 */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
+                          <Link
+                            href={`/ko/apps/${app.slug}`}
+                            style={{ display: 'block', minWidth: 0, flex: 1 }}
+                            className="hover:opacity-80 transition-opacity"
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div
                                 style={{
-                                  fontWeight: 800,
-                                  fontSize: 15,
-                                  color: 'var(--ink)',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: 12,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 24,
+                                  background: app.thumbnail_gradient
+                                    ? `linear-gradient(${app.thumbnail_gradient})`
+                                    : 'var(--card2)',
+                                  flexShrink: 0,
                                 }}
                               >
-                                {app.title}
+                                {app.thumbnail_emoji}
                               </div>
-                              <div
-                                style={{
-                                  fontSize: 11,
-                                  color:
-                                    app.app_type === 'webapp'
-                                      ? 'var(--accent)'
-                                      : 'var(--warm)',
-                                  fontWeight: 700,
-                                  marginTop: 2,
-                                }}
-                              >
-                                {app.app_type === 'webapp'
-                                  ? '● 웹 실행'
-                                  : '📦 네이티브'}
+                              <div style={{ minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    fontWeight: 800,
+                                    fontSize: 15,
+                                    color: 'var(--ink)',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {app.title}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 11,
+                                    color:
+                                      app.app_type === 'webapp'
+                                        ? 'var(--accent)'
+                                        : 'var(--warm)',
+                                    fontWeight: 700,
+                                    marginTop: 2,
+                                  }}
+                                >
+                                  {app.app_type === 'webapp'
+                                    ? '● 웹 실행'
+                                    : '📦 네이티브'}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </Link>
+                          </Link>
+                          {/* ✕ 제거 버튼 — 해당 앱을 비교에서 제거하고 URL 갱신 */}
+                          <CompareRemoveButton appId={app.id} currentIds={ids} />
+                        </div>
                       </th>
                     ))}
                   </tr>

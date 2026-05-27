@@ -54,8 +54,8 @@
   "appCard": {
     "webapp": "웹에서 바로 실행",
     "native": "네이티브 · 라이브 데모",
-    "tryNow": "지금 바로 실행해보기",
-    "tryDemo": "라이브 데모 영상 보기",
+    "tryNow": "자세히 보기",
+    "tryDemo": "스토어에서 보기",
     "by": "by",
     "upvote": "추천",
     "upvoted": "추천됨",
@@ -94,10 +94,13 @@
   "compare": {
     "barTitle": "비교 중",
     "barHint": "최대 3개까지 선택하세요",
+    "barHintOne": "1개 더 담으면 비교할 수 있어요",
     "compareBtn": "비교하기",
+    "compareBtnDisabledHint": "2개 이상 담아야 비교할 수 있어요",
     "clearBtn": "초기화",
     "pageTitle": "앱 비교",
     "backBtn": "목록으로",
+    "removeApp": "비교에서 제거",
     "field": {
       "maker": "제작자",
       "category": "카테고리",
@@ -249,7 +252,11 @@
     "searchEmpty": "아직 \"{query}\" 결과가 없어요. 첫 번째로 올려보세요!",
     "searchEmptyCta": "내 제품 등록하기",
     "backToHome": "홈으로",
-    "submitCta": "+ 내 제품 등록"
+    "submitCta": "+ 내 제품 등록",
+    "filterAll": "전체",
+    "sortVotes": "추천순",
+    "sortNewest": "최신순",
+    "filteredEmpty": "해당 카테고리에 등록된 앱이 없습니다."
   },
   "googleAuthPending": "구글 로그인은 준비 중입니다. 이메일로 로그인해 주세요.",
   "forgotPassword": {

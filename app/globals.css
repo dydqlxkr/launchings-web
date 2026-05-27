@@ -238,3 +238,11 @@ a {
 button {
   font-family: inherit;
 }
+
+/* ── 스크롤바 숨기기 (칩 행 가로 스크롤 등) ──────────────────── */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
+}
