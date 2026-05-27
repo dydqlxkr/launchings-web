@@ -161,7 +161,9 @@ export default async function MakerProfilePage({ params }: PageProps) {
                 </div>
                 <div>
                   <div style={{ fontSize: 20, fontWeight: 800 }}>
-                    {(totalVotes / 1000).toFixed(1)}k
+                    {totalVotes >= 1000
+                      ? `${(totalVotes / 1000).toFixed(1)}k`
+                      : String(totalVotes)}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--muted)' }}>총 추천</div>
                 </div>

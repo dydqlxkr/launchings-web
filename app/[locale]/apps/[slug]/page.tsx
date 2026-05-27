@@ -14,7 +14,6 @@ import UpvoteButton from '@/components/UpvoteButton';
 import AppRunner from '@/components/AppRunner';
 import ReportButton from '@/components/ReportButton';
 import AppDetailClient from '@/components/AppDetailClient';
-import { CATEGORIES } from '@/data/seed';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -81,19 +80,22 @@ export default async function AppDetailPage({ params }: PageProps) {
     ? await getVoteStatus(app.id)
     : { voted: false };
 
-  // 리뷰 + 기능 요청 데이터 조회
-  const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet] = await Promise.all([
+  // 리뷰 + 기능 요청 + 카테고리 목록 병렬 조회
+  const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet, allCategories] = await Promise.all([
     repo.listReviews(app.id),
     repo.getReviewStats(app.id),
     user ? repo.getMyReview(app.id, user.id) : Promise.resolve(null),
     repo.listFeatureRequests(app.id),
     user ? repo.getMyFeatureVotes(app.id, user.id) : Promise.resolve(new Set<string>()),
+    repo.listCategories(),
   ]);
   const myVotedIds = Array.from(myVotedIdsSet);
 
+  // slug → {label_ko, emoji} 맵 (DB 기반)
+  const catMap = new Map(allCategories.map((c) => [c.slug, c]));
   const catLabels = (app.categories ?? [])
     .map((cSlug) => {
-      const c = CATEGORIES.find((x) => x.slug === cSlug);
+      const c = catMap.get(cSlug);
       return c ? `${c.emoji} ${c.label_ko}` : cSlug;
     })
     .join(', ');

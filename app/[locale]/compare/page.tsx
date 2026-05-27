@@ -2,7 +2,6 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getRepo } from '@/lib/repo';
-import { CATEGORIES } from '@/data/seed';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import AvatarCircle from '@/components/AvatarCircle';
@@ -76,7 +75,12 @@ export default async function ComparePage({ searchParams }: PageProps) {
     .filter(Boolean)
     .slice(0, 3);
 
-  const allApps = await repo.listApps({ sort: 'votes' });
+  const [allApps, allCategories] = await Promise.all([
+    repo.listApps({ sort: 'votes' }),
+    repo.listCategories(),
+  ]);
+  // slug → {label_ko, emoji} 맵 (DB 기반)
+  const catMap = new Map(allCategories.map((c) => [c.slug, c]));
 
   // ids 순서 유지
   const apps: AppWithRelations[] = ids
@@ -303,7 +307,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
                     label={t('field.category')}
                     values={apps.map((app) => {
                       const cats = (app.categories ?? []).map((cSlug) => {
-                        const c = CATEGORIES.find((x) => x.slug === cSlug);
+                        const c = catMap.get(cSlug);
                         return c ? `${c.emoji} ${c.label_ko}` : cSlug;
                       });
                       return cats.length > 0 ? (

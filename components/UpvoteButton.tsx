@@ -37,22 +37,20 @@ export default function UpvoteButton({
       return;
     }
 
-    // 낙관적 UI
-    const optimisticVoted = !voted;
-    const optimisticCount = optimisticVoted ? count + 1 : count - 1;
-    setVoted(optimisticVoted);
-    setCount(optimisticCount);
+    // 낙관적 UI: 함수형 업데이트로 직전 상태 기반 갱신
+    setVoted((prev) => !prev);
+    setCount((prev) => (voted ? prev - 1 : prev + 1));
 
     startTransition(async () => {
       const result = await toggleVote(appId);
       if (result.error) {
-        // 롤백
-        setVoted(voted);
-        setCount(count);
+        // 롤백: 함수형 업데이트로 연속 클릭 스테일 방지
+        setVoted((prev) => !prev);
+        setCount((prev) => (voted ? prev + 1 : prev - 1));
       } else {
         // 서버 응답으로 정확한 값 동기화
-        setVoted(result.voted ?? optimisticVoted);
-        setCount(result.vote_count ?? optimisticCount);
+        if (result.voted !== undefined) setVoted(result.voted);
+        if (result.vote_count !== undefined) setCount(result.vote_count);
       }
     });
   }

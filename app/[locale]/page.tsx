@@ -22,11 +22,14 @@ export default async function HomePage() {
     repo.listCategories(),
   ]);
 
-  // 빌더별 앱 맵을 서버에서 미리 계산
-  const makerApps: Record<string, AppWithRelations[]> = {};
-  for (const profile of profiles) {
-    makerApps[profile.id] = await repo.listAppsByAuthor(profile.id);
-  }
+  // 빌더별 앱 맵을 서버에서 미리 계산 (병렬 조회)
+  const makerAppsEntries = await Promise.all(
+    profiles.map(async (profile) => {
+      const appList = await repo.listAppsByAuthor(profile.id);
+      return [profile.id, appList] as const;
+    })
+  );
+  const makerApps: Record<string, AppWithRelations[]> = Object.fromEntries(makerAppsEntries);
 
   return (
     <>
