@@ -14,15 +14,15 @@
     "logout": "로그아웃"
   },
   "hero": {
-    "pill": "한국 0→1 빌더 · 작동 제품으로 검증",
-    "heading1": "이력서 말고,",
-    "heading2": "작동하는 제품으로 증명하세요",
-    "lead": "한국에서 직접 만들어 굴러가는 제품이 곧 이력서입니다. 커밋·실사용·추천으로 검증된 0→1 빌더를, 초기 스타트업이 바로 만나는 곳.",
-    "ctaBrowse": "제품 둘러보기",
-    "ctaSubmit": "내 제품 올리기",
-    "statBuilders": "검증된 빌더",
-    "statApps": "작동 제품",
-    "statHires": "채용 성사"
+    "pill": "한국 AI 빌더들의 놀이터",
+    "heading1": "내가 만든 AI 앱,",
+    "heading2": "한번 써볼래?",
+    "lead": "한국 빌더들이 AI로 직접 만든 앱들이 매일 올라와요.\n가볍게 써보고, 좋으면 추천하고, 만든 사람한테 한마디 남겨주세요.",
+    "ctaBrowse": "써보러 가기",
+    "ctaSubmit": "내 앱 올리기",
+    "statBuilders": "빌더",
+    "statApps": "올라온 앱",
+    "statVotes": "누적 추천"
   },
   "categoriesSection": {
     "title": "카테고리별 탐색",
@@ -49,7 +49,7 @@
     "design": "디자인",
     "game": "게임",
     "mobile": "모바일",
-    "other": "기타"
+    "other": "실험실"
   },
   "appCard": {
     "webapp": "웹에서 바로 실행",
@@ -138,14 +138,14 @@
   },
   "discover": {
     "title": "이번 주 트렌딩",
-    "subtitle": "유저들이 가장 많이 체험하고 추천한 앱",
+    "subtitle": "사람들이 가장 많이 써보고 좋아한 앱",
     "viewAll": "전체 보기 →",
     "searchPlaceholder": "앱 이름, 기능, 기술 스택으로 검색 (예: AI 챗봇, Flutter)",
     "searchButton": "검색"
   },
   "chips": {
-    "trending": "트렌딩",
-    "newest": "새로 나온",
+    "trending": "이번 주 인기",
+    "newest": "갓 올라온",
     "ai": "AI / LLM",
     "productivity": "생산성",
     "design": "디자인",

@@ -438,7 +438,7 @@ INSERT INTO public.categories (slug, label_ko, label_en, emoji, sort_order) VALU
   ('design',      '디자인',     'Design',       '🎨', 3),
   ('game',        '게임',       'Game',         '🎮', 4),
   ('mobile',      '모바일',     'Mobile',       '📱', 5),
-  ('other',       '기타',       'Other',        '📦', 6)
+  ('other',       '실험실',     'Lab',          '🧪', 6)
 ON CONFLICT (slug) DO NOTHING;
 
 -- =============================================================

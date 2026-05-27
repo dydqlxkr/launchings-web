@@ -120,6 +120,7 @@ export default async function HomePage() {
                 color: 'var(--muted)',
                 maxWidth: 560,
                 margin: '0 auto 30px',
+                whiteSpace: 'pre-line',
               }}
             >
               {t('hero.lead')}
@@ -178,27 +179,32 @@ export default async function HomePage() {
                 flexWrap: 'wrap',
               }}
             >
-              {[
-                { n: String(apps.length), l: t('hero.statApps') },
-                { n: String(profiles.length), l: t('hero.statBuilders') },
-              ].map(({ n, l }) => (
-                <div key={l}>
-                  <div
-                    style={{
-                      fontSize: 26,
-                      fontWeight: 800,
-                      letterSpacing: '-.5px',
-                    }}
-                  >
-                    {n}
+              {(() => {
+                const totalVotes = apps.reduce((s, a) => s + a.vote_count, 0);
+                const voteLabel = totalVotes >= 10 ? `${totalVotes}+` : String(totalVotes);
+                return [
+                  { n: String(apps.length), l: t('hero.statApps') },
+                  { n: String(profiles.length), l: t('hero.statBuilders') },
+                  { n: voteLabel, l: t('hero.statVotes') },
+                ].map(({ n, l }) => (
+                  <div key={l}>
+                    <div
+                      style={{
+                        fontSize: 26,
+                        fontWeight: 800,
+                        letterSpacing: '-.5px',
+                      }}
+                    >
+                      {n}
+                    </div>
+                    <div
+                      style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}
+                    >
+                      {l}
+                    </div>
                   </div>
-                  <div
-                    style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}
-                  >
-                    {l}
-                  </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </div>

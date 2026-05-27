@@ -19,7 +19,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'design', label_ko: '디자인', label_en: 'Design', emoji: '🎨', sort_order: 3 },
   { slug: 'game', label_ko: '게임', label_en: 'Game', emoji: '🎮', sort_order: 4 },
   { slug: 'mobile', label_ko: '모바일', label_en: 'Mobile', emoji: '📱', sort_order: 5 },
-  { slug: 'other', label_ko: '기타', label_en: 'Other', emoji: '📦', sort_order: 6 },
+  { slug: 'other', label_ko: '실험실', label_en: 'Lab', emoji: '🧪', sort_order: 6 },
 ];
 
 // ────────────────────────────────────────────────────────────
