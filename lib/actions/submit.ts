@@ -12,15 +12,17 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
 
-// 슬러그 생성 헬퍼
+// 슬러그 생성 헬퍼 — ASCII(영문 소문자/숫자/하이픈)만 허용
 function slugify(text: string): string {
-  return text
+  const slug = text
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')  // 비-ASCII(한글 등) 제거, 영문/숫자/공백/하이픈만 유지
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 60);
+  // 결과가 비면 타임스탬프 폴백
+  return slug || `app-${Date.now().toString(36)}`;
 }
 
 // 유효성 검사
@@ -113,9 +115,8 @@ export async function submitApp(formData: FormData): Promise<SubmitResult> {
     ? JSON.parse(screenshotsRaw).filter(Boolean)
     : [];
 
-  // 슬러그 생성 (중복 시 suffix 추가)
+  // 슬러그 생성 (중복 시 suffix 추가) — slugify가 비어있으면 내부에서 폴백 반환
   let slug = slugify(title);
-  if (!slug) slug = `app-${Date.now()}`;
 
   // 중복 슬러그 확인
   const { data: existing } = await supabase

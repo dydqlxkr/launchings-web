@@ -7,28 +7,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-
-/** handle 허용 규칙: 소문자 영문·숫자·하이픈·언더스코어, 3~20자 */
-const HANDLE_RE = /^[a-z0-9_-]{3,20}$/;
-
-/** 예약어 목록 (라우트 충돌 방지) */
-const RESERVED_HANDLES = new Set([
-  'admin',
-  'api',
-  'auth',
-  'settings',
-  'submit',
-  'compare',
-  'apps',
-  'makers',
-  'privacy',
-  'terms',
-  'ko',
-  'en',
-  'support',
-  'help',
-  'about',
-]);
+import { validateHandle } from '@/lib/validations';
 
 export interface UpdateProfileInput {
   display_name: string;
@@ -57,17 +36,9 @@ export async function updateProfile(
   }
 
   const trimmedHandle = handle?.trim().toLowerCase();
-  if (!trimmedHandle) {
-    return { error: '사용자 ID를 입력해 주세요.' };
-  }
-  if (!HANDLE_RE.test(trimmedHandle)) {
-    return {
-      error:
-        '사용자 ID는 소문자 영문, 숫자, 하이픈(-), 언더스코어(_)만 사용 가능하며 3~20자여야 합니다.',
-    };
-  }
-  if (RESERVED_HANDLES.has(trimmedHandle)) {
-    return { error: '사용할 수 없는 ID입니다. 다른 ID를 입력해 주세요.' };
+  const handleError = validateHandle(trimmedHandle ?? '');
+  if (handleError) {
+    return { error: handleError };
   }
 
   const trimmedBio = bio?.trim() ?? null;
