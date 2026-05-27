@@ -13,6 +13,22 @@ import { routing } from './i18n/routing';
 const intlMiddleware = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
+  // 0. OAuth/recovery code가 콜백이 아닌 경로(예: Supabase Site URL 폴백으로
+  //    /ko?code=...)로 도착하면 /auth/callback으로 넘겨 세션 교환을 처리한다.
+  //    (Supabase Redirect URLs 허용목록 미설정 대비 안전장치)
+  const reqUrl = request.nextUrl;
+  const oauthCode = reqUrl.searchParams.get('code');
+  if (oauthCode && !reqUrl.pathname.startsWith('/auth/callback')) {
+    const cb = new URL('/auth/callback', reqUrl.origin);
+    cb.searchParams.set('code', oauthCode);
+    const safeNext =
+      reqUrl.pathname.startsWith('/') && !reqUrl.pathname.startsWith('//')
+        ? reqUrl.pathname
+        : '/ko';
+    cb.searchParams.set('next', safeNext);
+    return NextResponse.redirect(cb);
+  }
+
   // 1. Supabase 세션 쿠키 갱신
   //    getUser()를 호출해야 만료된 세션 토큰이 자동 갱신됨.
   let supabaseResponse = NextResponse.next({ request });
