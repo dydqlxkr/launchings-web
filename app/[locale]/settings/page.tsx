@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import SettingsForm from './SettingsForm';
+import DeleteAccountSection from './DeleteAccountSection';
 
 export const metadata: Metadata = {
   title: '프로필 설정',
@@ -78,6 +79,11 @@ export default async function SettingsPage() {
               initialBio={profile?.bio ?? null}
               initialWebsiteUrl={profile?.website_url ?? null}
             />
+          </div>
+
+          {/* 위험 구역 — 회원 탈퇴 */}
+          <div style={{ marginTop: 40 }}>
+            <DeleteAccountSection />
           </div>
         </div>
       </main>

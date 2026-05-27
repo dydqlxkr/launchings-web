@@ -20,6 +20,8 @@ export const CATEGORIES: Category[] = [
   { slug: 'game', label_ko: '게임', label_en: 'Game', emoji: '🎮', sort_order: 4 },
   { slug: 'mobile', label_ko: '모바일', label_en: 'Mobile', emoji: '📱', sort_order: 5 },
   { slug: 'other', label_ko: '실험실', label_en: 'Lab', emoji: '🧪', sort_order: 6 },
+  // 0010_finance_category.sql 과 동기
+  { slug: 'finance', label_ko: '금융/핀테크', label_en: 'Finance', emoji: '💸', sort_order: 7 },
 ];
 
 // ────────────────────────────────────────────────────────────
