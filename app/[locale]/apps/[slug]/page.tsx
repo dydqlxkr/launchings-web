@@ -19,14 +19,9 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export async function generateStaticParams() {
-  // generateStaticParams는 빌드 타임 실행이므로 cookies() 컨텍스트 없음.
-  // Supabase 환경이라도 로컬 시드에서 정적 경로를 가져온다.
-  // 런타임 ISR에서 실제 DB 데이터가 반영된다.
-  const { default: localRepo } = await import('@/lib/repo/local');
-  const slugs = await localRepo.listAppSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+// 로그인 세션(cookies)으로 업보트 상태 등 개인화되므로 항상 동적 렌더.
+// (generateStaticParams + cookies() 조합의 DYNAMIC_SERVER_USAGE 500 방지)
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

@@ -16,12 +16,9 @@ interface PageProps {
   params: Promise<{ locale: string; handle: string }>;
 }
 
-export async function generateStaticParams() {
-  // generateStaticParams는 빌드 타임 실행이므로 cookies() 컨텍스트 없음.
-  const { default: localRepo } = await import('@/lib/repo/local');
-  const handles = await localRepo.listHandles();
-  return handles.map((handle) => ({ handle }));
-}
+// 로그인 세션(cookies)을 읽어 개인화되므로 항상 동적 렌더.
+// (generateStaticParams + cookies() 조합의 DYNAMIC_SERVER_USAGE 500 방지)
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { handle } = await params;
