@@ -9,6 +9,7 @@
  */
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { signInWithPassword, signUpWithPassword, requestPasswordReset } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/client';
@@ -25,6 +26,7 @@ type LoginMode = 'normal' | 'forgot';
 
 export default function LoginModal({ isOpen, onClose }: Props) {
   const t = useTranslations();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('login');
   const [loginMode, setLoginMode] = useState<LoginMode>('normal');
   const [email, setEmail] = useState('');
@@ -116,9 +118,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         return;
       }
 
-      // 로그인/가입 성공 — 페이지 새로고침으로 세션 반영
+      // 로그인/가입 성공 — 서버 컴포넌트 갱신으로 세션 반영
       onClose();
-      window.location.reload();
+      router.refresh();
     });
   }
 

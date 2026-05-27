@@ -11,13 +11,14 @@
  *   4. 채용 CTA 밴드 (#recruit)
  */
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations, Profile, Category } from '@/lib/types';
 import AppCard from './AppCard';
 import { CompareProvider } from './CompareContext';
 import CompareBar from './CompareBar';
+import { useToast } from '@/components/Toast';
 
 interface Props {
   apps: AppWithRelations[];
@@ -166,11 +167,10 @@ function MakerMiniCard({
 // ─────────────────────────────────────────────────────────────────────────────
 function RecruitCTA() {
   const t = useTranslations('recruitSection');
-  const [toastVisible, setToastVisible] = useState(false);
+  const toast = useToast();
 
   function handleInterest() {
-    setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 3500);
+    toast.show(t('ctaToast'), 'success');
   }
 
   return (
@@ -359,29 +359,6 @@ function RecruitCTA() {
         </div>
       </div>
 
-      {/* 토스트 */}
-      {toastVisible && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 32,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'var(--card2)',
-            border: '1px solid var(--accent)',
-            borderRadius: 12,
-            padding: '12px 22px',
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--accent)',
-            zIndex: 100,
-            boxShadow: '0 8px 32px rgba(0,0,0,.4)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {t('ctaToast')}
-        </div>
-      )}
     </section>
   );
 }

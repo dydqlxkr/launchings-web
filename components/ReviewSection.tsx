@@ -9,7 +9,9 @@
  */
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { submitReview, deleteReview } from '@/lib/actions/review';
+import { useToast } from '@/components/Toast';
 import type { ReviewWithAuthor, ReviewStats } from '@/lib/types';
 
 interface Props {
@@ -91,6 +93,8 @@ export default function ReviewSection({
   isLoggedIn,
   onLoginRequest,
 }: Props) {
+  const router = useRouter();
+  const toast = useToast();
   const [isPending, startTransition] = useTransition();
   const [rating, setRating] = useState(myReview?.rating ?? 0);
   const [body, setBody] = useState(myReview?.body ?? '');
@@ -126,8 +130,8 @@ export default function ReviewSection({
         return;
       }
       setSubmitted(true);
-      // 페이지 새로고침으로 최신 데이터 반영 (revalidatePath 동작)
-      window.location.reload();
+      toast.show(myReview ? '리뷰가 수정됐습니다.' : '리뷰가 등록됐습니다.', 'success');
+      router.refresh();
     });
   }
 
@@ -141,7 +145,8 @@ export default function ReviewSection({
         setError(result.error);
         return;
       }
-      window.location.reload();
+      toast.show('리뷰가 삭제됐습니다.', 'info');
+      router.refresh();
     });
   }
 

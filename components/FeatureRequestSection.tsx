@@ -9,11 +9,13 @@
  */
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   addFeatureRequest,
   toggleFeatureVote,
   deleteFeatureRequest,
 } from '@/lib/actions/featureRequest';
+import { useToast } from '@/components/Toast';
 import type { FeatureRequestWithAuthor } from '@/lib/types';
 
 interface Props {
@@ -41,6 +43,8 @@ export default function FeatureRequestSection({
   userId,
   onLoginRequest,
 }: Props) {
+  const router = useRouter();
+  const toast = useToast();
   const [isPending, startTransition] = useTransition();
 
   // 낙관적 목록 상태
@@ -141,8 +145,8 @@ export default function FeatureRequestSection({
         return;
       }
       setBody('');
-      // 페이지 새로고침으로 최신 목록 반영
-      window.location.reload();
+      toast.show('기능 요청이 등록됐습니다.', 'success');
+      router.refresh();
     });
   }
 
@@ -156,8 +160,10 @@ export default function FeatureRequestSection({
     startTransition(async () => {
       const result = await deleteFeatureRequest(requestId);
       if (!('ok' in result)) {
-        // 롤백: 페이지 새로고침
-        window.location.reload();
+        // 롤백: 서버 데이터로 갱신
+        router.refresh();
+      } else {
+        toast.show('기능 요청이 삭제됐습니다.', 'info');
       }
     });
   }

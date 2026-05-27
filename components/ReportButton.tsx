@@ -8,6 +8,7 @@
 
 import { useState, useTransition } from 'react';
 import { reportApp, type ReportReason } from '@/lib/actions/report';
+import { useToast } from '@/components/Toast';
 import LoginModal from './LoginModal';
 import Modal from './Modal';
 
@@ -26,6 +27,7 @@ const REASON_OPTIONS: { value: ReportReason; label: string }[] = [
 ];
 
 export default function ReportButton({ appId, isLoggedIn }: Props) {
+  const toast = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>('other');
@@ -56,6 +58,7 @@ export default function ReportButton({ appId, isLoggedIn }: Props) {
       const res = await reportApp(appId, reason, detail);
       setResult(res);
       if (res.success) {
+        toast.show('신고가 접수되었습니다. 감사합니다.', 'success');
         setTimeout(() => setModalOpen(false), 1500);
       }
     });

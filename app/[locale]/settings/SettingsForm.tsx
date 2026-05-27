@@ -8,6 +8,7 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { updateProfile } from '@/lib/actions/profile';
+import { useToast } from '@/components/Toast';
 
 interface Props {
   initialDisplayName: string;
@@ -44,6 +45,7 @@ export default function SettingsForm({
   initialWebsiteUrl,
 }: Props) {
   const t = useTranslations('settings');
+  const toast = useToast();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [handle, setHandle] = useState(initialHandle);
   const [bio, setBio] = useState(initialBio ?? '');
@@ -71,6 +73,7 @@ export default function SettingsForm({
       }
 
       setSaved(true);
+      toast.show(t('saved'), 'success');
     });
   }
 
