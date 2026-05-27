@@ -17,6 +17,8 @@ import LoginModal from './LoginModal';
 interface NavUser {
   id: string;
   email?: string | null;
+  handle?: string | null;
+  displayName?: string | null;
 }
 
 interface Props {
@@ -86,63 +88,212 @@ export default function Navbar({ user }: Props) {
         }}
       >
         <div className="lp-container" style={{ display: 'flex', alignItems: 'center', gap: 16, height: 62 }}>
-          {/* 햄버거 버튼 — 모든 화면 크기에서 표시 */}
-          <button
-            ref={hamburgerRef}
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-expanded={mobileOpen}
-            aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
-            aria-controls="mobile-nav-menu"
-            style={{
-              width: 44,
-              height: 44,
-              background: 'none',
-              border: '1px solid var(--line)',
-              borderRadius: 10,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: 5,
-              flexShrink: 0,
-            }}
-          >
-            {/* 햄버거 아이콘 */}
-            <span
+          {/* 햄버거 버튼 래퍼 — position:relative로 드롭다운 기준점 */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              ref={hamburgerRef}
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
+              aria-controls="mobile-nav-menu"
               style={{
-                display: 'block',
-                width: 18,
-                height: 2,
-                background: 'var(--ink)',
-                borderRadius: 2,
-                transition: 'transform .2s, opacity .2s',
-                transform: mobileOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
+                width: 44,
+                height: 44,
+                background: 'none',
+                border: '1px solid var(--line)',
+                borderRadius: 10,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: 5,
               }}
-            />
-            <span
-              style={{
-                display: 'block',
-                width: 18,
-                height: 2,
-                background: 'var(--ink)',
-                borderRadius: 2,
-                transition: 'opacity .2s',
-                opacity: mobileOpen ? 0 : 1,
-              }}
-            />
-            <span
-              style={{
-                display: 'block',
-                width: 18,
-                height: 2,
-                background: 'var(--ink)',
-                borderRadius: 2,
-                transition: 'transform .2s, opacity .2s',
-                transform: mobileOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
-              }}
-            />
-          </button>
+            >
+              {/* 햄버거 아이콘 */}
+              <span
+                style={{
+                  display: 'block',
+                  width: 18,
+                  height: 2,
+                  background: 'var(--ink)',
+                  borderRadius: 2,
+                  transition: 'transform .2s, opacity .2s',
+                  transform: mobileOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
+                }}
+              />
+              <span
+                style={{
+                  display: 'block',
+                  width: 18,
+                  height: 2,
+                  background: 'var(--ink)',
+                  borderRadius: 2,
+                  transition: 'opacity .2s',
+                  opacity: mobileOpen ? 0 : 1,
+                }}
+              />
+              <span
+                style={{
+                  display: 'block',
+                  width: 18,
+                  height: 2,
+                  background: 'var(--ink)',
+                  borderRadius: 2,
+                  transition: 'transform .2s, opacity .2s',
+                  transform: mobileOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
+                }}
+              />
+            </button>
+
+            {/* 햄버거 드롭다운 메뉴 — 햄버거 아이콘 바로 아래 정렬 */}
+            {mobileOpen && (
+              <div
+                ref={mobileMenuRef}
+                id="mobile-nav-menu"
+                role="navigation"
+                aria-label="모바일 내비게이션"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  width: 'min(260px, calc(100vw - 20px))',
+                  zIndex: 200,
+                  background: 'var(--card)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 12,
+                  boxShadow: 'var(--shadow-pop)',
+                  padding: 8,
+                  animation: 'mobileMenuFadeIn .15s ease',
+                }}
+              >
+                <style>{`
+                  @keyframes mobileMenuFadeIn {
+                    from { opacity: 0; transform: translateY(-6px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                  }
+                  @media (prefers-reduced-motion: reduce) {
+                    @keyframes mobileMenuFadeIn { from { opacity: 1; } to { opacity: 1; } }
+                  }
+                `}</style>
+                <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {NAV_LINKS.map(({ href, labelKey }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      style={{
+                        display: 'block',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: isActive(href) ? 'var(--brand)' : 'var(--ink)',
+                        padding: '9px 10px',
+                        borderRadius: 8,
+                        textDecoration: 'none',
+                        background: isActive(href) ? 'rgba(108,140,255,.08)' : 'transparent',
+                      }}
+                    >
+                      {t(labelKey)}
+                    </Link>
+                  ))}
+
+                  {user ? (
+                    <>
+                      <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
+                      <Link
+                        href={user.handle ? `/ko/makers/${user.handle}` : '/ko/settings'}
+                        onClick={() => setMobileOpen(false)}
+                        style={{
+                          display: 'block',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--ink)',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {t('myProfile')}
+                      </Link>
+                      <Link
+                        href="/ko/my-apps"
+                        onClick={() => setMobileOpen(false)}
+                        style={{
+                          display: 'block',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--ink)',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {t('myApps')}
+                      </Link>
+                      <Link
+                        href="/ko/settings"
+                        onClick={() => setMobileOpen(false)}
+                        style={{
+                          display: 'block',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--ink)',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {t('profileSettings')}
+                      </Link>
+                      <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
+                      <form action={signOut}>
+                        <button
+                          type="submit"
+                          style={{
+                            width: '100%',
+                            background: 'none',
+                            border: 'none',
+                            color: '#ff6b6b',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            padding: '9px 10px',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            fontFamily: 'inherit',
+                            borderRadius: 8,
+                          }}
+                        >
+                          {t('logout')}
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <>
+                      <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
+                      <button
+                        onClick={() => { setMobileOpen(false); setShowLogin(true); }}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '9px 10px',
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: '#fff',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'left',
+                        }}
+                      >
+                        {t('login')}
+                      </button>
+                    </>
+                  )}
+                </nav>
+              </div>
+            )}
+          </div>
 
           {/* Logo */}
           <Link
@@ -208,20 +359,65 @@ export default function Navbar({ user }: Props) {
                     }}
                     onMouseLeave={() => setShowUserMenu(false)}
                   >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--muted)',
-                        padding: '6px 10px',
-                        maxWidth: 160,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {user.email}
+                    {/* 프로필 정보 헤더 */}
+                    <div style={{ padding: '6px 10px', maxWidth: 180 }}>
+                      {user.displayName && (
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: 'var(--ink)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {user.displayName}
+                        </div>
+                      )}
+                      {user.handle && (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: 'var(--muted)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          @{user.handle}
+                        </div>
+                      )}
+                      {!user.displayName && !user.handle && (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: 'var(--muted)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {user.email}
+                        </div>
+                      )}
                     </div>
                     <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '6px 0' }} />
+                    <Link
+                      href={user.handle ? `/ko/makers/${user.handle}` : '/ko/settings'}
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('myProfile')}
+                    </Link>
                     <Link
                       href="/ko/submit"
                       onClick={() => setShowUserMenu(false)}
@@ -312,154 +508,6 @@ export default function Navbar({ user }: Props) {
           </div>
         </div>
       </nav>
-
-      {/* 모바일 드롭다운 메뉴 */}
-      {mobileOpen && (
-        <div
-          ref={mobileMenuRef}
-          id="mobile-nav-menu"
-          role="navigation"
-          aria-label="모바일 내비게이션"
-          style={{
-            position: 'fixed',
-            top: 62 + 6,
-            left: 10,
-            width: 'min(260px, calc(100vw - 20px))',
-            zIndex: 200,
-            background: 'var(--card)',
-            border: '1px solid var(--line)',
-            borderRadius: 12,
-            boxShadow: 'var(--shadow-pop)',
-            padding: 8,
-            animation: 'mobileMenuFadeIn .15s ease',
-          }}
-        >
-          <style>{`
-            @keyframes mobileMenuFadeIn {
-              from { opacity: 0; transform: translateY(-6px); }
-              to   { opacity: 1; transform: translateY(0); }
-            }
-            @media (prefers-reduced-motion: reduce) {
-              @keyframes mobileMenuFadeIn { from { opacity: 1; } to { opacity: 1; } }
-            }
-          `}</style>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {NAV_LINKS.map(({ href, labelKey }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  display: 'block',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: isActive(href) ? 'var(--brand)' : 'var(--ink)',
-                  padding: '9px 10px',
-                  borderRadius: 8,
-                  textDecoration: 'none',
-                  background: isActive(href) ? 'rgba(108,140,255,.08)' : 'transparent',
-                }}
-              >
-                {t(labelKey)}
-              </Link>
-            ))}
-
-            {user ? (
-              <>
-                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
-                <Link
-                  href={`/ko/makers/${user.id}`}
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    padding: '9px 10px',
-                    borderRadius: 8,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {t('myProfile')}
-                </Link>
-                <Link
-                  href="/ko/my-apps"
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    padding: '9px 10px',
-                    borderRadius: 8,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {t('myApps')}
-                </Link>
-                <Link
-                  href="/ko/settings"
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    padding: '9px 10px',
-                    borderRadius: 8,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {t('profileSettings')}
-                </Link>
-                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
-                <form action={signOut}>
-                  <button
-                    type="submit"
-                    style={{
-                      width: '100%',
-                      background: 'none',
-                      border: 'none',
-                      color: '#ff6b6b',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      padding: '9px 10px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
-                      borderRadius: 8,
-                    }}
-                  >
-                    {t('logout')}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '4px 0' }} />
-                <button
-                  onClick={() => { setMobileOpen(false); setShowLogin(true); }}
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '9px 10px',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    textAlign: 'left',
-                  }}
-                >
-                  {t('login')}
-                </button>
-              </>
-            )}
-          </nav>
-        </div>
-      )}
 
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </>

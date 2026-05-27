@@ -12,9 +12,23 @@ export default async function NavbarServer() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const navUser = user
-    ? { id: user.id, email: user.email ?? null }
-    : null;
+  if (!user) {
+    return <Navbar user={null} />;
+  }
+
+  // profiles 테이블에서 handle과 display_name 조회
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('handle, display_name')
+    .eq('id', user.id)
+    .single();
+
+  const navUser = {
+    id: user.id,
+    email: user.email ?? null,
+    handle: profile?.handle ?? null,
+    displayName: profile?.display_name ?? null,
+  };
 
   return <Navbar user={navUser} />;
 }
