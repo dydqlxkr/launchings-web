@@ -3,14 +3,17 @@ import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import AvatarCircle from './AvatarCircle';
 import UpvoteButton from './UpvoteButton';
+import BookmarkButton from './BookmarkButton';
 import CompareToggle from './CompareToggle';
+import ViewCount from './ViewCount';
 
 interface Props {
   app: AppWithRelations;
   isLoggedIn?: boolean;
+  initialBookmarked?: boolean;
 }
 
-export default function AppCard({ app, isLoggedIn = false }: Props) {
+export default function AppCard({ app, isLoggedIn = false, initialBookmarked = false }: Props) {
   const t = useTranslations('appCard');
 
   const isNative = app.app_type === 'native';
@@ -166,16 +169,18 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
             </Link>
           )}
 
-          {/* Upvote */}
-          <UpvoteButton appId={app.id} initialCount={app.vote_count} isLoggedIn={isLoggedIn} />
+          {/* Upvote + Bookmark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            <UpvoteButton appId={app.id} initialCount={app.vote_count} isLoggedIn={isLoggedIn} />
+            <BookmarkButton appId={app.id} initialBookmarked={initialBookmarked} isLoggedIn={isLoggedIn} size="sm" />
+          </div>
         </div>
 
-        {/* Bottom row: detail link + compare toggle (비교 담기는 시각 비중 낮춤) */}
+        {/* Bottom row: detail link + view count + compare toggle */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
             marginTop: 11,
             gap: 8,
           }}
@@ -191,8 +196,12 @@ export default function AppCard({ app, isLoggedIn = false }: Props) {
           >
             {isNative ? t('tryDemo') : t('tryNow')}
           </Link>
-          {/* 비교 담기: 아이콘 중심 소형 버튼으로 시각 비중 낮춤 */}
-          <CompareToggle appId={app.id} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+            {/* 조회수 */}
+            <ViewCount count={app.view_count} />
+            {/* 비교 담기: 아이콘 중심 소형 버튼으로 시각 비중 낮춤 */}
+            <CompareToggle appId={app.id} />
+          </div>
         </div>
       </div>
     </div>

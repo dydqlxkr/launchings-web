@@ -118,6 +118,18 @@ class LocalRepo implements IRepo {
   async getMyFeatureVotes(_appId: string, _userId: string): Promise<Set<string>> {
     return new Set();
   }
+
+  // ── Bookmark (로컬 구현 — 빈 데이터 반환) ────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async listBookmarkedApps(_userId: string): Promise<AppWithRelations[]> {
+    return [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getMyBookmarkIds(_userId: string): Promise<Set<string>> {
+    return new Set();
+  }
 }
 
 // 싱글턴 — 서버 컴포넌트 내에서 import 시 동일 인스턴스

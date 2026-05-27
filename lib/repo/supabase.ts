@@ -289,6 +289,50 @@ class SupabaseRepo implements IRepo {
     if (error || !data) return new Set();
     return new Set((data as { request_id: string }[]).map((r) => r.request_id));
   }
+
+  // ── Bookmark ─────────────────────────────────────────────
+
+  async listBookmarkedApps(userId: string): Promise<AppWithRelations[]> {
+    const supabase = await createClient();
+
+    // bookmarks → apps 조인
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .select(`
+        app:apps!app_id(
+          *,
+          author:profiles!author_id(*),
+          app_categories(category_slug),
+          app_stacks(stack)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      console.error('[SupabaseRepo] listBookmarkedApps error:', error?.message);
+      return [];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any[])
+      .map((row) => row.app)
+      .filter(Boolean)
+      .filter((app: { status: string }) => app.status === 'published')
+      .map(mapApp);
+  }
+
+  async getMyBookmarkIds(userId: string): Promise<Set<string>> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .select('app_id')
+      .eq('user_id', userId);
+
+    if (error || !data) return new Set();
+    return new Set((data as { app_id: string }[]).map((r) => r.app_id));
+  }
 }
 
 // ── 매핑 헬퍼 ────────────────────────────────────────────

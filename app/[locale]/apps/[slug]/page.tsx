@@ -7,10 +7,14 @@ import { getDemoSrcdoc } from '@/lib/appDemos';
 import { createClient } from '@/lib/supabase/server';
 import { isSafeHttpUrl } from '@/lib/validations';
 import { getVoteStatus } from '@/lib/actions/vote';
+import { getBookmarkStatus } from '@/lib/actions/bookmark';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import AvatarCircle from '@/components/AvatarCircle';
 import UpvoteButton from '@/components/UpvoteButton';
+import BookmarkButton from '@/components/BookmarkButton';
+import ShareButton from '@/components/ShareButton';
+import ViewCount from '@/components/ViewCount';
 import AppRunner from '@/components/AppRunner';
 import ReportButton from '@/components/ReportButton';
 import AppDetailClient from '@/components/AppDetailClient';
@@ -68,12 +72,13 @@ export default async function AppDetailPage({ params }: PageProps) {
   // srcdoc 데모 조회 (서버에서 결정 — 클라이언트 번들에 전체 데모 포함 불필요)
   const srcDoc = isNative ? null : getDemoSrcdoc(app.slug);
 
-  // 현재 사용자 세션 및 업보트 상태 조회
+  // 현재 사용자 세션 및 업보트/북마크 상태 조회
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { voted: initialVoted } = user
-    ? await getVoteStatus(app.id)
-    : { voted: false };
+  const [{ voted: initialVoted }, { bookmarked: initialBookmarked }] = await Promise.all([
+    user ? getVoteStatus(app.id) : Promise.resolve({ voted: false }),
+    user ? getBookmarkStatus(app.id) : Promise.resolve({ bookmarked: false }),
+  ]);
 
   // 리뷰 + 기능 요청 + 카테고리 목록 병렬 조회
   const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet, allCategories] = await Promise.all([
@@ -204,12 +209,22 @@ export default async function AppDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            <UpvoteButton
-              appId={app.id}
-              initialCount={app.vote_count}
-              initialVoted={initialVoted}
-              isLoggedIn={!!user}
-            />
+            {/* 액션 버튼 그룹: 업보트 · 북마크 · 공유 · 조회수 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <UpvoteButton
+                appId={app.id}
+                initialCount={app.vote_count}
+                initialVoted={initialVoted}
+                isLoggedIn={!!user}
+              />
+              <BookmarkButton
+                appId={app.id}
+                initialBookmarked={initialBookmarked}
+                isLoggedIn={!!user}
+              />
+              <ShareButton slug={app.slug} />
+              <ViewCount count={app.view_count} style={{ marginLeft: 4 }} />
+            </div>
           </div>
 
           {/* Description */}

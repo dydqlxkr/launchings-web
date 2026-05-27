@@ -231,6 +231,21 @@ export default function Navbar({ user }: Props) {
                         {t('myApps')}
                       </Link>
                       <Link
+                        href="/ko/bookmarks"
+                        onClick={() => setMobileOpen(false)}
+                        style={{
+                          display: 'block',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--ink)',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {t('myBookmarks')}
+                      </Link>
+                      <Link
                         href="/ko/settings"
                         onClick={() => setMobileOpen(false)}
                         style={{
@@ -447,6 +462,21 @@ export default function Navbar({ user }: Props) {
                       }}
                     >
                       {t('myApps')}
+                    </Link>
+                    <Link
+                      href="/ko/bookmarks"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('myBookmarks')}
                     </Link>
                     <Link
                       href="/ko/settings"

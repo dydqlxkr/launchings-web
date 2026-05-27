@@ -67,4 +67,12 @@ export interface IFeatureRequestRepo {
   getMyFeatureVotes(appId: string, userId: string): Promise<Set<string>>;
 }
 
-export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo {}
+export interface IBookmarkRepo {
+  /** 사용자가 북마크한 앱 목록 */
+  listBookmarkedApps(userId: string): Promise<AppWithRelations[]>;
+
+  /** 사용자가 북마크한 앱 id 집합 */
+  getMyBookmarkIds(userId: string): Promise<Set<string>>;
+}
+
+export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo, IBookmarkRepo {}
