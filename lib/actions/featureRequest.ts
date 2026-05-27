@@ -9,6 +9,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { rateLimitInteraction, rateLimitVote, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 // ─── addFeatureRequest ─────────────────────────────────────────────────────
 
@@ -20,6 +21,9 @@ export async function addFeatureRequest(
   appId: string,
   body: string
 ): Promise<AddFeatureRequestResult> {
+  const rl = await rateLimitInteraction('addFeatureRequest');
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const supabase = await createClient();
 
   const {
@@ -67,6 +71,9 @@ export type FeatureVoteResult =
 export async function toggleFeatureVote(
   requestId: string
 ): Promise<FeatureVoteResult> {
+  const rl = await rateLimitVote('toggleFeatureVote');
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const supabase = await createClient();
 
   const {

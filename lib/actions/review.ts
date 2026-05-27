@@ -8,6 +8,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { rateLimitInteraction, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 export interface ReviewActionResult {
   error?: string;
@@ -19,6 +20,9 @@ export interface ReviewActionResult {
  * 유저당 앱당 1개 — DB unique 제약으로 보장.
  */
 export async function submitReview(formData: FormData): Promise<ReviewActionResult> {
+  const rl = await rateLimitInteraction('submitReview');
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

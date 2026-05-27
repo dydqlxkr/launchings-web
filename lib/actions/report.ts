@@ -8,6 +8,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { rateLimitInteraction, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 export type ReportReason =
   | 'spam'
@@ -26,6 +27,9 @@ export async function reportApp(
   reason: ReportReason,
   detail?: string
 ): Promise<ReportResult> {
+  const rl = await rateLimitInteraction('reportApp');
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   if (!appId || !reason) {
     return { error: '신고 정보가 올바르지 않습니다.' };
   }

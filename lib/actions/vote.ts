@@ -8,12 +8,16 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { rateLimitVote, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 export type VoteResult =
   | { voted: boolean; vote_count: number; error?: undefined }
   | { error: string; voted?: undefined; vote_count?: undefined };
 
 export async function toggleVote(appId: string): Promise<VoteResult> {
+  const rl = await rateLimitVote('toggleVote');
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const supabase = await createClient();
 
   // 인증 확인

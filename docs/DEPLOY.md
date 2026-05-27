@@ -155,6 +155,57 @@ DB가 아직 설정되지 않았다면 아래 순서로 적용합니다.
 
 ---
 
+## Step 8. 레이트리밋 설정 (선택 — Upstash Redis)
+
+레이트리밋은 **키가 없으면 자동으로 비활성화**됩니다. 앱은 키 없이도 완전히 정상 동작합니다.
+키를 설정하면 로그인·회원가입·앱 등록 등 주요 액션에 IP 기반 제한이 활성화됩니다.
+
+### 8-1. Upstash Redis 데이터베이스 생성
+
+1. [console.upstash.com](https://console.upstash.com/) 에 접속해 GitHub 또는 Google 계정으로 가입합니다.
+2. **Create Database** 를 클릭합니다.
+3. 이름(예: `launchings-ratelimit`)을 입력하고 리전은 **ap-northeast-1 (Tokyo)** 를 선택합니다.
+4. **Create** 를 클릭합니다.
+
+### 8-2. REST URL / TOKEN 복사
+
+1. 생성된 데이터베이스 페이지 → **REST API** 섹션으로 이동합니다.
+2. 아래 두 값을 메모합니다:
+   - `UPSTASH_REDIS_REST_URL` — `https://YOUR_DB_NAME.upstash.io` 형태
+   - `UPSTASH_REDIS_REST_TOKEN` — `AXxx...` 형태의 긴 토큰
+
+### 8-3. 환경변수 등록
+
+**로컬 개발 (`.env.local`)**:
+```
+UPSTASH_REDIS_REST_URL=https://YOUR_DB_NAME.upstash.io
+UPSTASH_REDIS_REST_TOKEN=AXxx...
+```
+
+**Vercel 배포**:
+1. Vercel 대시보드 → 프로젝트 → **Settings** → **Environment Variables** 로 이동합니다.
+2. 위 두 변수를 **Production** (및 필요 시 Preview) 환경에 추가합니다.
+3. **Redeploy** 를 실행합니다.
+
+### 적용된 한도
+
+| 액션 | 한도 |
+|---|---|
+| 로그인 (`signInWithPassword`) | IP당 분당 5회 |
+| 회원가입 (`signUpWithPassword`) | IP당 시간당 5회 |
+| 비밀번호 재설정 (`requestPasswordReset`) | IP당 시간당 3회 |
+| 앱 등록 (`submitApp`) | IP당 시간당 10회 |
+| 리뷰 (`submitReview`) | IP당 분당 10회 |
+| 신고 (`reportApp`) | IP당 분당 10회 |
+| 기능 요청 (`addFeatureRequest`) | IP당 분당 10회 |
+| 업보트 (`toggleVote`) | IP당 분당 30회 |
+| 기능 투표 (`toggleFeatureVote`) | IP당 분당 30회 |
+
+> 초과 시 `"요청이 너무 많아요. 잠시 후 다시 시도해 주세요."` 메시지가 반환됩니다.
+> 키가 없거나 Upstash 연결 오류 시에는 제한 없이 통과합니다 (가용성 우선).
+
+---
+
 ## 비용 알림 설정 (권장)
 
 ### Vercel

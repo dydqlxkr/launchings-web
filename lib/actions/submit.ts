@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
 import { isSafeHttpUrl } from '@/lib/validations';
+import { rateLimitSubmitApp, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 // 슬러그 생성 헬퍼 — ASCII(영문 소문자/숫자/하이픈)만 허용
 function slugify(text: string): string {
@@ -61,6 +62,9 @@ export type SubmitResult =
   | { error: string; slug?: undefined };
 
 export async function submitApp(formData: FormData): Promise<SubmitResult> {
+  const rl = await rateLimitSubmitApp();
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const supabase = await createClient();
 
   // 인증 확인

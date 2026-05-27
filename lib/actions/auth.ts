@@ -13,11 +13,20 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import { validateHandle } from '@/lib/validations';
+import {
+  rateLimitSignIn,
+  rateLimitSignUp,
+  rateLimitPasswordReset,
+  RATE_LIMIT_ERROR,
+} from '@/lib/rateLimit';
 
 /**
  * 이메일/비밀번호 로그인.
  */
 export async function signInWithPassword(formData: FormData) {
+  const rl = await rateLimitSignIn();
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
 
@@ -54,6 +63,9 @@ export async function signInWithPassword(formData: FormData) {
  *   이메일 인증 완료 후 DB 트리거나 /ko/settings에서 설정하도록 안내.
  */
 export async function signUpWithPassword(formData: FormData) {
+  const rl = await rateLimitSignUp();
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
   const passwordConfirm = formData.get('passwordConfirm') as string;
@@ -137,6 +149,9 @@ export async function getOAuthRedirectUrl() {
  * redirectTo: /auth/callback?next=/ko/reset → recovery 세션 교환 후 /ko/reset으로 이동.
  */
 export async function requestPasswordReset(formData: FormData) {
+  const rl = await rateLimitPasswordReset();
+  if (!rl.ok) return { error: RATE_LIMIT_ERROR };
+
   const email = (formData.get('email') as string)?.trim();
 
   if (!email || !email.includes('@')) {
