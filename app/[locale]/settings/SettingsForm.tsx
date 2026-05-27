@@ -2,20 +2,31 @@
 
 /**
  * 프로필 설정 폼 — 클라이언트 컴포넌트.
- * display_name, handle, bio, website_url 편집.
+ * display_name, handle, bio, website_url, avatar_url 편집.
  * handle 입력 시 400ms 디바운스 실시간 중복 확인.
  */
 
 import { useState, useTransition, useEffect, useRef, useId } from 'react';
 import { useTranslations } from 'next-intl';
 import { updateProfile, checkHandleAvailable } from '@/lib/actions/profile';
+import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/Toast';
+
+const AVATAR_MAX_MB = 2;
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]);
 
 interface Props {
   initialDisplayName: string;
   initialHandle: string;
   initialBio: string | null;
   initialWebsiteUrl: string | null;
+  initialAvatarUrl: string | null;
+  userId: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -53,6 +64,8 @@ export default function SettingsForm({
   initialHandle,
   initialBio,
   initialWebsiteUrl,
+  initialAvatarUrl,
+  userId,
 }: Props) {
   const t = useTranslations('settings');
   const toast = useToast();
@@ -66,6 +79,13 @@ export default function SettingsForm({
   const [handleStatus, setHandleStatus] = useState<HandleStatus>({ state: 'idle' });
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleDescId = useId();
+
+  // 아바타 상태
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialAvatarUrl);
+  const [avatarChanged, setAvatarChanged] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // 디바운스 handle 실시간 체크
   useEffect(() => {
@@ -96,6 +116,52 @@ export default function SettingsForm({
     };
   }, [handle, initialHandle]);
 
+  async function handleAvatarChange(file: File) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      setError(t('avatar.invalidType'));
+      return;
+    }
+    if (file.size > AVATAR_MAX_MB * 1024 * 1024) {
+      setError(t('avatar.tooLarge', { mb: AVATAR_MAX_MB }));
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${userId}/avatar/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('app-images')
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        setError(t('avatar.uploadFailed') + ': ' + uploadError.message);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('app-images')
+        .getPublicUrl(path);
+
+      const publicUrl = urlData.publicUrl;
+      setAvatarUrl(publicUrl);
+      setAvatarPreview(URL.createObjectURL(file));
+      setAvatarChanged(true);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  function handleRemoveAvatar() {
+    setAvatarUrl(null);
+    setAvatarPreview(null);
+    setAvatarChanged(true);
+    if (avatarInputRef.current) avatarInputRef.current.value = '';
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -117,6 +183,7 @@ export default function SettingsForm({
         handle,
         bio: bio || undefined,
         website_url: websiteUrl || undefined,
+        ...(avatarChanged ? { avatar_url: avatarUrl } : {}),
       });
 
       if (result.error) {
@@ -126,6 +193,7 @@ export default function SettingsForm({
 
       setSaved(true);
       setHandleStatus({ state: 'idle' });
+      setAvatarChanged(false);
       toast.show(t('saved'), 'success');
     });
   }
@@ -135,6 +203,99 @@ export default function SettingsForm({
   return (
     <form onSubmit={handleSubmit}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* 아바타 */}
+        <div>
+          <label style={labelStyle}>{t('avatar.label')}</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* 미리보기 */}
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                flexShrink: 0,
+                background: avatarPreview
+                  ? 'transparent'
+                  : 'linear-gradient(135deg, var(--brand), var(--brand2))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid var(--line)',
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarPreview}
+                  alt={t('avatar.previewAlt')}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <span style={{ fontSize: 28, fontWeight: 800, color: '#fff' }}>
+                  {displayName ? displayName[0].toUpperCase() : '?'}
+                </span>
+              )}
+            </div>
+
+            {/* 버튼 영역 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <label
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 16px',
+                  background: 'var(--chip)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: uploadingAvatar ? 'var(--muted)' : 'var(--ink)',
+                  cursor: uploadingAvatar ? 'not-allowed' : 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                {uploadingAvatar ? t('avatar.uploading') : t('avatar.changeButton')}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingAvatar}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleAvatarChange(file);
+                    e.target.value = '';
+                  }}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              {avatarPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploadingAvatar}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'transparent',
+                    border: '1px solid var(--line)',
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--muted)',
+                    cursor: uploadingAvatar ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {t('avatar.removeButton')}
+                </button>
+              )}
+            </div>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8, marginBottom: 0 }}>
+            {t('avatar.hint', { mb: AVATAR_MAX_MB })}
+          </p>
+        </div>
 
         {/* 이름 */}
         <div>
@@ -287,6 +448,7 @@ export default function SettingsForm({
         type="submit"
         disabled={
           isPending ||
+          uploadingAvatar ||
           !displayName ||
           !handle ||
           handleStatus.state === 'checking' ||
@@ -297,6 +459,7 @@ export default function SettingsForm({
           width: '100%',
           background:
             isPending ||
+            uploadingAvatar ||
             !displayName ||
             !handle ||
             handleStatus.state === 'checking' ||
@@ -310,6 +473,7 @@ export default function SettingsForm({
           fontWeight: 700,
           color:
             isPending ||
+            uploadingAvatar ||
             !displayName ||
             !handle ||
             handleStatus.state === 'checking' ||
@@ -317,7 +481,7 @@ export default function SettingsForm({
               ? 'var(--muted)'
               : '#fff',
           cursor:
-            isPending || handleStatus.state === 'checking' ? 'not-allowed' : 'pointer',
+            isPending || uploadingAvatar || handleStatus.state === 'checking' ? 'not-allowed' : 'pointer',
           fontFamily: 'inherit',
           transition: 'opacity .12s',
         }}

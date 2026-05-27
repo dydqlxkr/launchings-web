@@ -30,7 +30,7 @@ export default async function SettingsPage() {
   // 현재 프로필 조회
   const { data: profile } = await supabase
     .from('profiles')
-    .select('handle, display_name, bio, website_url')
+    .select('handle, display_name, bio, website_url, avatar_url')
     .eq('id', user.id)
     .single();
 
@@ -78,6 +78,8 @@ export default async function SettingsPage() {
               initialHandle={profile?.handle ?? ''}
               initialBio={profile?.bio ?? null}
               initialWebsiteUrl={profile?.website_url ?? null}
+              initialAvatarUrl={profile?.avatar_url ?? null}
+              userId={user.id}
             />
           </div>
 

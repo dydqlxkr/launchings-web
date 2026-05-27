@@ -1,6 +1,5 @@
 /**
- * 메이커 아바타 — Phase 1에서는 gradient+initial 방식,
- * Phase 2에서 avatar_url이 있으면 next/image로 전환.
+ * 메이커 아바타 — avatar_url이 있으면 원형 이미지, 없으면 gradient+initial.
  */
 
 import type { Profile } from '@/lib/types';
@@ -12,6 +11,34 @@ interface Props {
 }
 
 export default function AvatarCircle({ profile, size = 52, fontSize = 22 }: Props) {
+  if (profile.avatar_url) {
+    return (
+      <div
+        aria-label={profile.display_name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          flexShrink: 0,
+          position: 'relative',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={profile.avatar_url}
+          alt={profile.display_name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       role="img"

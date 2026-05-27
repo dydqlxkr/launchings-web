@@ -14,6 +14,7 @@ export interface UpdateProfileInput {
   handle: string;
   bio?: string;
   website_url?: string;
+  avatar_url?: string | null;
 }
 
 export interface UpdateProfileResult {
@@ -24,7 +25,7 @@ export interface UpdateProfileResult {
 export async function updateProfile(
   input: UpdateProfileInput
 ): Promise<UpdateProfileResult> {
-  const { display_name, handle, bio, website_url } = input;
+  const { display_name, handle, bio, website_url, avatar_url } = input;
 
   // ── 입력 검증 ──────────────────────────────────────────────
   const trimmedName = display_name?.trim();
@@ -55,6 +56,26 @@ export async function updateProfile(
     return { error: '웹사이트 URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
   }
 
+  // avatar_url 검증: null(제거) 또는 우리 Supabase Storage URL이어야 함
+  const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+    : null;
+  let sanitizedAvatarUrl: string | null | undefined = undefined; // undefined = 변경 없음
+  if (avatar_url === null) {
+    sanitizedAvatarUrl = null; // 명시적 제거
+  } else if (avatar_url) {
+    if (!isSafeHttpUrl(avatar_url)) {
+      return { error: '유효하지 않은 아바타 URL입니다.' };
+    }
+    if (supabaseHost) {
+      const parsedAvatar = new URL(avatar_url);
+      if (parsedAvatar.hostname !== supabaseHost) {
+        return { error: '아바타 이미지는 허용된 스토리지에만 업로드할 수 있습니다.' };
+      }
+    }
+    sanitizedAvatarUrl = avatar_url;
+  }
+
   // ── 인증 확인 ──────────────────────────────────────────────
   const supabase = await createClient();
   const {
@@ -66,15 +87,22 @@ export async function updateProfile(
   }
 
   // ── DB 업데이트 ────────────────────────────────────────────
+  const updateData: Record<string, unknown> = {
+    display_name: trimmedName,
+    handle: trimmedHandle,
+    bio: trimmedBio,
+    website_url: trimmedWebsite,
+    updated_at: new Date().toISOString(),
+  };
+
+  // avatar_url이 undefined가 아닐 때만 업데이트 (변경 의도가 있을 때만)
+  if (sanitizedAvatarUrl !== undefined) {
+    updateData.avatar_url = sanitizedAvatarUrl;
+  }
+
   const { error } = await supabase
     .from('profiles')
-    .update({
-      display_name: trimmedName,
-      handle: trimmedHandle,
-      bio: trimmedBio,
-      website_url: trimmedWebsite,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', user.id);
 
   if (error) {

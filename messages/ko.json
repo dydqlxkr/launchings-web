@@ -347,6 +347,17 @@
   "settings": {
     "title": "프로필 설정",
     "description": "이름, 사용자 ID, 소개를 설정하세요.",
+    "avatar": {
+      "label": "프로필 이미지",
+      "changeButton": "이미지 변경",
+      "removeButton": "제거",
+      "uploading": "업로드 중...",
+      "previewAlt": "프로필 이미지 미리보기",
+      "hint": "JPG, PNG, GIF, WebP · 최대 {mb}MB",
+      "invalidType": "지원하지 않는 파일 형식입니다. JPG, PNG, GIF, WebP 이미지만 업로드할 수 있습니다.",
+      "tooLarge": "이미지는 {mb}MB 이하만 업로드할 수 있습니다.",
+      "uploadFailed": "아바타 업로드에 실패했습니다"
+    },
     "displayName": "이름",
     "displayNamePlaceholder": "표시될 이름",
     "handle": "사용자 ID",
