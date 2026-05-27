@@ -57,6 +57,13 @@ export async function proxy(request: NextRequest) {
   // 세션 갱신 (중요: 반드시 호출해야 토큰 갱신)
   await supabase.auth.getUser();
 
+  // /auth/* (OAuth·이메일확인·비밀번호재설정 콜백)은 locale 라우팅 제외.
+  // next-intl이 /auth/callback을 /ko/auth/callback으로 localize하면
+  // 실제 콜백 라우트(app/auth/callback)에 도달하지 못해 로그인이 실패한다.
+  if (reqUrl.pathname.startsWith('/auth')) {
+    return supabaseResponse;
+  }
+
   // 2. next-intl locale 라우팅 처리
   const intlResponse = intlMiddleware(request);
 
