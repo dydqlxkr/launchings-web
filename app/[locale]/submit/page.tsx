@@ -32,10 +32,18 @@ export default async function SubmitPage() {
   return (
     <>
       <NavbarServer />
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, width: '100%' }}>
         <div
-          className="max-w-[1120px] mx-auto px-6 py-10"
-          style={{ maxWidth: 700 }}
+          style={{
+            maxWidth: 720,
+            width: '100%',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            paddingLeft: 24,
+            paddingRight: 24,
+            paddingTop: 40,
+            paddingBottom: 60,
+          }}
         >
           <h1
             style={{

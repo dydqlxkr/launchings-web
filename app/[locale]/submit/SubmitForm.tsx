@@ -10,11 +10,12 @@
  * - 스크린샷 ≤ 6장, 각 ≤ 3MB
  */
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { submitApp } from '@/lib/actions/submit';
 import { createClient } from '@/lib/supabase/client';
 import type { Category } from '@/lib/types';
+import { detectStacks } from '@/lib/stackKeywords';
 
 const THUMBNAIL_MAX_MB = 2;
 const SCREENSHOT_MAX_MB = 3;
@@ -31,6 +32,10 @@ export default function SubmitForm({ categories, userId }: Props) {
 
   // 카테고리 다중 선택
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+
+  // 제목·설명 — 스택 자동 추천을 위해 제어
+  const [titleValue, setTitleValue] = useState('');
+  const [descValue, setDescValue] = useState('');
 
   // 기술 스택 태그 입력
   const [stacks, setStacks] = useState<string[]>([]);
@@ -50,6 +55,18 @@ export default function SubmitForm({ categories, userId }: Props) {
 
   // 동의 체크박스
   const [agreed, setAgreed] = useState(false);
+
+  // 제목+설명 텍스트에서 감지된 추천 스택 (이미 추가된 것 제외)
+  const suggestedStacks = useMemo(
+    () => detectStacks(`${titleValue} ${descValue}`, stacks),
+    [titleValue, descValue, stacks]
+  );
+
+  function addSuggestedStack(tag: string) {
+    if (!stacks.includes(tag) && stacks.length < 10) {
+      setStacks((prev) => [...prev, tag]);
+    }
+  }
 
   function toggleCat(slug: string) {
     setSelectedCats((prev) =>
@@ -232,6 +249,8 @@ export default function SubmitForm({ categories, userId }: Props) {
         required
         maxLength={60}
         placeholder="MemoFlow"
+        value={titleValue}
+        onChange={(e) => setTitleValue(e.target.value)}
         style={inputStyle}
       />
 
@@ -259,6 +278,8 @@ export default function SubmitForm({ categories, userId }: Props) {
         maxLength={4000}
         placeholder="제품을 소개해 주세요. 어떤 문제를 해결하나요? 주요 기능은 무엇인가요?"
         rows={5}
+        value={descValue}
+        onChange={(e) => setDescValue(e.target.value)}
         style={{
           ...inputStyle,
           resize: 'vertical',
@@ -407,6 +428,58 @@ export default function SubmitForm({ categories, userId }: Props) {
           }}
         />
       </div>
+
+      {/* 추천 스택 칩 */}
+      {suggestedStacks.length > 0 && (
+        <div
+          style={{
+            marginTop: 10,
+            padding: '10px 12px',
+            background: 'rgba(108,140,255,.06)',
+            border: '1px solid rgba(108,140,255,.18)',
+            borderRadius: 10,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: 'var(--brand)',
+              marginBottom: 8,
+              letterSpacing: '.04em',
+              textTransform: 'uppercase',
+            }}
+          >
+            추천 스택 — 클릭해서 추가
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {suggestedStacks.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => addSuggestedStack(tag)}
+                style={{
+                  background: 'rgba(108,140,255,.14)',
+                  border: '1px solid rgba(108,140,255,.35)',
+                  borderRadius: 7,
+                  padding: '4px 10px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#a8b8ff',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'background .1s, border-color .1s',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 썸네일 업로드 */}
       <label style={labelStyle}>

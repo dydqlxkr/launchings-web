@@ -37,7 +37,7 @@ export default function Navbar({ user }: Props) {
           borderBottom: '1px solid var(--line)',
         }}
       >
-        <div className="max-w-[1120px] mx-auto px-6 flex items-center gap-7 h-[62px]">
+        <div className="w-full px-6 flex items-center gap-7 h-[62px]" style={{ width: '100%' }}>
           {/* Logo */}
           <Link
             href="/ko"
