@@ -55,76 +55,10 @@ export default function Navbar({ user }: Props) {
               }}
             />
             {t('brand')}
-            <small
-              style={{
-                fontSize: 11,
-                color: 'var(--muted)',
-                fontWeight: 600,
-                marginLeft: 2,
-              }}
-            >
-              {t('brandSub')}
-            </small>
           </Link>
 
-          {/* Nav links */}
-          <div className="hidden md:flex gap-6 text-sm font-medium text-[var(--muted)]">
-            <Link href="/ko/apps" className="hover:text-[var(--ink)] transition-colors">
-              앱 둘러보기
-            </Link>
-            <a href="#how" className="hover:text-[var(--ink)] transition-colors">
-              어떻게 작동하나요
-            </a>
-            <a href="#makers" className="hover:text-[var(--ink)] transition-colors">
-              메이커
-            </a>
-            <a href="#recruit" className="hover:text-[var(--ink)] transition-colors">
-              채용
-            </a>
-          </div>
-
-          {/* Right */}
+          {/* Right — 로그인/프로필만, 오른쪽 끝 */}
           <div className="ml-auto flex gap-3 items-center">
-            {/* 제품 등록 버튼 */}
-            {user ? (
-              <Link
-                href="/ko/submit"
-                style={{
-                  border: '1px solid var(--line)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  borderRadius: 10,
-                  padding: '7px 16px',
-                  display: 'inline-block',
-                  transition: 'border-color .12s',
-                  color: 'var(--ink)',
-                  textDecoration: 'none',
-                }}
-                className="hover:border-[var(--brand)]"
-              >
-                {t('submit')}
-              </Link>
-            ) : (
-              <button
-                style={{
-                  border: '1px solid var(--line)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  borderRadius: 10,
-                  padding: '7px 16px',
-                  background: 'transparent',
-                  color: 'var(--ink)',
-                  cursor: 'pointer',
-                  transition: 'border-color .12s',
-                  fontFamily: 'inherit',
-                }}
-                className="hover:border-[var(--brand)]"
-                onClick={() => setShowLogin(true)}
-              >
-                {t('submit')}
-              </button>
-            )}
-
             {/* 로그인/프로필 */}
             {user ? (
               <div style={{ position: 'relative' }}>
