@@ -46,6 +46,10 @@ export interface SubmitFormInitialData {
   store_url_ios: string;
   store_url_android: string;
   thumbnail_path: string | null;
+  /** Storage 경로 배열 — edit 모드에서 기존 스크린샷 보존에 사용 */
+  screenshot_paths: string[];
+  /** 스크린샷 공개 URL 배열 — 미리보기용 */
+  screenshot_preview_urls: string[];
   categories: string[];
   stacks: string[];
 }
@@ -94,8 +98,13 @@ export default function SubmitForm({
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
     existingThumbnailUrl
   );
-  const [screenshotPaths, setScreenshotPaths] = useState<string[]>([]);
-  const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([]);
+  // edit 모드: 기존 스크린샷 경로/미리보기 URL로 프리필 (보존)
+  const [screenshotPaths, setScreenshotPaths] = useState<string[]>(
+    initialData?.screenshot_paths ?? []
+  );
+  const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>(
+    initialData?.screenshot_preview_urls ?? []
+  );
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
 

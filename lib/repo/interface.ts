@@ -15,6 +15,7 @@ import type {
   AppFilters,
   ReviewWithAuthor,
   ReviewStats,
+  FeatureRequestWithAuthor,
 } from '@/lib/types';
 
 export interface IAppRepo {
@@ -58,4 +59,12 @@ export interface IReviewRepo {
   getMyReview(appId: string, userId: string): Promise<ReviewWithAuthor | null>;
 }
 
-export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo {}
+export interface IFeatureRequestRepo {
+  /** 앱의 기능 요청 목록 (vote_count 내림차순) */
+  listFeatureRequests(appId: string): Promise<FeatureRequestWithAuthor[]>;
+
+  /** 특정 사용자가 앱의 기능 요청에 투표한 request_id 집합 */
+  getMyFeatureVotes(appId: string, userId: string): Promise<Set<string>>;
+}
+
+export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo {}

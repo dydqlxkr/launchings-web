@@ -307,6 +307,20 @@
     "updateSubmit": "수정 완료",
     "updating": "수정 중..."
   },
+  "featureRequest": {
+    "sectionTitle": "기능 요청",
+    "noRequests": "아직 기능 요청이 없어요. 원하는 기능을 제안해보세요!",
+    "placeholder": "원하는 기능을 제안해 주세요. (4~200자)",
+    "submit": "기능 제안",
+    "submitting": "등록 중...",
+    "loginToRequest": "기능을 제안하려면 로그인이 필요합니다.",
+    "loginButton": "로그인하고 기능 제안",
+    "votes": "추천",
+    "delete": "삭제",
+    "confirmDelete": "기능 요청을 삭제하시겠습니까?",
+    "upvote": "추천",
+    "upvoted": "추천됨"
+  },
   "settings": {
     "title": "프로필 설정",
     "description": "이름, 사용자 ID, 소개를 설정하세요.",

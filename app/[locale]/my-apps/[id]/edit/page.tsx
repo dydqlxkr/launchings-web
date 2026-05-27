@@ -32,13 +32,14 @@ export default async function EditAppPage({ params }: Props) {
     notFound();
   }
 
-  // 앱 조회 (소유자 확인 포함)
+  // 앱 조회 (소유자 확인 + 스크린샷 포함)
   const { data: row, error } = await supabase
     .from('apps')
     .select(`
       *,
       app_categories(category_slug),
-      app_stacks(stack)
+      app_stacks(stack),
+      app_screenshots(storage_path, sort_order)
     `)
     .eq('id', id)
     .maybeSingle();
@@ -56,6 +57,19 @@ export default async function EditAppPage({ params }: Props) {
   const repo = getRepo();
   const categories = await repo.listCategories();
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+
+  // 기존 스크린샷 경로 (sort_order 오름차순)
+  const existingScreenshots: Array<{ storage_path: string; sort_order: number }> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((row.app_screenshots ?? []) as any[])
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  const screenshotPaths = existingScreenshots.map((s) => s.storage_path);
+  const screenshotPreviewUrls = screenshotPaths.map(
+    (p) => `${supabaseUrl}/storage/v1/object/public/app-images/${p}`
+  );
+
   // initialData 구성
   const initialData = {
     id: row.id,
@@ -68,6 +82,8 @@ export default async function EditAppPage({ params }: Props) {
     store_url_ios: row.store_url_ios ?? '',
     store_url_android: row.store_url_android ?? '',
     thumbnail_path: row.thumbnail_path ?? null,
+    screenshot_paths: screenshotPaths,
+    screenshot_preview_urls: screenshotPreviewUrls,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     categories: (row.app_categories ?? []).map((c: any) => c.category_slug).filter(Boolean) as string[],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

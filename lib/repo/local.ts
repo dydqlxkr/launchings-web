@@ -11,6 +11,7 @@ import type {
   AppFilters,
   ReviewWithAuthor,
   ReviewStats,
+  FeatureRequestWithAuthor,
 } from '@/lib/types';
 import type { IRepo } from './interface';
 
@@ -104,6 +105,18 @@ class LocalRepo implements IRepo {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getMyReview(_appId: string, _userId: string): Promise<ReviewWithAuthor | null> {
     return null;
+  }
+
+  // ── Feature Request (로컬 구현 — 빈 데이터 반환) ─────────
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async listFeatureRequests(_appId: string): Promise<FeatureRequestWithAuthor[]> {
+    return [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getMyFeatureVotes(_appId: string, _userId: string): Promise<Set<string>> {
+    return new Set();
   }
 }
 

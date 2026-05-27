@@ -14,6 +14,7 @@ import type {
   AppFilters,
   ReviewWithAuthor,
   ReviewStats,
+  FeatureRequestWithAuthor,
 } from '@/lib/types';
 import type { IRepo } from './interface';
 
@@ -239,6 +240,55 @@ class SupabaseRepo implements IRepo {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return mapReview(data as any);
   }
+
+  // ── Feature Request ───────────────────────────────────────
+
+  async listFeatureRequests(appId: string): Promise<FeatureRequestWithAuthor[]> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('feature_requests')
+      .select(`
+        *,
+        author:profiles!author_id(*)
+      `)
+      .eq('app_id', appId)
+      .order('vote_count', { ascending: false });
+
+    if (error || !data) {
+      console.error('[SupabaseRepo] listFeatureRequests error:', error?.message);
+      return [];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any[]).map(mapFeatureRequest);
+  }
+
+  async getMyFeatureVotes(appId: string, userId: string): Promise<Set<string>> {
+    const supabase = await createClient();
+
+    // 먼저 해당 앱의 기능 요청 ID 목록 조회
+    const { data: requestsData, error: requestsError } = await supabase
+      .from('feature_requests')
+      .select('id')
+      .eq('app_id', appId);
+
+    if (requestsError || !requestsData || requestsData.length === 0) {
+      return new Set();
+    }
+
+    const requestIds = (requestsData as { id: string }[]).map((r) => r.id);
+
+    // 해당 요청들 중 사용자가 투표한 항목 조회
+    const { data, error } = await supabase
+      .from('feature_request_votes')
+      .select('request_id')
+      .eq('user_id', userId)
+      .in('request_id', requestIds);
+
+    if (error || !data) return new Set();
+    return new Set((data as { request_id: string }[]).map((r) => r.request_id));
+  }
 }
 
 // ── 매핑 헬퍼 ────────────────────────────────────────────
@@ -307,6 +357,19 @@ function mapReview(row: any): ReviewWithAuthor {
     body: row.body,
     created_at: row.created_at,
     updated_at: row.updated_at ?? row.created_at,
+    author: row.author ? mapProfile(row.author) : ({} as Profile),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapFeatureRequest(row: any): FeatureRequestWithAuthor {
+  return {
+    id: row.id,
+    app_id: row.app_id,
+    author_id: row.author_id,
+    body: row.body,
+    vote_count: row.vote_count ?? 0,
+    created_at: row.created_at,
     author: row.author ? mapProfile(row.author) : ({} as Profile),
   };
 }

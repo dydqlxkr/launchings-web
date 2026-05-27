@@ -81,12 +81,15 @@ export default async function AppDetailPage({ params }: PageProps) {
     ? await getVoteStatus(app.id)
     : { voted: false };
 
-  // 리뷰 데이터 조회
-  const [reviews, reviewStats, myReview] = await Promise.all([
+  // 리뷰 + 기능 요청 데이터 조회
+  const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet] = await Promise.all([
     repo.listReviews(app.id),
     repo.getReviewStats(app.id),
     user ? repo.getMyReview(app.id, user.id) : Promise.resolve(null),
+    repo.listFeatureRequests(app.id),
+    user ? repo.getMyFeatureVotes(app.id, user.id) : Promise.resolve(new Set<string>()),
   ]);
+  const myVotedIds = Array.from(myVotedIdsSet);
 
   const catLabels = (app.categories ?? [])
     .map((cSlug) => {
@@ -365,14 +368,17 @@ export default async function AppDetailPage({ params }: PageProps) {
           {/* App runner (Phase 3 구현) */}
           <AppRunner app={app} srcDoc={srcDoc} />
 
-          {/* 리뷰 섹션 */}
+          {/* 리뷰 + 기능 요청 섹션 */}
           <AppDetailClient
             appId={app.id}
             appSlug={app.slug}
             reviews={reviews}
             stats={reviewStats}
             myReview={myReview}
+            featureRequests={featureRequests}
+            myVotedIds={myVotedIds}
             isLoggedIn={!!user}
+            userId={user?.id}
           />
 
           {/* 신고 영역 */}

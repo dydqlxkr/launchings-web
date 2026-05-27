@@ -96,3 +96,18 @@ export interface ReviewStats {
   avg_rating: number;
   review_count: number;
 }
+
+// ── 기능 요청 ─────────────────────────────────
+export interface FeatureRequest {
+  id: string;
+  app_id: string;
+  author_id: string;
+  body: string;
+  vote_count: number;
+  created_at: string;
+  author?: Profile; // 조인 시 포함
+}
+
+export interface FeatureRequestWithAuthor extends FeatureRequest {
+  author: Profile;
+}
