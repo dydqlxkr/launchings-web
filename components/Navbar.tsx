@@ -2,10 +2,8 @@
 
 /**
  * Navbar — Phase 2: 로그인 상태에 따라 UI 변경.
- * Phase UX1: 데스크톱 텍스트 링크 + 모바일 햄버거 메뉴.
  *
- * - 데스크톱(≥768px): 로고 우측 "둘러보기" · "제품 등록" 텍스트 링크 + 현재 경로 활성표시
- * - 모바일(<768px): 햄버거(44×44) → 풀스크린 메뉴 (aria-expanded, ESC, 바깥 클릭 닫기)
+ * - 모든 화면: 햄버거(44×44) → 드롭다운 메뉴 (aria-expanded, ESC, 바깥 클릭 닫기)
  * - 우측 끝: 로그인/아바타(현행 유지)
  */
 
@@ -75,18 +73,6 @@ export default function Navbar({ user }: Props) {
     return pathname === href || pathname.startsWith(href + '/');
   }
 
-  const navLinkStyle = (href: string): React.CSSProperties => ({
-    fontSize: 14,
-    fontWeight: 600,
-    color: isActive(href) ? 'var(--ink)' : 'var(--muted)',
-    textDecoration: 'none',
-    padding: '4px 2px',
-    position: 'relative',
-    borderBottom: isActive(href) ? '2px solid var(--brand)' : '2px solid transparent',
-    transition: 'color .15s, border-color .15s',
-    whiteSpace: 'nowrap',
-  });
-
   return (
     <>
       <nav
@@ -100,14 +86,13 @@ export default function Navbar({ user }: Props) {
         }}
       >
         <div className="lp-container" style={{ display: 'flex', alignItems: 'center', gap: 16, height: 62 }}>
-          {/* 모바일 햄버거 버튼 (<768px) — 가장 왼쪽 */}
+          {/* 햄버거 버튼 — 모든 화면 크기에서 표시 */}
           <button
             ref={hamburgerRef}
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
             aria-controls="mobile-nav-menu"
-            className="md:hidden"
             style={{
               width: 44,
               height: 44,
@@ -178,21 +163,6 @@ export default function Navbar({ user }: Props) {
             />
             {t('brand')}
           </Link>
-
-          {/* 데스크톱 내비 링크 (≥768px) */}
-          <div
-            className="hidden md:flex"
-            style={{
-              gap: 20,
-              alignItems: 'center',
-            }}
-          >
-            {NAV_LINKS.map(({ href, labelKey }) => (
-              <Link key={href} href={href} style={navLinkStyle(href)}>
-                {t(labelKey)}
-              </Link>
-            ))}
-          </div>
 
           {/* 오른쪽 영역 — 로그인/프로필 */}
           <div className="ml-auto flex gap-3 items-center">

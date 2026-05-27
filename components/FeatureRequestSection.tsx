@@ -144,8 +144,35 @@ export default function FeatureRequestSection({
         setFormError(result.error);
         return;
       }
+
+      // 낙관적 추가 — 서버 반환 id로 임시 항목 삽입 후 vote_count 기준 정렬
+      const newId = result.id ?? `temp-${Date.now()}`;
+      const optimisticItem: FeatureRequestWithAuthor = {
+        id: newId,
+        app_id: appId,
+        author_id: userId ?? '',
+        body: trimmed,
+        vote_count: 0,
+        created_at: new Date().toISOString(),
+        author: {
+          id: userId ?? '',
+          handle: '',
+          display_name: '나',
+          bio: null,
+          avatar_url: null,
+          avatar_gradient: null,
+          avatar_initial: null,
+          website_url: null,
+          created_at: new Date().toISOString(),
+        },
+      };
+      setRequests((prev) =>
+        [...prev, optimisticItem].sort((a, b) => b.vote_count - a.vote_count)
+      );
+
       setBody('');
       toast.show('기능 요청이 등록됐습니다.', 'success');
+      // 서버 데이터(작성자 프로필 등)로 정확히 동기화
       router.refresh();
     });
   }
