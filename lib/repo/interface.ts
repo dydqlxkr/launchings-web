@@ -16,6 +16,7 @@ import type {
   ReviewWithAuthor,
   ReviewStats,
   FeatureRequestWithAuthor,
+  FollowStatus,
 } from '@/lib/types';
 
 export interface IAppRepo {
@@ -75,4 +76,9 @@ export interface IBookmarkRepo {
   getMyBookmarkIds(userId: string): Promise<Set<string>>;
 }
 
-export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo, IBookmarkRepo {}
+export interface IFollowRepo {
+  /** 팔로우 상태 및 팔로워 수 조회 (viewerId가 null이면 following=false) */
+  getFollowStatus(targetId: string, viewerId: string | null): Promise<FollowStatus>;
+}
+
+export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo, IBookmarkRepo, IFollowRepo {}

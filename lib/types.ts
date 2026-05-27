@@ -111,3 +111,32 @@ export interface FeatureRequest {
 export interface FeatureRequestWithAuthor extends FeatureRequest {
   author: Profile;
 }
+
+// ── 팔로우 ────────────────────────────────────
+export interface FollowStatus {
+  following: boolean; // 현재 로그인 사용자가 해당 메이커를 팔로우 중인지
+  follower_count: number; // 해당 메이커의 팔로워 수
+}
+
+// ── 알림 ─────────────────────────────────────
+export type NotificationType = 'new_app';
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  actor_id: string | null;
+  app_id: string | null;
+  message: string | null;
+  is_read: boolean;
+  created_at: string;
+  // 조인 데이터 (쿼리 시 포함)
+  actor?: Profile | null;
+  app?: {
+    id: string;
+    slug: string;
+    title: string;
+    thumbnail_emoji: string | null;
+    thumbnail_gradient: string | null;
+  } | null;
+}

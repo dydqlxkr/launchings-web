@@ -23,6 +23,7 @@ interface NavUser {
 
 interface Props {
   user?: NavUser | null;
+  unreadNotifications?: number;
 }
 
 const NAV_LINKS = [
@@ -30,7 +31,7 @@ const NAV_LINKS = [
   { href: '/ko/submit', labelKey: 'submit' as const },
 ];
 
-export default function Navbar({ user }: Props) {
+export default function Navbar({ user, unreadNotifications = 0 }: Props) {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const [showLogin, setShowLogin] = useState(false);
@@ -216,6 +217,38 @@ export default function Navbar({ user }: Props) {
                         {t('myProfile')}
                       </Link>
                       <Link
+                        href="/ko/notifications"
+                        onClick={() => setMobileOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: 'var(--ink)',
+                          padding: '9px 10px',
+                          borderRadius: 8,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {t('notifications')}
+                        {unreadNotifications > 0 && (
+                          <span
+                            style={{
+                              background: 'var(--brand)',
+                              color: '#fff',
+                              fontSize: 11,
+                              fontWeight: 800,
+                              borderRadius: 10,
+                              padding: '1px 6px',
+                              lineHeight: '16px',
+                            }}
+                          >
+                            {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                          </span>
+                        )}
+                      </Link>
+                      <Link
                         href="/ko/my-apps"
                         onClick={() => setMobileOpen(false)}
                         style={{
@@ -332,6 +365,57 @@ export default function Navbar({ user }: Props) {
 
           {/* 오른쪽 영역 — 로그인/프로필 */}
           <div className="ml-auto flex gap-3 items-center">
+            {/* 알림 벨 아이콘 — 로그인 시만 표시 */}
+            {user && (
+              <Link
+                href="/ko/notifications"
+                aria-label={t('notifications')}
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  border: '1px solid var(--line)',
+                  background: 'none',
+                  color: 'var(--ink)',
+                  textDecoration: 'none',
+                  flexShrink: 0,
+                }}
+              >
+                {/* Bell SVG */}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {unreadNotifications > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: -2,
+                      right: -2,
+                      background: '#ff4757',
+                      color: '#fff',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      borderRadius: 10,
+                      minWidth: 16,
+                      height: 16,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 3px',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* 로그인/프로필 */}
             {user ? (
               <div style={{ position: 'relative' }}>
@@ -432,6 +516,38 @@ export default function Navbar({ user }: Props) {
                       }}
                     >
                       {t('myProfile')}
+                    </Link>
+                    <Link
+                      href="/ko/notifications"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('notifications')}
+                      {unreadNotifications > 0 && (
+                        <span
+                          style={{
+                            background: '#ff4757',
+                            color: '#fff',
+                            fontSize: 10,
+                            fontWeight: 800,
+                            borderRadius: 10,
+                            padding: '1px 5px',
+                            lineHeight: '15px',
+                          }}
+                        >
+                          {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       href="/ko/submit"

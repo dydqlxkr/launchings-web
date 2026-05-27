@@ -11,6 +11,7 @@ import AvatarCircle from '@/components/AvatarCircle';
 import AppCard from '@/components/AppCard';
 import { CompareProvider } from '@/components/CompareContext';
 import CompareBar from '@/components/CompareBar';
+import FollowButton from '@/components/FollowButton';
 
 interface PageProps {
   params: Promise<{ locale: string; handle: string }>;
@@ -69,6 +70,10 @@ export default async function MakerProfilePage({ params }: PageProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;
+
+  // 팔로우 상태 조회 (본인 프로필이 아닐 때만 의미 있음)
+  const isOwn = !!user && user.id === profile.id;
+  const followStatus = await repo.getFollowStatus(profile.id, user?.id ?? null);
 
   const joinedYear = new Date(profile.created_at).getFullYear();
   const joinedMonth = new Date(profile.created_at).getMonth() + 1;
@@ -170,6 +175,18 @@ export default async function MakerProfilePage({ params }: PageProps) {
                   </div>
                 </div>
               </div>
+
+              {/* 팔로우 버튼 — 본인 프로필 제외 */}
+              {!isOwn && (
+                <div style={{ marginTop: 16 }}>
+                  <FollowButton
+                    makerId={profile.id}
+                    isLoggedIn={isLoggedIn}
+                    initialFollowing={followStatus.following}
+                    initialFollowerCount={followStatus.follower_count}
+                  />
+                </div>
+              )}
 
               {profile.website_url && isSafeHttpUrl(profile.website_url) && (
                 <a

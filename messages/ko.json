@@ -12,7 +12,8 @@
     "myProfile": "내 프로필",
     "profileSettings": "프로필 설정",
     "login": "로그인",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "notifications": "알림"
   },
   "hero": {
     "pill": "한국 AI 빌더들의 놀이터",
@@ -344,6 +345,22 @@
     "confirmDelete": "기능 요청을 삭제하시겠습니까?",
     "upvote": "추천",
     "upvoted": "추천됨"
+  },
+  "follow": {
+    "follow": "팔로우",
+    "following": "팔로잉",
+    "followers": "팔로워",
+    "loginRequired": "팔로우하려면 로그인이 필요합니다.",
+    "toggleError": "잠시 후 다시 시도해 주세요."
+  },
+  "notifications": {
+    "title": "알림",
+    "empty": "새 알림이 없습니다.",
+    "emptyDesc": "팔로우한 메이커가 새 앱을 등록하면 여기에 알림이 옵니다.",
+    "markAllRead": "모두 읽음",
+    "newApp": "{actor}님이 새 앱을 등록했습니다",
+    "bellLabel": "알림",
+    "backToHome": "홈으로"
   },
   "settings": {
     "title": "프로필 설정",

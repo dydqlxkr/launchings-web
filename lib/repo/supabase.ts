@@ -15,6 +15,7 @@ import type {
   ReviewWithAuthor,
   ReviewStats,
   FeatureRequestWithAuthor,
+  FollowStatus,
 } from '@/lib/types';
 import type { IRepo } from './interface';
 
@@ -332,6 +333,35 @@ class SupabaseRepo implements IRepo {
 
     if (error || !data) return new Set();
     return new Set((data as { app_id: string }[]).map((r) => r.app_id));
+  }
+
+  // ── Follow ───────────────────────────────────────────────
+
+  async getFollowStatus(targetId: string, viewerId: string | null): Promise<FollowStatus> {
+    const supabase = await createClient();
+
+    // 팔로워 수 조회
+    const { count, error: countError } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', targetId);
+
+    const follower_count = countError ? 0 : (count ?? 0);
+
+    // 로그인 사용자가 팔로우 중인지
+    if (!viewerId) {
+      return { following: false, follower_count };
+    }
+
+    const { data, error } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('following_id', targetId)
+      .eq('follower_id', viewerId)
+      .maybeSingle();
+
+    if (error) return { following: false, follower_count };
+    return { following: !!data, follower_count };
   }
 }
 

@@ -23,6 +23,13 @@ export default async function NavbarServer() {
     .eq('id', user.id)
     .single();
 
+  // 안 읽은 알림 수 조회
+  const { count: unreadCount } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('is_read', false);
+
   const navUser = {
     id: user.id,
     email: user.email ?? null,
@@ -30,5 +37,5 @@ export default async function NavbarServer() {
     displayName: profile?.display_name ?? null,
   };
 
-  return <Navbar user={navUser} />;
+  return <Navbar user={navUser} unreadNotifications={unreadCount ?? 0} />;
 }

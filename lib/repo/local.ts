@@ -12,6 +12,7 @@ import type {
   ReviewWithAuthor,
   ReviewStats,
   FeatureRequestWithAuthor,
+  FollowStatus,
 } from '@/lib/types';
 import type { IRepo } from './interface';
 
@@ -129,6 +130,13 @@ class LocalRepo implements IRepo {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getMyBookmarkIds(_userId: string): Promise<Set<string>> {
     return new Set();
+  }
+
+  // ── Follow (로컬 구현 — 빈 데이터 반환) ──────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getFollowStatus(_targetId: string, _viewerId: string | null): Promise<FollowStatus> {
+    return { following: false, follower_count: 0 };
   }
 }
 
