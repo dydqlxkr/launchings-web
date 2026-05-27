@@ -7,6 +7,7 @@
  */
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { signInWithPassword, signUpWithPassword } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/client';
 
@@ -18,11 +19,13 @@ interface Props {
 type Tab = 'login' | 'signup';
 
 export default function LoginModal({ isOpen, onClose }: Props) {
+  const t = useTranslations();
   const [tab, setTab] = useState<Tab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [googleInfo, setGoogleInfo] = useState<string | null>(null);
   const [confirmSent, setConfirmSent] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -35,6 +38,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setPassword('');
     setPasswordConfirm('');
     setError(null);
+    setGoogleInfo(null);
     setConfirmSent(false);
     setConfirmEmail('');
   }
@@ -79,6 +83,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   async function handleGoogle() {
     setGoogleLoading(true);
     setError(null);
+    setGoogleInfo(null);
     try {
       const supabase = createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -88,12 +93,13 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         },
       });
       if (oauthError) {
-        setError('구글 로그인 초기화에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        // 구글 OAuth 미설정 — 사용자에게 친절한 안내 메시지 표시
+        setGoogleInfo(t('googleAuthPending'));
         setGoogleLoading(false);
       }
       // 성공 시 브라우저가 Google 동의화면으로 이동하므로 로딩 상태 유지
     } catch {
-      setError('구글 로그인 중 오류가 발생했습니다.');
+      setGoogleInfo(t('googleAuthPending'));
       setGoogleLoading(false);
     }
   }
@@ -275,6 +281,25 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               </svg>
               {googleLoading ? '연결 중...' : 'Google로 계속하기'}
             </button>
+
+            {/* 구글 로그인 안내 메시지 (OAuth 미설정 시) */}
+            {googleInfo && (
+              <p
+                style={{
+                  color: 'var(--warm)',
+                  fontSize: 13,
+                  marginTop: -8,
+                  marginBottom: 8,
+                  padding: '8px 12px',
+                  background: 'rgba(255,180,84,.08)',
+                  border: '1px solid rgba(255,180,84,.25)',
+                  borderRadius: 8,
+                  lineHeight: 1.5,
+                }}
+              >
+                {googleInfo}
+              </p>
+            )}
 
             {/* 구분선 */}
             <div

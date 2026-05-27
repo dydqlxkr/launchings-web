@@ -52,9 +52,9 @@ export default function Footer() {
 
           {/* 링크 */}
           <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-            <a href="#discover" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
+            <Link href="/ko/apps" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               앱 둘러보기
-            </a>
+            </Link>
             <a href="#makers" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               메이커
             </a>

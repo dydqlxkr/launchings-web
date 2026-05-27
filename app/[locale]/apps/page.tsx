@@ -1,0 +1,112 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { getRepo } from '@/lib/repo';
+import { createClient } from '@/lib/supabase/server';
+import NavbarServer from '@/components/NavbarServer';
+import Footer from '@/components/Footer';
+import AppsPageClient from '@/components/AppsPageClient';
+
+export const metadata: Metadata = {
+  title: '앱 둘러보기 | Launchings',
+  description:
+    '한국 0→1 빌더들이 직접 만든 작동 제품을 카테고리별로 탐색해 보세요.',
+};
+
+export default async function AppsIndexPage() {
+  const t = await getTranslations('appsPage');
+  const repo = getRepo();
+
+  // 현재 사용자 세션 — 홈 page.tsx의 user 취득 패턴과 동일
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 앱 전체(추천순) + 카테고리 목록 조회
+  const [apps, categories] = await Promise.all([
+    repo.listApps({ sort: 'votes' }),
+    repo.listCategories(),
+  ]);
+
+  return (
+    <>
+      <NavbarServer />
+
+      {/* ── 페이지 헤더 ─────────────────────────────────────────── */}
+      <header
+        style={{
+          position: 'relative',
+          padding: '56px 0 28px',
+          overflow: 'hidden',
+        }}
+      >
+        {/* 배경 글로우 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -120,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 700,
+            height: 400,
+            background:
+              'radial-gradient(closest-side,rgba(108,140,255,.18),transparent 70%)',
+            filter: 'blur(10px)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        <div className="lp-container" style={{ position: 'relative' }}>
+          {/* 뒤로가기 */}
+          <Link
+            href="/ko"
+            style={{
+              color: 'var(--muted)',
+              fontSize: 13,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              marginBottom: 20,
+              textDecoration: 'none',
+            }}
+            className="hover:text-[var(--ink)] transition-colors"
+          >
+            ← {t('backToHome')}
+          </Link>
+
+          <h1
+            style={{
+              fontSize: 'clamp(26px, 4vw, 38px)',
+              fontWeight: 800,
+              letterSpacing: '-1px',
+              marginBottom: 10,
+            }}
+          >
+            {t('title')}
+          </h1>
+          <p
+            style={{
+              fontSize: 16,
+              color: 'var(--muted)',
+              maxWidth: 540,
+            }}
+          >
+            {t('description')}
+          </p>
+        </div>
+      </header>
+
+      {/* ── 클라이언트 파트 (검색 + 그리드) ───────────────────── */}
+      <main style={{ flex: 1, paddingBottom: 80 }}>
+        <AppsPageClient
+          apps={apps}
+          categories={categories}
+          isLoggedIn={!!user}
+        />
+      </main>
+
+      <Footer />
+    </>
+  );
+}

@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 import { getRepo } from '@/lib/repo';
 import type { AppWithRelations } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
@@ -133,8 +134,8 @@ export default async function HomePage() {
                 flexWrap: 'wrap',
               }}
             >
-              <a
-                href="#discover"
+              <Link
+                href="/ko/apps"
                 style={{
                   background:
                     'linear-gradient(135deg,var(--brand),var(--brand2))',
@@ -148,7 +149,7 @@ export default async function HomePage() {
                 }}
               >
                 🔥 {t('hero.ctaBrowse')}
-              </a>
+              </Link>
               <a
                 href={user ? '/ko/submit' : '#discover'}
                 style={{

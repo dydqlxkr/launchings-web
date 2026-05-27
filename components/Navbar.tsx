@@ -69,9 +69,9 @@ export default function Navbar({ user }: Props) {
 
           {/* Nav links */}
           <div className="hidden md:flex gap-6 text-sm font-medium text-[var(--muted)]">
-            <a href="#discover" className="hover:text-[var(--ink)] transition-colors">
+            <Link href="/ko/apps" className="hover:text-[var(--ink)] transition-colors">
               앱 둘러보기
-            </a>
+            </Link>
             <a href="#how" className="hover:text-[var(--ink)] transition-colors">
               어떻게 작동하나요
             </a>
