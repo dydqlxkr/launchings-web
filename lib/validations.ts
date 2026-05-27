@@ -3,6 +3,25 @@
  * 서버/클라이언트 양쪽에서 사용 가능 (순수 JS — 외부 의존 없음).
  */
 
+/**
+ * 외부 URL이 안전한 스킴(https: 또는 http:)인지 검증.
+ *
+ * - new URL() 파싱 실패 → false
+ * - javascript:, data:, vbscript: 등 비-HTTP 스킴 → false
+ * - https: 또는 http: → true
+ *
+ * 렌더 가드 및 Server Action 저장 전 모두 이 헬퍼를 통해 검증한다.
+ */
+export function isSafeHttpUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 /** handle 허용 규칙: 소문자 영문·숫자·하이픈·언더스코어, 3~20자 */
 export const HANDLE_RE = /^[a-z0-9_-]{3,20}$/;
 

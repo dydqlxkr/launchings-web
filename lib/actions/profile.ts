@@ -7,7 +7,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { validateHandle } from '@/lib/validations';
+import { validateHandle, isSafeHttpUrl } from '@/lib/validations';
 
 export interface UpdateProfileInput {
   display_name: string;
@@ -49,6 +49,10 @@ export async function updateProfile(
   const trimmedWebsite = website_url?.trim() ?? null;
   if (trimmedWebsite && trimmedWebsite.length > 200) {
     return { error: '웹사이트 URL은 200자 이내로 입력해 주세요.' };
+  }
+  // C-1: URL 스킴 검증 — javascript:, data: 등 위험 스킴 차단
+  if (trimmedWebsite && !isSafeHttpUrl(trimmedWebsite)) {
+    return { error: '웹사이트 URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
   }
 
   // ── 인증 확인 ──────────────────────────────────────────────

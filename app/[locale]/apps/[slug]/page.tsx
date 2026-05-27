@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { getRepo } from '@/lib/repo';
 import { getDemoSrcdoc } from '@/lib/appDemos';
 import { createClient } from '@/lib/supabase/server';
+import { isSafeHttpUrl } from '@/lib/validations';
 import { getVoteStatus } from '@/lib/actions/vote';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
@@ -296,7 +297,7 @@ export default async function AppDetailPage({ params }: PageProps) {
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 36 }}>
             {isNative ? (
               <>
-                {app.store_url_ios && (
+                {app.store_url_ios && isSafeHttpUrl(app.store_url_ios) && (
                   <a
                     href={app.store_url_ios}
                     target="_blank"
@@ -316,7 +317,7 @@ export default async function AppDetailPage({ params }: PageProps) {
                     📱 {t('appStore')}
                   </a>
                 )}
-                {app.store_url_android && (
+                {app.store_url_android && isSafeHttpUrl(app.store_url_android) && (
                   <a
                     href={app.store_url_android}
                     target="_blank"
@@ -338,7 +339,7 @@ export default async function AppDetailPage({ params }: PageProps) {
                 )}
               </>
             ) : (
-              app.live_url && (
+              app.live_url && isSafeHttpUrl(app.live_url) && (
                 <a
                   href={app.live_url}
                   target="_blank"

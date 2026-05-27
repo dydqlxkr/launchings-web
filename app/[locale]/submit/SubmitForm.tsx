@@ -21,6 +21,19 @@ const THUMBNAIL_MAX_MB = 2;
 const SCREENSHOT_MAX_MB = 3;
 const SCREENSHOT_MAX_COUNT = 6;
 
+// L-7: 허용 이미지 MIME 타입 (클라이언트 사전 검증)
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+]);
+
+function isAllowedImageType(file: File): boolean {
+  return ALLOWED_IMAGE_TYPES.has(file.type);
+}
+
 interface Props {
   categories: Category[];
   userId: string;
@@ -90,6 +103,11 @@ export default function SubmitForm({ categories, userId }: Props) {
   }
 
   async function uploadThumbnail(file: File) {
+    // L-7: MIME 타입 클라이언트 사전 검증
+    if (!isAllowedImageType(file)) {
+      setError('지원하지 않는 파일 형식입니다. JPEG, PNG, GIF, WebP, SVG 이미지만 업로드할 수 있습니다.');
+      return;
+    }
     if (file.size > THUMBNAIL_MAX_MB * 1024 * 1024) {
       setError(`썸네일은 ${THUMBNAIL_MAX_MB}MB 이하만 업로드할 수 있습니다.`);
       return;
@@ -120,6 +138,11 @@ export default function SubmitForm({ categories, userId }: Props) {
   async function uploadScreenshot(file: File) {
     if (screenshotPaths.length >= SCREENSHOT_MAX_COUNT) {
       setError(`스크린샷은 최대 ${SCREENSHOT_MAX_COUNT}장까지 업로드할 수 있습니다.`);
+      return;
+    }
+    // L-7: MIME 타입 클라이언트 사전 검증
+    if (!isAllowedImageType(file)) {
+      setError('지원하지 않는 파일 형식입니다. JPEG, PNG, GIF, WebP, SVG 이미지만 업로드할 수 있습니다.');
       return;
     }
     if (file.size > SCREENSHOT_MAX_MB * 1024 * 1024) {

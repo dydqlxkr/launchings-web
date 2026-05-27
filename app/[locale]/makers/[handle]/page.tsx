@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getRepo } from '@/lib/repo';
 import { createClient } from '@/lib/supabase/server';
+import { isSafeHttpUrl } from '@/lib/validations';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import AvatarCircle from '@/components/AvatarCircle';
@@ -171,7 +172,7 @@ export default async function MakerProfilePage({ params }: PageProps) {
                 </div>
               </div>
 
-              {profile.website_url && (
+              {profile.website_url && isSafeHttpUrl(profile.website_url) && (
                 <a
                   href={profile.website_url}
                   target="_blank"

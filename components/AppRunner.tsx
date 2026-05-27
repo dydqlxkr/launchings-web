@@ -13,14 +13,15 @@
  *
  * 보안 (ADR-0004):
  *   - srcdoc(우리 통제): sandbox="allow-scripts allow-same-origin allow-modals"
- *   - 외부 URL: sandbox="allow-scripts allow-forms allow-popups-to-escape-sandbox"
- *     (allow-same-origin 미부여, referrerpolicy="no-referrer")
+ *   - 외부 URL: sandbox="allow-scripts allow-forms allow-popups"
+ *     (allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여, referrerpolicy="no-referrer")
  *   - 임베드 실패 감지: onLoad 후 blank 여부 → 폴백 버튼 표시
  */
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
+import { isSafeHttpUrl } from '@/lib/validations';
 
 interface Props {
   app: AppWithRelations;
@@ -147,9 +148,9 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
           ))}
         </div>
 
-        {/* 스토어 버튼 */}
+        {/* 스토어 버튼 — C-1 렌더 가드: 안전한 스킴(https/http)만 링크로 렌더 */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {app.store_url_ios && (
+          {app.store_url_ios && isSafeHttpUrl(app.store_url_ios) && (
             <a
               href={app.store_url_ios}
               target="_blank"
@@ -169,7 +170,7 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
               📱 App Store
             </a>
           )}
-          {app.store_url_android && (
+          {app.store_url_android && isSafeHttpUrl(app.store_url_android) && (
             <a
               href={app.store_url_android}
               target="_blank"
@@ -224,8 +225,8 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
 
   // srcdoc(우리 코드)용 sandbox: allow-same-origin 허용 (우리 코드이므로 안전)
   const srcdocSandbox = 'allow-scripts allow-same-origin allow-modals';
-  // 외부 URL용 sandbox: allow-same-origin 미부여 (ADR-0004)
-  const externalSandbox = 'allow-scripts allow-forms allow-popups-to-escape-sandbox';
+  // 외부 URL용 sandbox: allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여 (M-3, ADR-0004)
+  const externalSandbox = 'allow-scripts allow-forms allow-popups';
 
   // 외부 URL 경로: 타임아웃 내 로드 신호 없으면 폴백 전환
   useEffect(() => {
@@ -298,7 +299,7 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
             <br />
             <span style={{ fontSize: 12 }}>{t('embedBlockedHint')}</span>
           </div>
-          {app.live_url && (
+          {app.live_url && isSafeHttpUrl(app.live_url) && (
             <a
               href={app.live_url}
               target="_blank"
@@ -376,8 +377,8 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
         >
           {displayUrl}
         </div>
-        {/* 외부 URL 폴백 버튼 */}
-        {app.live_url && (
+        {/* 외부 URL 폴백 버튼 — C-1 렌더 가드 */}
+        {app.live_url && isSafeHttpUrl(app.live_url) && (
           <a
             href={app.live_url}
             target="_blank"

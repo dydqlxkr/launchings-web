@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
+import { isSafeHttpUrl } from '@/lib/validations';
 
 // 슬러그 생성 헬퍼 — ASCII(영문 소문자/숫자/하이픈)만 허용
 function slugify(text: string): string {
@@ -48,13 +49,8 @@ function validateSubmit(data: {
     if (!data.live_url) {
       return 'Live URL을 입력해 주세요.';
     }
-    try {
-      const url = new URL(data.live_url);
-      if (url.protocol !== 'https:') {
-        return 'Live URL은 https로 시작해야 합니다.';
-      }
-    } catch {
-      return '올바른 URL 형식이 아닙니다.';
+    if (!isSafeHttpUrl(data.live_url)) {
+      return 'Live URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.';
     }
   }
   return null;
@@ -94,6 +90,14 @@ export async function submitApp(formData: FormData): Promise<SubmitResult> {
     return { error: validationError };
   }
 
+  // store_url_ios / store_url_android 스킴 검증 (C-1)
+  if (store_url_ios && !isSafeHttpUrl(store_url_ios)) {
+    return { error: 'App Store URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
+  }
+  if (store_url_android && !isSafeHttpUrl(store_url_android)) {
+    return { error: 'Google Play URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
+  }
+
   // Google Safe Browsing URL 검사 (live_url이 있는 경우)
   if (live_url) {
     const safeResult = await checkUrlSafety(live_url);
@@ -111,9 +115,19 @@ export async function submitApp(formData: FormData): Promise<SubmitResult> {
   const stacks: string[] = stacksRaw
     ? JSON.parse(stacksRaw).filter(Boolean)
     : [];
-  const screenshotPaths: string[] = screenshotsRaw
+  const allScreenshotPaths: string[] = screenshotsRaw
     ? JSON.parse(screenshotsRaw).filter(Boolean)
     : [];
+
+  // M-1: 이미지 경로 소유권 검증 — 경로가 반드시 "{user.id}/"로 시작해야 함.
+  // Storage RLS가 업로드는 막지만, 등록 시점에 임의 경로 주입을 추가 방어.
+  const ownPrefix = `${user.id}/`;
+  const validatedThumbnailPath =
+    thumbnail_path && thumbnail_path.startsWith(ownPrefix) ? thumbnail_path : null;
+  if (thumbnail_path && !validatedThumbnailPath) {
+    return { error: '썸네일 경로가 올바르지 않습니다.' };
+  }
+  const screenshotPaths: string[] = allScreenshotPaths.filter((p) => p.startsWith(ownPrefix));
 
   // 슬러그 생성 (중복 시 suffix 추가) — slugify가 비어있으면 내부에서 폴백 반환
   let slug = slugify(title);
@@ -159,7 +173,7 @@ export async function submitApp(formData: FormData): Promise<SubmitResult> {
       live_url,
       store_url_ios,
       store_url_android,
-      thumbnail_path,
+      thumbnail_path: validatedThumbnailPath,
       embed_status: 'unknown',
       status: 'published',
     })
