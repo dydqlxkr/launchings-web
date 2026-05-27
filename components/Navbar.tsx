@@ -114,6 +114,37 @@ export default function Navbar({ user }: Props) {
                       {user.email}
                     </div>
                     <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '6px 0' }} />
+                    <Link
+                      href="/ko/submit"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('mySubmit')}
+                    </Link>
+                    <Link
+                      href="/ko/settings"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        color: 'var(--ink)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: '7px 10px',
+                        textDecoration: 'none',
+                        borderRadius: 8,
+                      }}
+                    >
+                      {t('profileSettings')}
+                    </Link>
+                    <hr style={{ border: 'none', borderTop: '1px solid var(--line)', margin: '6px 0' }} />
                     <form action={signOut}>
                       <button
                         type="submit"

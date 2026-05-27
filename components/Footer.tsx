@@ -52,17 +52,11 @@ export default function Footer() {
 
           {/* 링크 */}
           <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Link href="/ko" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
+              홈
+            </Link>
             <Link href="/ko/apps" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               앱 둘러보기
-            </Link>
-            <a href="#makers" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-              메이커
-            </a>
-            <a href="#recruit" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-              채용
-            </a>
-            <Link href="/ko" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-              문의
             </Link>
             <Link href="/ko/terms" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
               이용약관

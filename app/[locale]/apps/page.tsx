@@ -75,25 +75,58 @@ export default async function AppsIndexPage() {
             ← {t('backToHome')}
           </Link>
 
-          <h1
+          {/* 제목 행: 제목+설명 왼쪽, 등록 버튼 오른쪽 */}
+          <div
             style={{
-              fontSize: 'clamp(26px, 4vw, 38px)',
-              fontWeight: 800,
-              letterSpacing: '-1px',
-              marginBottom: 10,
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 16,
             }}
           >
-            {t('title')}
-          </h1>
-          <p
-            style={{
-              fontSize: 16,
-              color: 'var(--muted)',
-              maxWidth: 540,
-            }}
-          >
-            {t('description')}
-          </p>
+            <div>
+              <h1
+                style={{
+                  fontSize: 'clamp(26px, 4vw, 38px)',
+                  fontWeight: 800,
+                  letterSpacing: '-1px',
+                  marginBottom: 10,
+                }}
+              >
+                {t('title')}
+              </h1>
+              <p
+                style={{
+                  fontSize: 16,
+                  color: 'var(--muted)',
+                  maxWidth: 540,
+                }}
+              >
+                {t('description')}
+              </p>
+            </div>
+
+            <Link
+              href="/ko/submit"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: 14,
+                padding: '10px 20px',
+                borderRadius: 12,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              {t('submitCta')}
+            </Link>
+          </div>
         </div>
       </header>
 

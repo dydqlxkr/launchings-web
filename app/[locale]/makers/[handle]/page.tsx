@@ -78,8 +78,19 @@ export default async function MakerProfilePage({ params }: PageProps) {
   return (
     <>
       <NavbarServer />
-      <main style={{ flex: 1 }}>
-        <div className="max-w-[1120px] mx-auto px-6 py-10" style={{ maxWidth: 860 }}>
+      <main style={{ flex: 1, width: '100%' }}>
+        <div
+          style={{
+            maxWidth: 860,
+            width: '100%',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            paddingLeft: 24,
+            paddingRight: 24,
+            paddingTop: 40,
+            paddingBottom: 40,
+          }}
+        >
           {/* Back */}
           <Link
             href="/ko"
