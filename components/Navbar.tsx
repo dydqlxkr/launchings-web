@@ -29,6 +29,7 @@ interface Props {
 const NAV_LINKS = [
   { href: '/ko/apps', labelKey: 'browse' as const },
   { href: '/ko/submit', labelKey: 'submit' as const },
+  { href: '/ko/contact', labelKey: 'contact' as const },
 ];
 
 export default function Navbar({ user, unreadNotifications = 0 }: Props) {

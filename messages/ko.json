@@ -13,7 +13,8 @@
     "profileSettings": "프로필 설정",
     "login": "로그인",
     "logout": "로그아웃",
-    "notifications": "알림"
+    "notifications": "알림",
+    "contact": "문의하기"
   },
   "hero": {
     "pill": "한국 AI 빌더들의 놀이터",
