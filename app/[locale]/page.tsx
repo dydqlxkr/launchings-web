@@ -165,7 +165,7 @@ export default async function HomePage() {
                   display: 'inline-block',
                 }}
               >
-                {t('hero.ctaSubmit')} →
+                {t('hero.ctaSubmit')}
               </a>
             </div>
 
