@@ -4,17 +4,18 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import Navbar from './Navbar';
 
 export default async function NavbarServer() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     return <Navbar user={null} />;
   }
+
+  // createClient는 profile/알림 조회용 (getUser는 getCurrentUser로 dedupe됨)
+  const supabase = await createClient();
 
   // profiles 테이블에서 handle과 display_name 조회
   const { data: profile } = await supabase

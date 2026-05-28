@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { getRepo } from '@/lib/repo';
 import type { AppWithRelations } from '@/lib/types';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import HomeWrapper from '@/components/HomeWrapper';
@@ -11,10 +11,8 @@ export default async function HomePage() {
   const t = await getTranslations();
   const repo = getRepo();
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // 요청 내 1회로 dedupe (NavbarServer와 공유)
+  const user = await getCurrentUser();
 
   const [apps, profiles, categories] = await Promise.all([
     repo.listApps({ sort: 'votes' }),
@@ -22,14 +20,13 @@ export default async function HomePage() {
     repo.listCategories(),
   ]);
 
-  // 빌더별 앱 맵을 서버에서 미리 계산 (병렬 조회)
-  const makerAppsEntries = await Promise.all(
-    profiles.map(async (profile) => {
-      const appList = await repo.listAppsByAuthor(profile.id);
-      return [profile.id, appList] as const;
-    })
-  );
-  const makerApps: Record<string, AppWithRelations[]> = Object.fromEntries(makerAppsEntries);
+  // N+1 제거: listApps() 결과를 author_id로 메모리 group-by (추가 DB 쿼리 없음)
+  const makerApps: Record<string, AppWithRelations[]> = {};
+  for (const app of apps) {
+    const aid = app.author_id;
+    if (!makerApps[aid]) makerApps[aid] = [];
+    makerApps[aid].push(app);
+  }
 
   return (
     <>

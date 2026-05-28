@@ -2,8 +2,9 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { getRepo } from '@/lib/repo';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import { isSafeHttpUrl } from '@/lib/validations';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
@@ -17,18 +18,21 @@ interface PageProps {
   params: Promise<{ locale: string; handle: string }>;
 }
 
+// React cache — generateMetadata와 page 함수 간 dedupe
+const getProfileByHandleCached = cache((handle: string) => getRepo().getProfileByHandle(handle));
+const listAppsByAuthorCached = cache((authorId: string) => getRepo().listAppsByAuthor(authorId));
+
 // 로그인 세션(cookies)을 읽어 개인화되므로 항상 동적 렌더.
 // (generateStaticParams + cookies() 조합의 DYNAMIC_SERVER_USAGE 500 방지)
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { handle } = await params;
-  const repo = getRepo();
-  const profile = await repo.getProfileByHandle(handle);
+  const profile = await getProfileByHandleCached(handle);
 
   if (!profile) return {};
 
-  const apps = await repo.listAppsByAuthor(profile.id);
+  const apps = await listAppsByAuthorCached(profile.id);
   const description = profile.bio
     ? `${profile.display_name} · ${profile.bio} · 제품 ${apps.length}개`
     : `${profile.display_name}의 빌더 프로필 · 만든 제품 ${apps.length}개`;
@@ -61,15 +65,18 @@ export default async function MakerProfilePage({ params }: PageProps) {
   const t = await getTranslations('makerDetail');
   const repo = getRepo();
 
-  const profile = await repo.getProfileByHandle(handle);
+  // generateMetadata와 dedupe
+  const profile = await getProfileByHandleCached(handle);
   if (!profile) notFound();
 
-  const apps = await repo.listAppsByAuthor(profile.id);
-  const totalVotes = apps.reduce((sum, a) => sum + a.vote_count, 0);
+  // apps, user, followStatus 병렬 조회
+  const [apps, user] = await Promise.all([
+    listAppsByAuthorCached(profile.id),
+    getCurrentUser(),
+  ]);
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;
+  const totalVotes = apps.reduce((sum, a) => sum + a.vote_count, 0);
 
   // 팔로우 상태 조회 (본인 프로필이 아닐 때만 의미 있음)
   const isOwn = !!user && user.id === profile.id;

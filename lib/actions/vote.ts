@@ -51,23 +51,29 @@ export async function toggleVote(appId: string): Promise<VoteResult> {
 
 /**
  * 현재 로그인 사용자가 특정 앱에 업보트했는지 조회.
+ * userId를 넘기면 추가 getUser() 호출 없이 처리 (dedupe).
  */
 export async function getVoteStatus(
-  appId: string
+  appId: string,
+  userId?: string
 ): Promise<{ voted: boolean }> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uid = user?.id;
+  }
 
-  if (!user) return { voted: false };
+  if (!uid) return { voted: false };
 
   const { data, error } = await supabase
     .from('votes')
     .select('app_id')
     .eq('app_id', appId)
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .maybeSingle();
 
   if (error) return { voted: false };

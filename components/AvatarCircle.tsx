@@ -2,6 +2,7 @@
  * 메이커 아바타 — avatar_url이 있으면 원형 이미지, 없으면 gradient+initial.
  */
 
+import Image from 'next/image';
 import type { Profile } from '@/lib/types';
 
 interface Props {
@@ -24,13 +25,13 @@ export default function AvatarCircle({ profile, size = 52, fontSize = 22 }: Prop
           position: 'relative',
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={profile.avatar_url}
           alt={profile.display_name}
+          width={size}
+          height={size}
+          sizes={`${size}px`}
           style={{
-            width: '100%',
-            height: '100%',
             objectFit: 'cover',
             display: 'block',
           }}

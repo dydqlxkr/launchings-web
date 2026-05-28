@@ -2,9 +2,10 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { getRepo } from '@/lib/repo';
 import { getDemoSrcdoc } from '@/lib/appDemos';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import { isSafeHttpUrl } from '@/lib/validations';
 import { getVoteStatus } from '@/lib/actions/vote';
 import { getBookmarkStatus } from '@/lib/actions/bookmark';
@@ -23,14 +24,17 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
+// React cache — generateMetadata와 page 함수에서 같은 slug로 호출 시 1회만 DB 조회
+const getAppBySlugCached = cache((slug: string) => getRepo().getAppBySlug(slug));
+const listCategoriesCached = cache(() => getRepo().listCategories());
+
 // 로그인 세션(cookies)으로 업보트 상태 등 개인화되므로 항상 동적 렌더.
 // (generateStaticParams + cookies() 조합의 DYNAMIC_SERVER_USAGE 500 방지)
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const repo = getRepo();
-  const app = await repo.getAppBySlug(slug);
+  const app = await getAppBySlugCached(slug);
 
   if (!app) return {};
 
@@ -63,7 +67,9 @@ export default async function AppDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const t = await getTranslations('appDetail');
   const repo = getRepo();
-  const app = await repo.getAppBySlug(slug);
+
+  // generateMetadata와 dedupe — 같은 요청 내 1회만 DB 조회
+  const app = await getAppBySlugCached(slug);
 
   if (!app) notFound();
 
@@ -72,22 +78,23 @@ export default async function AppDetailPage({ params }: PageProps) {
   // srcdoc 데모 조회 (서버에서 결정 — 클라이언트 번들에 전체 데모 포함 불필요)
   const srcDoc = isNative ? null : getDemoSrcdoc(app.slug);
 
-  // 현재 사용자 세션 및 업보트/북마크 상태 조회
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // 현재 사용자 세션 (요청 내 1회로 dedupe)
+  const user = await getCurrentUser();
+
+  // 업보트/북마크 상태 — user.id를 직접 전달해 추가 getUser() 호출 제거
   const [{ voted: initialVoted }, { bookmarked: initialBookmarked }] = await Promise.all([
-    user ? getVoteStatus(app.id) : Promise.resolve({ voted: false }),
-    user ? getBookmarkStatus(app.id) : Promise.resolve({ bookmarked: false }),
+    user ? getVoteStatus(app.id, user.id) : Promise.resolve({ voted: false }),
+    user ? getBookmarkStatus(app.id, user.id) : Promise.resolve({ bookmarked: false }),
   ]);
 
-  // 리뷰 + 기능 요청 + 카테고리 목록 병렬 조회
+  // 리뷰 + 기능 요청 + 카테고리 목록 병렬 조회 (listCategories도 dedupe)
   const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet, allCategories] = await Promise.all([
     repo.listReviews(app.id),
     repo.getReviewStats(app.id),
     user ? repo.getMyReview(app.id, user.id) : Promise.resolve(null),
     repo.listFeatureRequests(app.id),
     user ? repo.getMyFeatureVotes(app.id, user.id) : Promise.resolve(new Set<string>()),
-    repo.listCategories(),
+    listCategoriesCached(),
   ]);
   const myVotedIds = Array.from(myVotedIdsSet);
 

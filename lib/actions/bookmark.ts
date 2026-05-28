@@ -69,22 +69,28 @@ export async function toggleBookmark(appId: string): Promise<BookmarkResult> {
 
 /**
  * 현재 로그인 사용자가 특정 앱을 북마크했는지 조회.
+ * userId를 넘기면 추가 getUser() 호출 없이 처리 (dedupe).
  */
 export async function getBookmarkStatus(
-  appId: string
+  appId: string,
+  userId?: string
 ): Promise<{ bookmarked: boolean }> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uid = user?.id;
+  }
 
-  if (!user) return { bookmarked: false };
+  if (!uid) return { bookmarked: false };
 
   const { data, error } = await supabase
     .from('bookmarks')
     .select('app_id')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .eq('app_id', appId)
     .maybeSingle();
 
