@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
+import { getThumbnailUrl } from '@/lib/thumbnailUrl';
 import AvatarCircle from './AvatarCircle';
 import UpvoteButton from './UpvoteButton';
 import BookmarkButton from './BookmarkButton';
@@ -47,9 +49,20 @@ export default function AppCard({ app, isLoggedIn = false, initialBookmarked = f
               ? `linear-gradient(${app.thumbnail_gradient})`
               : 'var(--card2)',
             flexShrink: 0,
+            overflow: 'hidden',
           }}
         >
-          <span aria-hidden="true">{app.thumbnail_emoji}</span>
+          {app.thumbnail_path ? (
+            <Image
+              src={getThumbnailUrl(app.thumbnail_path)}
+              alt={`${app.title} 썸네일`}
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="(max-width: 768px) 100vw, 400px"
+            />
+          ) : (
+            <span aria-hidden="true">{app.thumbnail_emoji}</span>
+          )}
 
           {/* Type badge — LIVE 배지 유지 */}
           {isNative ? (

@@ -1,12 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import { getRepo } from '@/lib/repo';
 import { getDemoSrcdoc } from '@/lib/appDemos';
 import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import { isSafeHttpUrl } from '@/lib/validations';
+import { getThumbnailUrl } from '@/lib/thumbnailUrl';
 import { getVoteStatus } from '@/lib/actions/vote';
 import { getBookmarkStatus } from '@/lib/actions/bookmark';
 import NavbarServer from '@/components/NavbarServer';
@@ -135,89 +137,110 @@ export default async function AppDetailPage({ params }: PageProps) {
           </Link>
 
           {/* App header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 20,
-              marginBottom: 28,
-              flexWrap: 'wrap',
-            }}
-          >
-            {/* Thumbnail */}
+          <div style={{ marginBottom: 28 }}>
+            {/* 행 1: 썸네일 + 제목/태그라인/메이커 */}
             <div
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: 20,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 40,
-                background: app.thumbnail_gradient
-                  ? `linear-gradient(${app.thumbnail_gradient})`
-                  : 'var(--card)',
-                flexShrink: 0,
+                alignItems: 'flex-start',
+                gap: 20,
               }}
             >
-              {app.thumbnail_emoji}
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <h1
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 800,
-                    letterSpacing: '-.5px',
-                  }}
-                >
-                  {app.title}
-                </h1>
-                {!isNative && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--accent)',
-                      background: 'rgba(46,230,166,.12)',
-                      padding: '2px 8px',
-                      borderRadius: 6,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ● LIVE
-                  </span>
+              {/* Thumbnail */}
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 40,
+                  background: app.thumbnail_gradient
+                    ? `linear-gradient(${app.thumbnail_gradient})`
+                    : 'var(--card)',
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                {app.thumbnail_path ? (
+                  <Image
+                    src={getThumbnailUrl(app.thumbnail_path)}
+                    alt={`${app.title} 썸네일`}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="80px"
+                  />
+                ) : (
+                  app.thumbnail_emoji
                 )}
               </div>
 
-              {app.tagline && (
-                <p style={{ color: 'var(--muted)', fontSize: 15, marginTop: 6 }}>
-                  {app.tagline}
-                </p>
-              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <h1
+                    style={{
+                      fontSize: 28,
+                      fontWeight: 800,
+                      letterSpacing: '-.5px',
+                    }}
+                  >
+                    {app.title}
+                  </h1>
+                  {!isNative && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--accent)',
+                        background: 'rgba(46,230,166,.12)',
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        fontWeight: 700,
+                      }}
+                    >
+                      ● LIVE
+                    </span>
+                  )}
+                </div>
 
-              {/* Maker */}
-              {app.author && (
-                <Link
-                  href={`/ko/makers/${app.author.handle}`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginTop: 10,
-                    fontSize: 13,
-                    color: 'var(--muted)',
-                  }}
-                  className="hover:text-[var(--brand)] transition-colors"
-                >
-                  <AvatarCircle profile={app.author} size={24} fontSize={12} />
-                  {t('by')} {app.author.display_name} →
-                </Link>
-              )}
+                {app.tagline && (
+                  <p style={{ color: 'var(--muted)', fontSize: 15, marginTop: 6 }}>
+                    {app.tagline}
+                  </p>
+                )}
+
+                {/* Maker */}
+                {app.author && (
+                  <Link
+                    href={`/ko/makers/${app.author.handle}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginTop: 10,
+                      fontSize: 13,
+                      color: 'var(--muted)',
+                    }}
+                    className="hover:text-[var(--brand)] transition-colors"
+                  >
+                    <AvatarCircle profile={app.author} size={24} fontSize={12} />
+                    {t('by')} {app.author.display_name} →
+                  </Link>
+                )}
+              </div>
             </div>
 
-            {/* 액션 버튼 그룹: 업보트 · 북마크 · 공유 · 조회수 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {/* 행 2: 액션 버튼 그룹 (업보트 · 북마크 · 공유 · 조회수) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                flexWrap: 'wrap',
+                marginTop: 16,
+              }}
+            >
               <UpvoteButton
                 appId={app.id}
                 initialCount={app.vote_count}

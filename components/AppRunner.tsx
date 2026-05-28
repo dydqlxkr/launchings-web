@@ -219,8 +219,8 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
   );
 }
 
-/** 외부 URL iframe 로딩 타임아웃 (ms) */
-const EMBED_TIMEOUT_MS = 2500;
+/** 외부 URL iframe 로딩이 오래 걸릴 때 "새 탭" 안내를 띄우는 시간 (ms) */
+const EMBED_TIMEOUT_MS = 9000;
 
 /**
  * 전체화면 오버레이 fallback (Fullscreen API 미지원 시)
@@ -291,6 +291,7 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   const t = useTranslations('appRunner');
   const [embedFailed, setEmbedFailed] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [slowLoad, setSlowLoad] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [useOverlay, setUseOverlay] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -304,20 +305,20 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   // 외부 URL용 sandbox: allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여 (M-3, ADR-0004)
   const externalSandbox = 'allow-scripts allow-forms allow-popups';
 
-  // 외부 URL 경로: 타임아웃 내 로드 신호 없으면 폴백 전환
+  // 외부 URL 경로: 로딩이 오래 걸리면 "새 탭" 안내만 표시(iframe은 계속 로딩 — 느린 사이트도 결국 임베드됨)
   useEffect(() => {
-    if (!hasExternalUrl || embedFailed) return;
+    if (!hasExternalUrl || iframeLoaded) return;
 
     timeoutRef.current = setTimeout(() => {
       if (!iframeLoaded) {
-        setEmbedFailed(true);
+        setSlowLoad(true);
       }
     }, EMBED_TIMEOUT_MS);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [hasExternalUrl, embedFailed, iframeLoaded]);
+  }, [hasExternalUrl, iframeLoaded]);
 
   // Fullscreen API 이벤트 동기화
   useEffect(() => {
@@ -368,6 +369,7 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   function handleLoad() {
     if (!hasExternalUrl) return;
     setIframeLoaded(true);
+    setSlowLoad(false);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }
 
@@ -487,6 +489,32 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
               <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
                 {t('loadingLabel')}
               </div>
+              {slowLoad && app.live_url && isSafeHttpUrl(app.live_url) && (
+                <div style={{ textAlign: 'center', marginTop: 14 }}>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>
+                    로딩이 오래 걸리네요. 계속 기다리거나 새 탭에서 열어보세요.
+                  </div>
+                  <a
+                    href={app.live_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                      color: '#fff',
+                      padding: '9px 18px',
+                      borderRadius: 10,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    ↗ {t('openInTab')}
+                  </a>
+                </div>
+              )}
             </div>
           )}
           <iframe
