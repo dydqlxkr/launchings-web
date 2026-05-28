@@ -1,4 +1,8 @@
 import type { Metadata } from 'next';
+// Vercel Analytics: 쿠키리스·익명 집계 방식. 광고 트래커 미사용.
+import { Analytics } from '@vercel/analytics/next';
+// Vercel Speed Insights: 실사용자 Web Vitals(LCP/CLS/INP 등) 수집. 쿠키 미사용.
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 const siteUrl = 'https://launchings.io';
@@ -51,7 +55,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
