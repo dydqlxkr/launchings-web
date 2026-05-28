@@ -142,7 +142,7 @@
   "discover": {
     "title": "이번 주 트렌딩",
     "subtitle": "사람들이 가장 많이 써보고 좋아한 앱",
-    "viewAll": "전체 보기 →",
+    "viewAll": "전체 보기",
     "searchPlaceholder": "앱 이름, 기능, 기술 스택으로 검색 (예: AI 챗봇, Flutter)",
     "searchButton": "검색"
   },

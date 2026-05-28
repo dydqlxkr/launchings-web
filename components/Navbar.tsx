@@ -8,6 +8,7 @@
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -19,6 +20,7 @@ interface NavUser {
   email?: string | null;
   handle?: string | null;
   displayName?: string | null;
+  avatarUrl?: string | null;
 }
 
 interface Props {
@@ -285,7 +287,9 @@ export default function Navbar({ user, unreadNotifications = 0 }: Props) {
                     width: 34,
                     height: 34,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                    background: user.avatarUrl
+                      ? 'var(--card)'
+                      : 'linear-gradient(135deg,var(--brand),var(--brand2))',
                     border: 'none',
                     cursor: 'pointer',
                     display: 'flex',
@@ -295,11 +299,24 @@ export default function Navbar({ user, unreadNotifications = 0 }: Props) {
                     fontWeight: 800,
                     color: '#fff',
                     flexShrink: 0,
+                    padding: 0,
+                    overflow: 'hidden',
                   }}
                   aria-label="내 메뉴"
                   aria-expanded={showUserMenu}
                 >
-                  {user.email?.charAt(0).toUpperCase() ?? 'U'}
+                  {user.avatarUrl ? (
+                    <Image
+                      src={user.avatarUrl}
+                      alt=""
+                      width={34}
+                      height={34}
+                      sizes="34px"
+                      style={{ width: 34, height: 34, objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    (user.displayName?.trim()?.charAt(0) ?? user.email?.charAt(0) ?? 'U').toUpperCase()
+                  )}
                 </button>
 
                 {showUserMenu && (

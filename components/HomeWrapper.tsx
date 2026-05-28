@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations, Profile, Category } from '@/lib/types';
 import AppCard from './AppCard';
+import AvatarCircle from './AvatarCircle';
 import { CompareProvider } from './CompareContext';
 import CompareBar from './CompareBar';
 import { useToast } from '@/components/Toast';
@@ -43,12 +44,6 @@ function MakerMiniCard({
   const t = useTranslations('makersSection');
   const totalVotes = apps.reduce((s, a) => s + a.vote_count, 0);
 
-  // 아바타 이니셜·그라데이션
-  const initial =
-    profile.avatar_initial ?? profile.display_name.charAt(0).toUpperCase();
-  const gradient =
-    profile.avatar_gradient ?? 'linear-gradient(135deg,#6c8cff,#9b6cff)';
-
   const voteDisplay =
     totalVotes >= 1000
       ? `${(totalVotes / 1000).toFixed(1)}k`
@@ -73,23 +68,8 @@ function MakerMiniCard({
       className="hover:-translate-y-1 hover:border-[var(--brand2)]"
     >
       {/* 아바타 */}
-      <div
-        style={{
-          width: 60,
-          height: 60,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 24,
-          fontWeight: 800,
-          color: '#fff',
-          background: gradient,
-          marginBottom: 12,
-          flexShrink: 0,
-        }}
-      >
-        {initial}
+      <div style={{ marginBottom: 12 }}>
+        <AvatarCircle profile={profile} size={60} fontSize={24} />
       </div>
 
       {/* 이름 */}
@@ -503,7 +483,7 @@ function HomeInner({
                   }}
                   className="hover:border-[var(--brand)] hover:text-[var(--brand)]"
                 >
-                  {td('viewAll')} →
+                  {td('viewAll')}
                 </Link>
               </div>
             </>

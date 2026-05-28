@@ -7,6 +7,7 @@
  */
 
 import { useState, useTransition, useEffect, useRef, useId } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { updateProfile, checkHandleAvailable } from '@/lib/actions/profile';
 import { createClient } from '@/lib/supabase/client';
@@ -69,6 +70,7 @@ export default function SettingsForm({
 }: Props) {
   const t = useTranslations('settings');
   const toast = useToast();
+  const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [handle, setHandle] = useState(initialHandle);
   const [bio, setBio] = useState(initialBio ?? '');
@@ -195,6 +197,8 @@ export default function SettingsForm({
       setHandleStatus({ state: 'idle' });
       setAvatarChanged(false);
       toast.show(t('saved'), 'success');
+      // 서버 컴포넌트(네비바 아바타·메이커 카드)가 변경된 프로필을 다시 읽도록 갱신
+      router.refresh();
     });
   }
 

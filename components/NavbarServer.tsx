@@ -17,10 +17,10 @@ export default async function NavbarServer() {
   // createClient는 profile/알림 조회용 (getUser는 getCurrentUser로 dedupe됨)
   const supabase = await createClient();
 
-  // profiles 테이블에서 handle과 display_name 조회
+  // profiles 테이블에서 handle, display_name, avatar_url 조회
   const { data: profile } = await supabase
     .from('profiles')
-    .select('handle, display_name')
+    .select('handle, display_name, avatar_url')
     .eq('id', user.id)
     .single();
 
@@ -36,6 +36,7 @@ export default async function NavbarServer() {
     email: user.email ?? null,
     handle: profile?.handle ?? null,
     displayName: profile?.display_name ?? null,
+    avatarUrl: profile?.avatar_url ?? null,
   };
 
   return <Navbar user={navUser} unreadNotifications={unreadCount ?? 0} />;
