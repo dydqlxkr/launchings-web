@@ -99,9 +99,14 @@ export default function TermsPage() {
               lineHeight: 1.6,
             }}
           >
-            <p>시행일: [시행일: 2026-00-00]</p>
-            <p>운영자: [운영자명]</p>
-            <p>연락처: [연락처 이메일]</p>
+            <p>시행일: 2026년 5월 28일</p>
+            <p>운영자: 런칭스 운영자</p>
+            <p>
+              연락처:{' '}
+              <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
+                문의하기 폼(/ko/contact)
+              </Link>
+            </p>
           </div>
 
           <LegalSection title="제1조 (목적 및 정의)">
@@ -128,7 +133,7 @@ export default function TermsPage() {
                 <strong>콘텐츠</strong>: 이용자가 서비스에 등록·게시한 앱 정보(제목, 설명, URL, 스크린샷 등), 리뷰, 기능요청, 댓글, 기타 게시물 일체.
               </li>
               <li>
-                <strong>운영자</strong>: 서비스를 기획·운영하는 주체([운영자명]).
+                <strong>운영자</strong>: 서비스를 기획·운영하는 주체(런칭스 운영자).
               </li>
             </ol>
           </LegalSection>
@@ -266,7 +271,7 @@ export default function TermsPage() {
                 한국 저작권법 및 「정보통신망법」상 임시조치 요청은
                 <Link href="/ko/contact" style={{ color: 'var(--brand)', marginLeft: 4 }}>
                   문의하기
-                </Link> 또는 [연락처 이메일]로 문의하십시오.
+                </Link>를 통해 접수해 주십시오.
                 저작권자임을 증명하는 자료(저작권 등록증 등)와 함께 침해 사실을 명시하여 요청하시면 신속히 처리합니다.
               </li>
               <li>
@@ -318,7 +323,7 @@ export default function TermsPage() {
 
           <LegalSection title="제10조 (시행일)">
             <p>
-              본 약관은 <strong>[시행일: 2026-00-00]</strong>부터 시행됩니다.
+              본 약관은 <strong>2026년 5월 28일</strong>부터 시행됩니다.
               이전 약관은 본 약관 시행일부터 효력을 상실합니다.
             </p>
           </LegalSection>

@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
+import { sendInquiryNotification } from '@/lib/email';
 
 export interface InquiryActionResult {
   error?: string;
@@ -60,6 +61,17 @@ export async function submitInquiry(formData: FormData): Promise<InquiryActionRe
   if (error) {
     console.error('[Inquiry] submitInquiry error:', error.message);
     return { error: '문의 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.' };
+  }
+
+  // 이메일 알림 — 실패해도 문의 접수에 영향 없음
+  try {
+    await sendInquiryNotification({
+      name: name || '',
+      email: resolvedEmail,
+      message,
+    });
+  } catch (emailErr) {
+    console.error('[Inquiry] 이메일 알림 발송 실패:', emailErr);
   }
 
   return { success: true };

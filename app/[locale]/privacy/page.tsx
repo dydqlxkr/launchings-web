@@ -99,9 +99,14 @@ export default function PrivacyPage() {
               lineHeight: 1.6,
             }}
           >
-            <p>시행일: [시행일: 2026-00-00]</p>
-            <p>개인정보처리자(운영자): [운영자명]</p>
-            <p>연락처: [연락처 이메일]</p>
+            <p>시행일: 2026년 5월 28일</p>
+            <p>개인정보처리자(운영자): 런칭스 운영자</p>
+            <p>
+              연락처:{' '}
+              <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
+                문의하기 폼(/ko/contact)
+              </Link>
+            </p>
           </div>
 
           <p style={{ fontSize: 14, color: '#cfd6e4', lineHeight: 1.8, marginBottom: 32 }}>
@@ -349,8 +354,8 @@ export default function PrivacyPage() {
             </ol>
             <p style={{ marginTop: 12 }}>
               <strong>행사 방법</strong>: 서비스 내 프로필/설정 메뉴에서 직접 처리하거나,{' '}
-              <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>문의하기</Link> 또는
-              [연락처 이메일]로 이메일 요청 시 10일 이내 처리합니다.
+              <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>문의하기 폼(/ko/contact)</Link>을
+              통해 요청 시 10일 이내 처리합니다.
             </p>
             <p style={{ marginTop: 12 }}>
               권리 행사는 이용자 본인 또는 위임을 받은 대리인이 할 수 있습니다.
@@ -413,8 +418,13 @@ export default function PrivacyPage() {
                 marginBottom: 16,
               }}
             >
-              <p><strong>개인정보 보호책임자</strong>: [운영자명]</p>
-              <p><strong>연락처(이메일)</strong>: [연락처 이메일]</p>
+              <p><strong>개인정보 보호책임자</strong>: 런칭스 운영자</p>
+              <p>
+                <strong>연락처</strong>:{' '}
+                <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
+                  문의하기 폼(/ko/contact)
+                </Link>
+              </p>
               <p>
                 <strong>문의하기</strong>:{' '}
                 <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
@@ -444,7 +454,7 @@ export default function PrivacyPage() {
           {/* ⑩ 시행일 */}
           <LegalSection title="제10조 (시행일)">
             <p>
-              본 개인정보처리방침은 <strong>[시행일: 2026-00-00]</strong>부터 시행됩니다.
+              본 개인정보처리방침은 <strong>2026년 5월 28일</strong>부터 시행됩니다.
             </p>
           </LegalSection>
 
