@@ -82,6 +82,7 @@ export default async function EditAppPage({ params }: Props) {
     live_url: row.live_url ?? '',
     store_url_ios: row.store_url_ios ?? '',
     store_url_android: row.store_url_android ?? '',
+    demo_video_url: row.demo_video_url ?? '',
     thumbnail_path: row.thumbnail_path ?? null,
     screenshot_paths: screenshotPaths,
     screenshot_preview_urls: screenshotPreviewUrls,

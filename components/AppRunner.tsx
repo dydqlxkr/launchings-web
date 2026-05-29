@@ -31,6 +31,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import { isSafeHttpUrl } from '@/lib/validations';
+import { getEmbedUrl } from '@/lib/videoEmbed';
 
 interface Props {
   app: AppWithRelations;
@@ -47,6 +48,9 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
   const gradColors = app.thumbnail_gradient ?? '135deg, #1e2734, #2a3a5a';
   const placeholderShots = [0, 1, 2, 3];
   const hasRealScreenshots = screenshotUrls.length > 0;
+
+  // 데모 영상 임베드 URL 계산 (null이면 영상 없음)
+  const embedUrl = getEmbedUrl(app.demo_video_url);
 
   return (
     <div
@@ -95,39 +99,46 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
             position: 'absolute',
             inset: 10,
             borderRadius: 26,
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 12,
-            textAlign: 'center',
-            padding: 20,
-            background: `linear-gradient(${gradColors})`,
+            background: embedUrl ? '#000' : `linear-gradient(${gradColors})`,
           }}
         >
-          <div style={{ fontSize: 44 }}>{app.thumbnail_emoji}</div>
-          {/* 재생 버튼 */}
-          <button
-            aria-label={t('playDemo')}
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,.9)',
-              color: '#111',
-              border: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-              cursor: 'pointer',
-            }}
-          >
-            ▶
-          </button>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.8)' }}>
-            {t('nativeDemoVideo')}
-          </div>
+          {embedUrl ? (
+            /* 데모 영상 임베드 */
+            <iframe
+              src={embedUrl}
+              title={t('playDemo')}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+                display: 'block',
+              }}
+              loading="lazy"
+            />
+          ) : (
+            /* 영상 없음 — 이모지/썸네일만 표시, 가짜 재생 버튼 없음 */
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                padding: 20,
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 44 }}>{app.thumbnail_emoji}</div>
+            </div>
+          )}
         </div>
       </div>
 

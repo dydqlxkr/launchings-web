@@ -45,6 +45,7 @@ export interface SubmitFormInitialData {
   live_url: string;
   store_url_ios: string;
   store_url_android: string;
+  demo_video_url: string;
   thumbnail_path: string | null;
   /** Storage 경로 배열 — edit 모드에서 기존 스크린샷 보존에 사용 */
   screenshot_paths: string[];
@@ -410,6 +411,22 @@ export default function SubmitForm({
           />
         </>
       )}
+
+      {/* 데모 영상 URL (네이티브 앱에서 폰 프레임에 임베드) */}
+      <label style={labelStyle} htmlFor="demo_video_url">
+        데모 영상 URL (선택 · 유튜브/Vimeo)
+      </label>
+      <input
+        id="demo_video_url"
+        name="demo_video_url"
+        type="url"
+        placeholder="https://www.youtube.com/watch?v=... 또는 https://vimeo.com/..."
+        defaultValue={initialData?.demo_video_url ?? ''}
+        style={inputStyle}
+      />
+      <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
+        유튜브(youtube.com, youtu.be, Shorts) 또는 Vimeo 링크만 지원합니다. 네이티브 앱의 경우 폰 프레임 안에서 재생됩니다.
+      </div>
 
       {/* 카테고리 다중 선택 */}
       <label style={labelStyle}>카테고리 (복수 선택 가능)</label>

@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
 import { isSafeHttpUrl } from '@/lib/validations';
+import { isEmbeddableVideoUrl } from '@/lib/videoEmbed';
 
 // ─── 공유 헬퍼 ──────────────────────────────────────────────────────────────
 
@@ -133,6 +134,7 @@ export async function updateApp(
   const live_url = (formData.get('live_url') as string)?.trim() || null;
   const store_url_ios = (formData.get('store_url_ios') as string)?.trim() || null;
   const store_url_android = (formData.get('store_url_android') as string)?.trim() || null;
+  const demo_video_url_raw = (formData.get('demo_video_url') as string)?.trim() || null;
   const thumbnail_path = (formData.get('thumbnail_path') as string)?.trim() || null;
   const categoriesRaw = formData.get('categories') as string;
   const stacksRaw = formData.get('stacks') as string;
@@ -154,6 +156,18 @@ export async function updateApp(
   }
   if (store_url_android && !isSafeHttpUrl(store_url_android)) {
     return { error: 'Google Play URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
+  }
+
+  // 데모 영상 URL 검증 — 비었으면 null, 값 있으면 YouTube/Vimeo 임베드 가능 URL인지 확인
+  let demo_video_url: string | null = null;
+  if (demo_video_url_raw) {
+    if (!isSafeHttpUrl(demo_video_url_raw)) {
+      return { error: '데모 영상 URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.' };
+    }
+    if (!isEmbeddableVideoUrl(demo_video_url_raw)) {
+      return { error: '데모 영상은 유튜브(youtube.com, youtu.be, Shorts) 또는 Vimeo 링크만 지원합니다.' };
+    }
+    demo_video_url = demo_video_url_raw;
   }
 
   // Google Safe Browsing 검사
@@ -199,6 +213,7 @@ export async function updateApp(
       live_url,
       store_url_ios,
       store_url_android,
+      demo_video_url,
       thumbnail_path: validatedThumbnailPath,
       updated_at: new Date().toISOString(),
     })
