@@ -240,8 +240,8 @@ function RecruitCTA({ mature }: { mature: boolean }) {
             </button>
           </div>
 
-          {/* 비주얼 카드 — 예시 프로필은 빌더가 쌓인 뒤에만 노출 (P2-9) */}
-          {mature && (
+          {/* 비주얼 카드 — 채용 매칭은 준비 중이므로 블러 미리보기로 노출 (P2-9).
+              실제 데이터가 아니며 블러+오버레이로 '준비 중'임을 명확히 한다. */}
           <div
             style={{
               flex: '0 0 300px',
@@ -250,128 +250,144 @@ function RecruitCTA({ mature }: { mature: boolean }) {
               borderRadius: 16,
               padding: 18,
               position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            {/* 예시 라벨 */}
+            {/* 미리보기 콘텐츠 — 블러 + 비상호작용 (스크린리더/탭 제외) */}
+            <div
+              aria-hidden="true"
+              style={{
+                filter: 'blur(4px)',
+                pointerEvents: 'none',
+                userSelect: 'none',
+                opacity: 0.9,
+              }}
+            >
+              {/* 프로필 행 */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg,#6c8cff,#9b6cff)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  B
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>
+                    {t('visualName')}{' '}
+                    <span style={{ color: 'var(--accent)', fontSize: 12 }}>✓</span>
+                  </div>
+                  <div style={{ color: 'var(--muted-strong)', fontSize: 12.5 }}>
+                    {t('visualRole')}
+                  </div>
+                </div>
+              </div>
+
+              {/* 스탯 바 목록 */}
+              {[
+                { label: t('visualStat1Label'), val: t('visualStat1Val'), pct: '85%' },
+                { label: t('visualStat2Label'), val: t('visualStat2Val'), pct: '72%' },
+                { label: t('visualStat3Label'), val: t('visualStat3Val'), pct: '90%' },
+              ].map(({ label, val, pct }) => (
+                <div key={label}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: 12,
+                      color: 'var(--muted-strong)',
+                      marginTop: 10,
+                    }}
+                  >
+                    <span>{label}</span>
+                    <span style={{ color: 'var(--ink)' }}>{val}</span>
+                  </div>
+                  <div
+                    style={{
+                      height: 6,
+                      background: 'var(--chip)',
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      margin: '8px 0',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'block',
+                        height: '100%',
+                        width: pct,
+                        background: 'linear-gradient(90deg,var(--brand),var(--accent))',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button
+                tabIndex={-1}
+                style={{
+                  width: '100%',
+                  marginTop: 16,
+                  background: 'transparent',
+                  border: '1px solid var(--line)',
+                  color: 'var(--ink)',
+                  borderRadius: 10,
+                  padding: '9px 16px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {t('visualBtn')}
+              </button>
+            </div>
+
+            {/* 크리스프 오버레이 — '준비 중' 배지 (블러 위) */}
             <div
               style={{
                 position: 'absolute',
-                top: 12,
-                right: 12,
-                fontSize: 10,
-                fontWeight: 700,
-                color: 'var(--muted-strong)',
-                background: 'var(--chip)',
-                border: '1px solid var(--line)',
-                borderRadius: 5,
-                padding: '2px 6px',
-                letterSpacing: '.4px',
-              }}
-            >
-              {t('visualNote')}
-            </div>
-
-            {/* 프로필 행 — 가짜 인물/인증 신호 제거: 익명 실루엣 + 플레이스홀더 (P1-5) */}
-            <div
-              style={{
+                inset: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 12,
-                marginBottom: 14,
+                justifyContent: 'center',
+                pointerEvents: 'none',
               }}
             >
-              <div
+              <span
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: '50%',
-                  background: 'var(--chip)',
-                  border: '1px solid var(--line)',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--muted-strong)',
-                  flexShrink: 0,
+                  gap: 6,
+                  background: 'var(--card)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 999,
+                  padding: '8px 14px',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--ink)',
+                  boxShadow: 'var(--shadow-pop)',
                 }}
-                aria-hidden="true"
               >
-                {/* 사람 실루엣 아이콘 */}
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--muted-strong)' }}>
-                  {t('visualName')}
-                </div>
-                <div style={{ color: 'var(--muted-strong)', fontSize: 12.5 }}>
-                  {t('visualRole')}
-                </div>
-              </div>
+                🔒 {t('previewOverlay')}
+              </span>
             </div>
-
-            {/* 스탯 바 목록 */}
-            {[
-              { label: t('visualStat1Label'), val: t('visualStat1Val'), pct: '28%' },
-              { label: t('visualStat2Label'), val: t('visualStat2Val'), pct: '28%' },
-              { label: t('visualStat3Label'), val: t('visualStat3Val'), pct: '28%' },
-            ].map(({ label, val, pct }) => (
-              <div key={label}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: 12,
-                    color: 'var(--muted-strong)',
-                    marginTop: 10,
-                  }}
-                >
-                  <span>{label}</span>
-                  <span style={{ color: 'var(--ink)' }}>{val}</span>
-                </div>
-                <div
-                  style={{
-                    height: 6,
-                    background: 'var(--chip)',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    margin: '8px 0',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'block',
-                      height: '100%',
-                      width: pct,
-                      background: 'var(--muted-strong)',
-                      opacity: 0.35,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button
-              onClick={handleInterest}
-              style={{
-                width: '100%',
-                marginTop: 16,
-                background: 'transparent',
-                border: '1px solid var(--line)',
-                color: 'var(--ink)',
-                borderRadius: 10,
-                padding: '9px 16px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              {t('visualBtn')}
-            </button>
           </div>
-          )}
         </div>
       </div>
     </section>
