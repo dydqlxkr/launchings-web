@@ -10,6 +10,8 @@ import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import LoginPrompt from '@/components/LoginPrompt';
 import AppCard from '@/components/AppCard';
+import { CompareProvider } from '@/components/CompareContext';
+import CompareBar from '@/components/CompareBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,22 +103,25 @@ async function BookmarksContent({ userId }: { userId: string }) {
           </p>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 20,
-          }}
-        >
-          {apps.map((app) => (
-            <AppCard
-              key={app.id}
-              app={app}
-              isLoggedIn={true}
-              initialBookmarked={bookmarkIds.has(app.id)}
-            />
-          ))}
-        </div>
+        <CompareProvider>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: 20,
+            }}
+          >
+            {apps.map((app) => (
+              <AppCard
+                key={app.id}
+                app={app}
+                isLoggedIn={true}
+                initialBookmarked={bookmarkIds.has(app.id)}
+              />
+            ))}
+          </div>
+          <CompareBar apps={apps} />
+        </CompareProvider>
       )}
     </>
   );
