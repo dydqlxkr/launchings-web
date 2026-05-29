@@ -550,7 +550,7 @@ function HomeInner({
                   fontWeight: 800,
                 }}
               >
-                🆕 {tn('title')}
+                ✨ {tn('title')}
               </h2>
               <p style={{ color: 'var(--muted)', fontSize: 14.5, marginTop: 4 }}>
                 {tn('subtitle')}
@@ -561,6 +561,30 @@ function HomeInner({
               {newApps.map((app) => (
                 <AppCard key={app.id} app={app} isLoggedIn={isLoggedIn} />
               ))}
+            </div>
+
+            {/* 전체 둘러보기 링크 */}
+            <div style={{ textAlign: 'center', marginTop: 32 }}>
+              <Link
+                href="/ko/apps"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: 'transparent',
+                  border: '1px solid var(--line)',
+                  color: 'var(--ink)',
+                  padding: '11px 24px',
+                  borderRadius: 12,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  textDecoration: 'none',
+                  transition: 'border-color .15s, color .15s',
+                }}
+                className="hover:border-[var(--brand)] hover:text-[var(--brand)]"
+              >
+                {td('viewAll')}
+              </Link>
             </div>
           </div>
         </section>
