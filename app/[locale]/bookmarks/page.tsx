@@ -16,6 +16,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: '내 북마크',
   description: '북마크한 앱 목록을 확인하세요.',
+  robots: { index: false, follow: false },
 };
 
 export default async function BookmarksPage() {

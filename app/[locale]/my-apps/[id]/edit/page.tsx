@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '제품 수정',
+  robots: { index: false, follow: false },
 };
 
 interface Props {

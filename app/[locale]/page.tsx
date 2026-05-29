@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/ko' },
 };
 
+// 콜드스타트 방지: 앱/빌더 수가 임계치 미만이면 히어로 카운터를 숨겨
+// '텅 빈 사이트' 인상을 주지 않는다 (P1-4).
+const HERO_STATS_MIN_APPS = 10;
+const HERO_STATS_MIN_BUILDERS = 3;
+
 export default async function HomePage() {
   const t = await getTranslations();
   const repo = getRepo();
@@ -174,7 +179,9 @@ export default async function HomePage() {
               </a>
             </div>
 
-            {/* 통계 행 — 실제 카운트 기반, 가짜 통계 제거 */}
+            {/* 통계 행 — 콜드스타트 방지: 임계치 미만이면 숨김 (P1-4) */}
+            {apps.length >= HERO_STATS_MIN_APPS &&
+              profiles.length >= HERO_STATS_MIN_BUILDERS && (
             <div
               style={{
                 display: 'flex',
@@ -211,6 +218,7 @@ export default async function HomePage() {
                 ));
               })()}
             </div>
+            )}
           </div>
         </div>
       </header>

@@ -94,8 +94,10 @@ function MakerMiniCard({
         </div>
       )}
 
-      {/* 검증 배지 */}
+      {/* 검증 배지 — 호버/포커스 시 검증 기준 설명 (P1-6) */}
       <div
+        title={t('verifiedTooltip')}
+        aria-label={`${t('verified')}: ${t('verifiedTooltip')}`}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -108,6 +110,7 @@ function MakerMiniCard({
           borderRadius: 6,
           marginTop: 6,
           marginBottom: 12,
+          cursor: 'help',
         }}
       >
         ✓ {t('verified')}
@@ -257,10 +260,10 @@ function RecruitCTA() {
                 letterSpacing: '.4px',
               }}
             >
-              예시
+              {t('visualNote')}
             </div>
 
-            {/* 프로필 행 */}
+            {/* 프로필 행 — 가짜 인물/인증 신호 제거: 익명 실루엣 + 플레이스홀더 (P1-5) */}
             <div
               style={{
                 display: 'flex',
@@ -274,21 +277,25 @@ function RecruitCTA() {
                   width: 44,
                   height: 44,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg,#6c8cff,#9b6cff)',
+                  background: 'var(--chip)',
+                  border: '1px solid var(--line)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 800,
-                  color: '#fff',
+                  color: 'var(--muted-strong)',
                   flexShrink: 0,
                 }}
+                aria-hidden="true"
               >
-                지
+                {/* 사람 실루엣 아이콘 */}
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  {t('visualName')}{' '}
-                  <span style={{ color: 'var(--accent)', fontSize: 12 }}>✓</span>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--muted-strong)' }}>
+                  {t('visualName')}
                 </div>
                 <div style={{ color: 'var(--muted-strong)', fontSize: 12.5 }}>
                   {t('visualRole')}
@@ -298,9 +305,9 @@ function RecruitCTA() {
 
             {/* 스탯 바 목록 */}
             {[
-              { label: t('visualStat1Label'), val: t('visualStat1Val'), pct: '92%' },
-              { label: t('visualStat2Label'), val: t('visualStat2Val'), pct: '88%' },
-              { label: t('visualStat3Label'), val: t('visualStat3Val'), pct: '95%' },
+              { label: t('visualStat1Label'), val: t('visualStat1Val'), pct: '28%' },
+              { label: t('visualStat2Label'), val: t('visualStat2Val'), pct: '28%' },
+              { label: t('visualStat3Label'), val: t('visualStat3Val'), pct: '28%' },
             ].map(({ label, val, pct }) => (
               <div key={label}>
                 <div
@@ -329,7 +336,8 @@ function RecruitCTA() {
                       display: 'block',
                       height: '100%',
                       width: pct,
-                      background: 'linear-gradient(90deg,var(--brand),var(--accent))',
+                      background: 'var(--muted-strong)',
+                      opacity: 0.35,
                     }}
                   />
                 </div>

@@ -17,6 +17,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: '알림',
   description: '팔로우한 메이커의 새 앱 알림을 확인하세요.',
+  robots: { index: false, follow: false },
 };
 
 export default async function NotificationsPage() {

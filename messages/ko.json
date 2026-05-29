@@ -176,7 +176,8 @@
     "viewAll": "메이커 랭킹 →",
     "appCount": "앱",
     "voteCount": "추천",
-    "verified": "활동 검증됨"
+    "verified": "활동 검증됨",
+    "verifiedTooltip": "직접 만든 작동 제품을 1개 이상 공개·등록한 빌더예요."
   },
   "recruitSection": {
     "title": "이 앱을 만든 사람, 채용해보시겠어요?",
@@ -186,14 +187,15 @@
     "tag3": "성사 시에만 과금",
     "ctaButton": "채용 연결 준비 중 — 관심 등록하기",
     "ctaToast": "관심 등록해 주셨습니다! 서비스 오픈 시 가장 먼저 안내해 드릴게요.",
-    "visualName": "김지훈",
+    "visualNote": "표시 예시",
+    "visualName": "빌더 프로필",
     "visualRole": "풀스택 · AI 프로덕트 빌더",
-    "visualStat1Label": "제품 출시 경험",
-    "visualStat1Val": "12개 앱",
-    "visualStat2Label": "활동 검증 점수",
-    "visualStat2Val": "A+",
-    "visualStat3Label": "최근 6개월 빌드",
-    "visualStat3Val": "활발 🔥",
+    "visualStat1Label": "공개한 작동 제품",
+    "visualStat1Val": "—",
+    "visualStat2Label": "활동 검증",
+    "visualStat2Val": "—",
+    "visualStat3Label": "최근 빌드 활동",
+    "visualStat3Val": "—",
     "visualBtn": "프로필 보기 / 연락하기"
   },
   "footer": {

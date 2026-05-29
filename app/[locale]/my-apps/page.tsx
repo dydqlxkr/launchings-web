@@ -14,6 +14,7 @@ import MyAppsList from './MyAppsList';
 export const metadata: Metadata = {
   title: '내 등록 제품',
   description: '내가 런칭스에 등록한 제품을 관리하세요.',
+  robots: { index: false, follow: false },
 };
 
 export default async function MyAppsPage() {

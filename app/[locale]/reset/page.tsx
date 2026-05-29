@@ -13,6 +13,7 @@ import ResetPasswordForm from './ResetPasswordForm';
 export const metadata: Metadata = {
   title: '비밀번호 재설정',
   description: '런칭스 계정 비밀번호를 재설정합니다.',
+  robots: { index: false, follow: false },
 };
 
 export default async function ResetPasswordPage() {

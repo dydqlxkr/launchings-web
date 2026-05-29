@@ -15,6 +15,7 @@ import DeleteAccountSection from './DeleteAccountSection';
 export const metadata: Metadata = {
   title: '프로필 설정',
   description: '런칭스 프로필을 설정하세요.',
+  robots: { index: false, follow: false },
 };
 
 export default async function SettingsPage() {

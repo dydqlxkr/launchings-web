@@ -11,6 +11,7 @@ import type { AppWithRelations } from '@/lib/types';
 export const metadata: Metadata = {
   title: '앱 비교',
   description: '런칭스 앱 나란히 비교',
+  robots: { index: false, follow: false },
 };
 
 interface PageProps {
