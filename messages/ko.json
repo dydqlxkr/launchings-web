@@ -63,7 +63,8 @@
     "upvote": "추천",
     "upvoted": "추천됨",
     "addCompare": "비교 담기",
-    "removeCompare": "비교 제거"
+    "removeCompare": "비교 제거",
+    "new": "신규"
   },
   "appDetail": {
     "by": "by",
@@ -145,6 +146,10 @@
     "viewAll": "전체 보기",
     "searchPlaceholder": "앱 이름, 기능, 기술 스택으로 검색 (예: AI 챗봇, Flutter)",
     "searchButton": "검색"
+  },
+  "newSection": {
+    "title": "신규 앱",
+    "subtitle": "최근 올라온 따끈한 앱"
   },
   "chips": {
     "trending": "이번 주 인기",

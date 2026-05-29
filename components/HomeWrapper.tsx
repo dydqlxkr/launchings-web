@@ -405,6 +405,7 @@ function HomeInner({
 }: Omit<Props, 'categories'>) {
   const t = useTranslations();
   const td = useTranslations('discover');
+  const tn = useTranslations('newSection');
   const tm = useTranslations('makersSection');
 
   // 트렌딩 상위 앱 (추천순, 최대 HOME_PREVIEW_COUNT개)
@@ -412,6 +413,18 @@ function HomeInner({
     () =>
       [...apps]
         .sort((a, b) => b.vote_count - a.vote_count)
+        .slice(0, HOME_PREVIEW_COUNT),
+    [apps]
+  );
+
+  // 신규 앱 (등록일 최신순, 최대 HOME_PREVIEW_COUNT개)
+  const newApps = useMemo(
+    () =>
+      [...apps]
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         .slice(0, HOME_PREVIEW_COUNT),
     [apps]
   );
@@ -523,6 +536,35 @@ function HomeInner({
           )}
         </div>
       </section>
+
+      {/* ── 1.5 신규 앱 (등록 최신순) ─────────────────────────────── */}
+      {newApps.length > 0 && (
+        <section id="new">
+          <div className="lp-container" style={{ paddingBottom: 46 }}>
+            {/* 섹션 헤더 */}
+            <div style={{ marginBottom: 24 }}>
+              <h2
+                style={{
+                  fontSize: 26,
+                  letterSpacing: '-.6px',
+                  fontWeight: 800,
+                }}
+              >
+                🆕 {tn('title')}
+              </h2>
+              <p style={{ color: 'var(--muted)', fontSize: 14.5, marginTop: 4 }}>
+                {tn('subtitle')}
+              </p>
+            </div>
+
+            <div className="lp-grid">
+              {newApps.map((app) => (
+                <AppCard key={app.id} app={app} isLoggedIn={isLoggedIn} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── 2. 주목받는 메이커 ───────────────────────────────────── */}
       <section id="makers" style={{ padding: '46px 0' }}>

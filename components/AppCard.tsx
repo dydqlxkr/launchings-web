@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import { getThumbnailUrl } from '@/lib/thumbnailUrl';
+import { isNewApp } from '@/lib/isNew';
 import AvatarCircle from './AvatarCircle';
 import UpvoteButton from './UpvoteButton';
 import BookmarkButton from './BookmarkButton';
@@ -19,6 +20,7 @@ export default function AppCard({ app, isLoggedIn = false, initialBookmarked = f
   const t = useTranslations('appCard');
 
   const isNative = app.app_type === 'native';
+  const isNew = isNewApp(app.created_at);
 
   return (
     <div
@@ -114,6 +116,26 @@ export default function AppCard({ app, isLoggedIn = false, initialBookmarked = f
                 }}
               />
               {t('webapp')}
+            </span>
+          )}
+
+          {/* 신규 배지 — 등록 7일 이내 (우상단, 타입 배지와 겹치지 않게) */}
+          {isNew && (
+            <span
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                fontSize: 11,
+                fontWeight: 800,
+                padding: '4px 9px',
+                borderRadius: 7,
+                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
+                color: '#fff',
+                letterSpacing: '.3px',
+              }}
+            >
+              {t('new')}
             </span>
           )}
         </div>
