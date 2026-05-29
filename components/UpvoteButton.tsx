@@ -3,7 +3,8 @@
 /**
  * 업보트 버튼 — Phase 2: Server Action(toggleVote RPC)으로 영속화.
  * - 낙관적 UI: 클릭 즉시 반영, 실패 시 롤백.
- * - 비로그인 클릭 시 로그인 모달 표시.
+ * - 비로그인 클릭: 즉시 추천 피드백(낙관적, 세션 한정)을 주고 로그인 유도(첫 인터랙션 비차단, P2-7).
+ *   로그인 없이 모달을 닫으면 저장되지 않았으므로 피드백을 되돌린다(가짜 카운트 방지).
  * - initialVoted: 페이지 렌더링 시 서버에서 조회한 현재 사용자의 투표 여부.
  */
 
@@ -30,9 +31,17 @@ export default function UpvoteButton({
   const [count, setCount] = useState(initialCount);
   const [showLogin, setShowLogin] = useState(false);
   const [isPending, startTransition] = useTransition();
+  // 게스트가 낙관적으로 +1 했는지 추적 — 로그인 없이 모달을 닫으면 되돌린다.
+  const [guestBumped, setGuestBumped] = useState(false);
 
   function handleVote() {
     if (!isLoggedIn) {
+      // 첫 인터랙션 비차단: 즉시 추천 피드백을 보여준 뒤 로그인을 유도한다.
+      if (!guestBumped) {
+        setVoted(true);
+        setCount((prev) => prev + 1);
+        setGuestBumped(true);
+      }
       setShowLogin(true);
       return;
     }
@@ -82,7 +91,18 @@ export default function UpvoteButton({
         <span>{count}</span>
       </button>
 
-      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => {
+          setShowLogin(false);
+          // 로그인하지 않고 닫으면 저장되지 않았으므로 게스트 피드백을 되돌린다.
+          if (!isLoggedIn && guestBumped) {
+            setVoted(false);
+            setCount((prev) => prev - 1);
+            setGuestBumped(false);
+          }
+        }}
+      />
     </>
   );
 }

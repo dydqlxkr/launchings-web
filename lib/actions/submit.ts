@@ -11,7 +11,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
-import { isSafeHttpUrl } from '@/lib/validations';
+import { isSafeHttpUrl, isPublicHttpUrl } from '@/lib/validations';
 import { rateLimitSubmitApp, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 // 슬러그 생성 헬퍼 — ASCII(영문 소문자/숫자/하이픈)만 허용
@@ -50,8 +50,8 @@ function validateSubmit(data: {
     if (!data.live_url) {
       return 'Live URL을 입력해 주세요.';
     }
-    if (!isSafeHttpUrl(data.live_url)) {
-      return 'Live URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.';
+    if (!isPublicHttpUrl(data.live_url)) {
+      return 'Live URL은 외부에서 접속 가능한 공개 https:// 또는 http:// 주소여야 합니다. (localhost·사설 IP는 사용할 수 없어요)';
     }
   }
   return null;

@@ -22,6 +22,47 @@ export function isSafeHttpUrl(url: string | null | undefined): boolean {
   }
 }
 
+/**
+ * 외부에서 접속 가능한 "공개" http(s) URL인지 검증 (제출 모더레이션용, P2-8).
+ *
+ * isSafeHttpUrl(스킴 검증)에 더해 localhost·사설/예약 IP·내부망 호스트를 차단한다.
+ * 방문자 브라우저에서 iframe으로 실행되므로, 이런 비공개 주소는 무의미하거나 악용될 수 있다.
+ */
+export function isPublicHttpUrl(url: string | null | undefined): boolean {
+  if (!isSafeHttpUrl(url)) return false;
+  try {
+    const host = new URL(url as string).hostname.toLowerCase();
+
+    // 로컬/내부망 이름
+    if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) {
+      return false;
+    }
+    // 점 없는 단일 라벨 호스트(예: intranet) — 공개 도메인은 최소 1개의 점을 가진다
+    if (!host.includes('.')) return false;
+
+    // IPv4 사설/루프백/링크로컬/예약 범위
+    const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (m) {
+      const a = Number(m[1]);
+      const b = Number(m[2]);
+      if (a === 0 || a === 10 || a === 127) return false;
+      if (a === 169 && b === 254) return false;
+      if (a === 172 && b >= 16 && b <= 31) return false;
+      if (a === 192 && b === 168) return false;
+      if (a >= 224) return false; // 멀티캐스트/예약
+    }
+
+    // IPv6 루프백/링크로컬/유니크로컬
+    if (host === '[::1]' || host.startsWith('[fe80') || host.startsWith('[fc') || host.startsWith('[fd')) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** handle 허용 규칙: 소문자 영문·숫자·하이픈·언더스코어, 3~20자 */
 export const HANDLE_RE = /^[a-z0-9_-]{3,20}$/;
 

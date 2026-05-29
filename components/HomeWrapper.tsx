@@ -31,6 +31,11 @@ interface Props {
 /** 홈 맛보기 최대 표시 수 */
 const HOME_PREVIEW_COUNT = 9;
 
+// 빌더/앱이 일정 수 쌓이기 전에는 채용 BM을 과하게 노출하지 않는다 (P2-9).
+// 임계치 미만이면 채용 섹션을 슬림(헤드라인 + '관심 등록' CTA만)하게 보여준다.
+const RECRUIT_MATURE_MIN_APPS = 10;
+const RECRUIT_MATURE_MIN_BUILDERS = 3;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MakerMiniCard — 시안의 .mcard (텍스트 중앙정렬, 통계 2개)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -147,7 +152,7 @@ function MakerMiniCard({
 // ─────────────────────────────────────────────────────────────────────────────
 // RecruitCTA — 시안의 #recruit 밴드 (v1: 버튼은 토스트만)
 // ─────────────────────────────────────────────────────────────────────────────
-function RecruitCTA() {
+function RecruitCTA({ mature }: { mature: boolean }) {
   const t = useTranslations('recruitSection');
   const toast = useToast();
 
@@ -195,25 +200,27 @@ function RecruitCTA() {
               {t('desc')}
             </p>
 
-            {/* 태그 */}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
-              {[t('tag1'), t('tag2'), t('tag3')].map((tag) => (
-                <span
-                  key={tag}
-                  style={{
-                    background: 'var(--card2)',
-                    border: '1px solid var(--line)',
-                    borderRadius: 999,
-                    padding: '7px 14px',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                  }}
-                >
-                  ✓ {tag}
-                </span>
-              ))}
-            </div>
+            {/* 태그 — 빌더가 쌓인 뒤에만 BM 약속을 노출 (P2-9) */}
+            {mature && (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+                {[t('tag1'), t('tag2'), t('tag3')].map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      background: 'var(--card2)',
+                      border: '1px solid var(--line)',
+                      borderRadius: 999,
+                      padding: '7px 14px',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    ✓ {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <button
               onClick={handleInterest}
@@ -233,7 +240,8 @@ function RecruitCTA() {
             </button>
           </div>
 
-          {/* 비주얼 카드 */}
+          {/* 비주얼 카드 — 예시 프로필은 빌더가 쌓인 뒤에만 노출 (P2-9) */}
+          {mature && (
           <div
             style={{
               flex: '0 0 300px',
@@ -363,6 +371,7 @@ function RecruitCTA() {
               {t('visualBtn')}
             </button>
           </div>
+          )}
         </div>
       </div>
     </section>
@@ -556,7 +565,12 @@ function HomeInner({
       </section>
 
       {/* ── 3. 채용 CTA 밴드 ─────────────────────────────────────── */}
-      <RecruitCTA />
+      <RecruitCTA
+        mature={
+          apps.length >= RECRUIT_MATURE_MIN_APPS &&
+          profiles.length >= RECRUIT_MATURE_MIN_BUILDERS
+        }
+      />
 
       {/* ── 비교 플로팅 바 ───────────────────────────────────────── */}
       <CompareBar apps={apps} />
