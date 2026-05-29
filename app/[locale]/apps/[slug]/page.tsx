@@ -21,6 +21,7 @@ import ViewCount from '@/components/ViewCount';
 import AppRunner from '@/components/AppRunner';
 import ReportButton from '@/components/ReportButton';
 import AppDetailClient from '@/components/AppDetailClient';
+import ScreenshotGallery from '@/components/ScreenshotGallery';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -411,55 +412,12 @@ export default async function AppDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* 스크린샷 갤러리 — 1장 이상일 때만 표시 */}
-          {screenshotUrls.length > 0 && (
-            <div style={{ marginBottom: 28 }}>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: 'var(--muted)',
-                  marginBottom: 12,
-                  textTransform: 'uppercase',
-                  letterSpacing: '.06em',
-                }}
-              >
-                {t('screenshots')}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  overflowX: 'auto',
-                  paddingBottom: 6,
-                }}
-              >
-                {screenshotUrls.map((url, i) => (
-                  <div
-                    key={url}
-                    style={{
-                      flexShrink: 0,
-                      borderRadius: 10,
-                      overflow: 'hidden',
-                      border: '1px solid var(--line)',
-                      position: 'relative',
-                      width: 160,
-                      height: 284,
-                      background: 'var(--card)',
-                    }}
-                  >
-                    <Image
-                      src={url}
-                      alt={t('screenshotAlt', { n: i + 1 })}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      sizes="160px"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* 스크린샷 갤러리 — 1장 이상일 때만 표시 (클릭 시 라이트박스) */}
+          <ScreenshotGallery
+            urls={screenshotUrls}
+            label={t('screenshots')}
+            alts={screenshotUrls.map((_, i) => t('screenshotAlt', { n: i + 1 }))}
+          />
 
           {/* App runner (Phase 3 구현) */}
           <AppRunner app={app} srcDoc={srcDoc} screenshotUrls={screenshotUrls} />
