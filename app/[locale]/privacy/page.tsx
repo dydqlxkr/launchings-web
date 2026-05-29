@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '개인정보처리방침 | Launchings',
     description: 'Launchings 개인정보처리방침. 수집 항목, 이용 목적, 보유 기간 등을 확인하세요.',
-    url: 'https://launchings.io/ko/privacy',
+    url: 'https://www.launchings.io/ko/privacy',
     siteName: 'Launchings',
     locale: 'ko_KR',
     type: 'website',

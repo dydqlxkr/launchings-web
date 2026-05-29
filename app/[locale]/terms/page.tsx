@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '이용약관 | Launchings',
     description: 'Launchings 서비스 이용약관. 플랫폼 이용 조건, 업로더 책임, 저작권 정책 등을 확인하세요.',
-    url: 'https://launchings.io/ko/terms',
+    url: 'https://www.launchings.io/ko/terms',
     siteName: 'Launchings',
     locale: 'ko_KR',
     type: 'website',

@@ -8,9 +8,10 @@ import Footer from '@/components/Footer';
 import AppsPageClient from '@/components/AppsPageClient';
 
 export const metadata: Metadata = {
-  title: '앱 둘러보기 | Launchings',
+  title: '앱 둘러보기',
   description:
     '한국 0→1 빌더들이 직접 만든 작동 제품을 카테고리별로 탐색해 보세요.',
+  alternates: { canonical: '/ko/apps' },
 };
 
 export default async function AppsIndexPage() {

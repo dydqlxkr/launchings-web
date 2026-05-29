@@ -9,8 +9,9 @@ import Footer from '@/components/Footer';
 import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
-  title: '문의하기 — Launchings',
+  title: '문의하기',
   description: '런칭스에 궁금한 점이나 제안을 남겨주세요.',
+  alternates: { canonical: '/ko/contact' },
 };
 
 export default async function ContactPage() {

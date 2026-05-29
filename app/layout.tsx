@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
-const siteUrl = 'https://launchings.io';
+const siteUrl = 'https://www.launchings.io';
 const defaultTitle = 'Launchings — 작동 제품으로 증명하는 한국 빌더 쇼케이스';
 const defaultDescription =
   '작동 제품으로 증명하는 한국 0→1 빌더 쇼케이스. 직접 만든 앱·도구를 올리고 커뮤니티의 검증을 받으세요.';
@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     template: '%s | Launchings',
   },
   description: defaultDescription,
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',

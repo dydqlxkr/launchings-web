@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { getRepo } from '@/lib/repo';
@@ -6,6 +7,10 @@ import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import NavbarServer from '@/components/NavbarServer';
 import Footer from '@/components/Footer';
 import HomeWrapper from '@/components/HomeWrapper';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/ko' },
+};
 
 export default async function HomePage() {
   const t = await getTranslations();

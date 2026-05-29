@@ -7,7 +7,7 @@
 
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://launchings.io';
+const BASE_URL = 'https://www.launchings.io';
 
 export default function robots(): MetadataRoute.Robots {
   return {

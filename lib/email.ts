@@ -48,7 +48,7 @@ export async function sendInquiryNotification(
     </tr>
   </table>
   <p style="margin-top:24px;font-size:12px;color:#666">
-    이 메일은 <a href="https://launchings.io/ko/contact">launchings.io/ko/contact</a> 문의 폼을 통해 자동 발송됐습니다.
+    이 메일은 <a href="https://www.launchings.io/ko/contact">launchings.io/ko/contact</a> 문의 폼을 통해 자동 발송됐습니다.
   </p>
 </div>
 `;

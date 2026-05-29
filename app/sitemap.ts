@@ -9,7 +9,7 @@
 import type { MetadataRoute } from 'next';
 import { getRepo } from '@/lib/repo';
 
-const BASE_URL = 'https://launchings.io';
+const BASE_URL = 'https://www.launchings.io';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

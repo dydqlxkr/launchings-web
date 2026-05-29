@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       type: 'profile',
       locale: 'ko_KR',
-      url: `https://launchings.io${canonicalUrl}`,
+      url: `https://www.launchings.io${canonicalUrl}`,
       title: `${profile.display_name} | Launchings`,
       description,
       siteName: 'Launchings',
