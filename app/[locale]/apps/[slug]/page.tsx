@@ -8,7 +8,7 @@ import { getRepo } from '@/lib/repo';
 import { getDemoSrcdoc } from '@/lib/appDemos';
 import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
 import { isSafeHttpUrl } from '@/lib/validations';
-import { getThumbnailUrl } from '@/lib/thumbnailUrl';
+import { getThumbnailUrl, storagePublicUrl } from '@/lib/thumbnailUrl';
 import { getVoteStatus } from '@/lib/actions/vote';
 import { getBookmarkStatus } from '@/lib/actions/bookmark';
 import NavbarServer from '@/components/NavbarServer';
@@ -89,15 +89,19 @@ export default async function AppDetailPage({ params }: PageProps) {
     user ? getBookmarkStatus(app.id, user.id) : Promise.resolve({ bookmarked: false }),
   ]);
 
-  // 리뷰 + 기능 요청 + 카테고리 목록 병렬 조회 (listCategories도 dedupe)
-  const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet, allCategories] = await Promise.all([
+  // 리뷰 + 기능 요청 + 카테고리 목록 + 스크린샷 병렬 조회 (listCategories도 dedupe)
+  const [reviews, reviewStats, myReview, featureRequests, myVotedIdsSet, allCategories, screenshots] = await Promise.all([
     repo.listReviews(app.id),
     repo.getReviewStats(app.id),
     user ? repo.getMyReview(app.id, user.id) : Promise.resolve(null),
     repo.listFeatureRequests(app.id),
     user ? repo.getMyFeatureVotes(app.id, user.id) : Promise.resolve(new Set<string>()),
     listCategoriesCached(),
+    repo.listScreenshots(app.id),
   ]);
+
+  // storage_path → 공개 URL 변환
+  const screenshotUrls = screenshots.map((s) => storagePublicUrl(s.storage_path));
   const myVotedIds = Array.from(myVotedIdsSet);
 
   // slug → {label_ko, emoji} 맵 (DB 기반)
@@ -407,8 +411,58 @@ export default async function AppDetailPage({ params }: PageProps) {
             )}
           </div>
 
+          {/* 스크린샷 갤러리 — 1장 이상일 때만 표시 */}
+          {screenshotUrls.length > 0 && (
+            <div style={{ marginBottom: 28 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: 'var(--muted)',
+                  marginBottom: 12,
+                  textTransform: 'uppercase',
+                  letterSpacing: '.06em',
+                }}
+              >
+                {t('screenshots')}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 10,
+                  overflowX: 'auto',
+                  paddingBottom: 6,
+                }}
+              >
+                {screenshotUrls.map((url, i) => (
+                  <div
+                    key={url}
+                    style={{
+                      flexShrink: 0,
+                      borderRadius: 10,
+                      overflow: 'hidden',
+                      border: '1px solid var(--line)',
+                      position: 'relative',
+                      width: 160,
+                      height: 284,
+                      background: 'var(--card)',
+                    }}
+                  >
+                    <Image
+                      src={url}
+                      alt={t('screenshotAlt', { n: i + 1 })}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      sizes="160px"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* App runner (Phase 3 구현) */}
-          <AppRunner app={app} srcDoc={srcDoc} />
+          <AppRunner app={app} srcDoc={srcDoc} screenshotUrls={screenshotUrls} />
 
           {/* 리뷰 + 기능 요청 섹션 */}
           <AppDetailClient

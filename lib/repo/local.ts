@@ -6,6 +6,7 @@
 import { APPS, PROFILES, CATEGORIES } from '@/data/seed';
 import type {
   AppWithRelations,
+  AppScreenshot,
   Category,
   Profile,
   AppFilters,
@@ -89,6 +90,13 @@ class LocalRepo implements IRepo {
 
   async listCategories(): Promise<Category[]> {
     return CATEGORIES;
+  }
+
+  // ── Screenshot (로컬 구현 — 빈 데이터 반환) ──────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async listScreenshots(_appId: string): Promise<AppScreenshot[]> {
+    return [];
   }
 
   // ── Review (로컬 구현 — 빈 데이터 반환) ──────────────────

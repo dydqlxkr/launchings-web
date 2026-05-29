@@ -9,6 +9,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type {
   AppWithRelations,
+  AppScreenshot,
   Category,
   Profile,
   AppFilters,
@@ -180,6 +181,25 @@ class SupabaseRepo implements IRepo {
 
     if (error || !data) return [];
     return data as Category[];
+  }
+
+  // ── Screenshot ───────────────────────────────────────────
+
+  async listScreenshots(appId: string): Promise<AppScreenshot[]> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('app_screenshots')
+      .select('storage_path, sort_order')
+      .eq('app_id', appId)
+      .order('sort_order', { ascending: true });
+
+    if (error || !data) {
+      console.error('[SupabaseRepo] listScreenshots error:', error?.message);
+      return [];
+    }
+
+    return data as AppScreenshot[];
   }
 
   // ── Review ───────────────────────────────────────────────

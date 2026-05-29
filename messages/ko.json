@@ -79,7 +79,9 @@
     "backToApps": "목록으로",
     "makerProfile": "메이커 프로필 보기",
     "upvote": "추천",
-    "votes": "추천"
+    "votes": "추천",
+    "screenshots": "스크린샷",
+    "screenshotAlt": "스크린샷 {n}"
   },
   "appRunner": {
     "liveRunning": "실시간 실행 중",

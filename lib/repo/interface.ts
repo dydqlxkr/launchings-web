@@ -10,6 +10,7 @@
 
 import type {
   AppWithRelations,
+  AppScreenshot,
   Category,
   Profile,
   AppFilters,
@@ -49,6 +50,11 @@ export interface ICategoryRepo {
   listCategories(): Promise<Category[]>;
 }
 
+export interface IScreenshotRepo {
+  /** 앱의 스크린샷 목록 (sort_order 오름차순) */
+  listScreenshots(appId: string): Promise<AppScreenshot[]>;
+}
+
 export interface IReviewRepo {
   /** 앱의 리뷰 목록 조회 (작성자 포함) */
   listReviews(appId: string): Promise<ReviewWithAuthor[]>;
@@ -81,4 +87,4 @@ export interface IFollowRepo {
   getFollowStatus(targetId: string, viewerId: string | null): Promise<FollowStatus>;
 }
 
-export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IReviewRepo, IFeatureRequestRepo, IBookmarkRepo, IFollowRepo {}
+export interface IRepo extends IAppRepo, IProfileRepo, ICategoryRepo, IScreenshotRepo, IReviewRepo, IFeatureRequestRepo, IBookmarkRepo, IFollowRepo {}

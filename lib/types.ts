@@ -118,6 +118,12 @@ export interface FollowStatus {
   follower_count: number; // 해당 메이커의 팔로워 수
 }
 
+// ── 스크린샷 ──────────────────────────────────
+export interface AppScreenshot {
+  storage_path: string;
+  sort_order: number;
+}
+
 // ── 알림 ─────────────────────────────────────
 export type NotificationType = 'new_app';
 

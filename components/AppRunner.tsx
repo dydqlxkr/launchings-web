@@ -27,6 +27,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import { isSafeHttpUrl } from '@/lib/validations';
@@ -35,14 +36,17 @@ interface Props {
   app: AppWithRelations;
   /** 사전계산된 srcdoc HTML (서버에서 주입). null이면 외부 URL 또는 native 경로. */
   srcDoc: string | null;
+  /** app_screenshots 공개 URL 배열 (sort_order 순). 없으면 placeholder 표시. */
+  screenshotUrls?: string[];
 }
 
-function NativeDemoView({ app }: { app: AppWithRelations }) {
+function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; screenshotUrls?: string[] }) {
   const t = useTranslations('appRunner');
 
-  // 스크린샷 플레이스홀더: 앱 그라디언트로 4개 생성
+  // 스크린샷 플레이스홀더: 실제 스크린샷이 없을 때만 그라디언트로 4개 생성
   const gradColors = app.thumbnail_gradient ?? '135deg, #1e2734, #2a3a5a';
-  const shots = [0, 1, 2, 3];
+  const placeholderShots = [0, 1, 2, 3];
+  const hasRealScreenshots = screenshotUrls.length > 0;
 
   return (
     <div
@@ -141,19 +145,42 @@ function NativeDemoView({ app }: { app: AppWithRelations }) {
           {t('nativeDemoScreenshots')}
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {shots.map((i) => (
-            <div
-              key={i}
-              aria-label={t('screenshotAlt', { n: i + 1 })}
-              style={{
-                width: 44,
-                height: 76,
-                borderRadius: 8,
-                border: '1px solid var(--line)',
-                background: `linear-gradient(${160 + i * 15}deg, ${gradColors.replace('135deg,', '')})`,
-              }}
-            />
-          ))}
+          {hasRealScreenshots
+            ? screenshotUrls.slice(0, 4).map((url, i) => (
+                <div
+                  key={url}
+                  style={{
+                    width: 44,
+                    height: 76,
+                    borderRadius: 8,
+                    border: '1px solid var(--line)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Image
+                    src={url}
+                    alt={t('screenshotAlt', { n: i + 1 })}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="44px"
+                  />
+                </div>
+              ))
+            : placeholderShots.map((i) => (
+                <div
+                  key={i}
+                  aria-label={t('screenshotAlt', { n: i + 1 })}
+                  style={{
+                    width: 44,
+                    height: 76,
+                    borderRadius: 8,
+                    border: '1px solid var(--line)',
+                    background: `linear-gradient(${160 + i * 15}deg, ${gradColors.replace('135deg,', '')})`,
+                  }}
+                />
+              ))}
         </div>
 
         {/* 스토어 버튼 — C-1 렌더 가드: 안전한 스킴(https/http)만 링크로 렌더 */}
@@ -771,11 +798,11 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   );
 }
 
-export default function AppRunner({ app, srcDoc }: Props) {
+export default function AppRunner({ app, srcDoc, screenshotUrls = [] }: Props) {
   const isNative = app.app_type === 'native';
 
   if (isNative) {
-    return <NativeDemoView app={app} />;
+    return <NativeDemoView app={app} screenshotUrls={screenshotUrls} />;
   }
 
   return <WebAppView app={app} srcDoc={srcDoc} />;
