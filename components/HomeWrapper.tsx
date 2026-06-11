@@ -19,13 +19,13 @@ import AvatarCircle from './AvatarCircle';
 import { CompareProvider } from './CompareContext';
 import CompareBar from './CompareBar';
 import { useToast } from '@/components/Toast';
+import { useSession } from './useSession';
 
 interface Props {
   apps: AppWithRelations[];
   profiles: Profile[];
   categories: Category[];
   makerApps: Record<string, AppWithRelations[]>;
-  isLoggedIn: boolean;
 }
 
 /** 홈 맛보기 최대 표시 수 */
@@ -424,8 +424,8 @@ function HomeInner({
   apps,
   profiles,
   makerApps,
-  isLoggedIn,
 }: Omit<Props, 'categories'>) {
+  const { isLoggedIn } = useSession();
   const t = useTranslations();
   const td = useTranslations('discover');
   const tn = useTranslations('newSection');
@@ -689,7 +689,11 @@ function HomeInner({
 export default function HomeWrapper(props: Props) {
   return (
     <CompareProvider totalApps={props.apps.length}>
-      <HomeInner {...props} />
+      <HomeInner
+        apps={props.apps}
+        profiles={props.profiles}
+        makerApps={props.makerApps}
+      />
     </CompareProvider>
   );
 }

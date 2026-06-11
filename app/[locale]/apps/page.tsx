@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { getRepo } from '@/lib/repo';
-import { createClient } from '@/lib/supabase/server';
-import NavbarServer from '@/components/NavbarServer';
+import NavbarClient from '@/components/NavbarClient';
 import Footer from '@/components/Footer';
 import AppsPageClient from '@/components/AppsPageClient';
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: '앱 둘러보기',
@@ -14,17 +16,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/ko/apps' },
 };
 
-export default async function AppsIndexPage() {
+export default async function AppsIndexPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations('appsPage');
   const repo = getRepo();
 
-  // 현재 사용자 세션 — 홈 page.tsx의 user 취득 패턴과 동일
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // 앱 전체(추천순) + 카테고리 목록 조회
+  // 앱 전체(추천순) + 카테고리 목록 조회 (비개인화 캐시)
   const [apps, categories] = await Promise.all([
     repo.listApps({ sort: 'votes' }),
     repo.listCategories(),
@@ -32,7 +35,7 @@ export default async function AppsIndexPage() {
 
   return (
     <>
-      <NavbarServer />
+      <NavbarClient />
 
       {/* ── 페이지 헤더 ─────────────────────────────────────────── */}
       <header
@@ -124,7 +127,6 @@ export default async function AppsIndexPage() {
         <AppsPageClient
           apps={apps}
           categories={categories}
-          isLoggedIn={!!user}
         />
       </main>
 

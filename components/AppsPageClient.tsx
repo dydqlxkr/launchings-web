@@ -14,17 +14,18 @@ import type { AppWithRelations, Category, SortOption } from '@/lib/types';
 import AppCard from './AppCard';
 import { CompareProvider } from './CompareContext';
 import CompareBar from './CompareBar';
+import { useSession } from './useSession';
 
 interface Props {
   apps: AppWithRelations[];
   categories: Category[];
-  isLoggedIn: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Inner — CompareProvider 안에서 렌더링되는 실제 UI
 // ─────────────────────────────────────────────────────────────────────────────
-function AppsPageInner({ apps, categories, isLoggedIn }: Props) {
+function AppsPageInner({ apps, categories }: Props) {
+  const { isLoggedIn } = useSession();
   const t = useTranslations('appsPage');
 
   // 검색어 상태 (입력값은 즉시, 필터 적용은 디바운스)
@@ -352,7 +353,7 @@ function AppsPageInner({ apps, categories, isLoggedIn }: Props) {
 export default function AppsPageClient(props: Props) {
   return (
     <CompareProvider totalApps={props.apps.length}>
-      <AppsPageInner {...props} />
+      <AppsPageInner apps={props.apps} categories={props.categories} />
     </CompareProvider>
   );
 }

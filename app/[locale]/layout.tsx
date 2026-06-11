@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { ToastProvider } from '@/components/Toast';
@@ -20,6 +20,9 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as 'ko')) {
     notFound();
   }
+
+  // next-intl 정적 렌더링 활성화 — headers() 없이 로케일을 캐시에서 읽음
+  setRequestLocale(locale);
 
   const messages = await getMessages();
 

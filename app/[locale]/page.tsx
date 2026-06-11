@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { getRepo } from '@/lib/repo';
 import type { AppWithRelations } from '@/lib/types';
-import { getCurrentUser } from '@/lib/supabase/getCurrentUser';
-import NavbarServer from '@/components/NavbarServer';
+import NavbarClient from '@/components/NavbarClient';
 import Footer from '@/components/Footer';
 import HomeWrapper from '@/components/HomeWrapper';
+import HeroCtaSubmit from '@/components/HeroCtaSubmit';
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/ko' },
@@ -17,12 +20,16 @@ export const metadata: Metadata = {
 const HERO_STATS_MIN_APPS = 10;
 const HERO_STATS_MIN_BUILDERS = 3;
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations();
   const repo = getRepo();
-
-  // 요청 내 1회로 dedupe (NavbarServer와 공유)
-  const user = await getCurrentUser();
 
   const [apps, profiles, categories] = await Promise.all([
     repo.listApps({ sort: 'votes' }),
@@ -40,7 +47,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <NavbarServer />
+      <NavbarClient />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <header
@@ -152,13 +159,8 @@ export default async function HomePage() {
               >
                 🔥 {t('hero.ctaBrowse')}
               </Link>
-              <a
-                href={user ? '/ko/submit' : '#discover'}
-                className="lp-btn lp-btn-ghost"
-                style={{ fontSize: 15.5 }}
-              >
-                {t('hero.ctaSubmit')}
-              </a>
+              {/* 로그인 여부에 따라 href가 다른 버튼 — 클라이언트에서 세션으로 결정 */}
+              <HeroCtaSubmit label={t('hero.ctaSubmit')} />
             </div>
 
             {/* 통계 행 — 콜드스타트 방지: 임계치 미만이면 숨김 (P1-4) */}
@@ -211,7 +213,6 @@ export default async function HomePage() {
         profiles={profiles}
         categories={categories}
         makerApps={makerApps}
-        isLoggedIn={!!user}
       />
 
       <Footer />
