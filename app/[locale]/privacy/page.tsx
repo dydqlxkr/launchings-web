@@ -100,9 +100,14 @@ export default function PrivacyPage() {
             }}
           >
             <p>시행일: 2026년 5월 28일</p>
+            <p>최종 수정일: 2026년 6월 11일</p>
             <p>개인정보처리자(운영자): 런칭스 운영자</p>
             <p>
               연락처:{' '}
+              <a href="mailto:tuktuk.app.dev@gmail.com" style={{ color: 'var(--brand)' }}>
+                tuktuk.app.dev@gmail.com
+              </a>
+              {' '}또는{' '}
               <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
                 문의하기 폼(/ko/contact)
               </Link>
@@ -398,8 +403,37 @@ export default function PrivacyPage() {
               서비스 기능(앱 등록, 추천, 리뷰, 북마크 등)을 이용하실 수 없습니다.
               쿠키 설정 방법은 사용하시는 브라우저의 도움말을 참고하시기 바랍니다.
             </p>
-            <p style={{ marginTop: 12 }}>
-              서비스는 별도의 행동 추적 또는 광고 목적 쿠키·트래커는 사용하지 않습니다.
+            <p style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: 8, marginTop: 16 }}>
+              방문 통계(Vercel Analytics / Speed Insights)
+            </p>
+            <p style={{ marginBottom: 8 }}>
+              서비스는 서비스 품질 개선 목적으로 <strong>Vercel Analytics</strong> 및
+              <strong> Vercel Speed Insights</strong>를 사용합니다.
+              이 도구들은 <strong>쿠키를 사용하지 않으며</strong>, 개인 식별이 불가능한
+              익명·집계 방식으로만 데이터를 수집합니다.
+            </p>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginBottom: 12 }}>
+              <thead>
+                <tr>
+                  <Th>수집 항목</Th>
+                  <Th>목적</Th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <Td>페이지 URL, 국가 단위 위치(도시·개인 위치 아님), 기기 유형, 브라우저 유형, 리퍼러(직전 페이지 도메인)</Td>
+                  <Td>방문 통계 집계, 서비스 개선</Td>
+                </tr>
+                <tr>
+                  <Td>Web Vitals(LCP, CLS, INP 등 페이지 성능 지표)</Td>
+                  <Td>페이지 로딩 성능 모니터링·개선</Td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              수집된 데이터는 개인 식별이 불가능한 형태로 처리되며, 광고 목적 또는
+              크로스사이트 추적에는 사용되지 않습니다. 처리 위탁 수탁자는
+              <strong> Vercel Inc.(미국)</strong>이며, 제5조 처리위탁 현황을 참조하시기 바랍니다.
             </p>
           </LegalSection>
 
@@ -420,10 +454,10 @@ export default function PrivacyPage() {
             >
               <p><strong>개인정보 보호책임자</strong>: 런칭스 운영자</p>
               <p>
-                <strong>연락처</strong>:{' '}
-                <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
-                  문의하기 폼(/ko/contact)
-                </Link>
+                <strong>이메일</strong>:{' '}
+                <a href="mailto:tuktuk.app.dev@gmail.com" style={{ color: 'var(--brand)' }}>
+                  tuktuk.app.dev@gmail.com
+                </a>
               </p>
               <p>
                 <strong>문의하기</strong>:{' '}
@@ -455,6 +489,7 @@ export default function PrivacyPage() {
           <LegalSection title="제10조 (시행일)">
             <p>
               본 개인정보처리방침은 <strong>2026년 5월 28일</strong>부터 시행됩니다.
+              최종 수정일: <strong>2026년 6월 11일</strong>.
             </p>
           </LegalSection>
 

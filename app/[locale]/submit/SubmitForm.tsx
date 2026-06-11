@@ -72,6 +72,12 @@ export default function SubmitForm({
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // 필드 ref — scrollIntoView용
+  const liveUrlRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   // 카테고리 다중 선택
   const [selectedCats, setSelectedCats] = useState<string[]>(
@@ -228,9 +234,58 @@ export default function SubmitForm({
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     if (!agreed) {
       setError('이용약관에 동의해야 제품을 등록할 수 있습니다.');
+      return;
+    }
+
+    // 클라이언트 사전 검증
+    const formEl = e.currentTarget;
+    const titleVal = (formEl.elements.namedItem('title') as HTMLInputElement)?.value?.trim() ?? '';
+    const descVal = (formEl.elements.namedItem('description') as HTMLTextAreaElement)?.value?.trim() ?? '';
+    const liveUrlVal = (formEl.elements.namedItem('live_url') as HTMLInputElement)?.value?.trim() ?? '';
+
+    const newFieldErrors: Record<string, string> = {};
+
+    if (!titleVal || titleVal.length < 2) {
+      newFieldErrors.title = '제목을 2자 이상 입력해 주세요.';
+    } else if (titleVal.length > 60) {
+      newFieldErrors.title = '제목은 60자 이하로 입력해 주세요.';
+    }
+
+    if (!descVal || descVal.length < 10) {
+      newFieldErrors.description = '설명을 10자 이상 입력해 주세요.';
+    } else if (descVal.length > 4000) {
+      newFieldErrors.description = '설명은 4000자 이하로 입력해 주세요.';
+    }
+
+    if ((appType === 'webapp' || appType === 'link') && !liveUrlVal) {
+      newFieldErrors.live_url = 'Live URL을 입력해 주세요.';
+    }
+
+    if (selectedCats.length === 0) {
+      newFieldErrors.categories = '카테고리를 1개 이상 선택해 주세요.';
+    }
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      // 첫 에러 필드로 스크롤
+      if (newFieldErrors.live_url && liveUrlRef.current) {
+        liveUrlRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        liveUrlRef.current.focus();
+      } else if (newFieldErrors.categories && categoryRef.current) {
+        categoryRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (newFieldErrors.title) {
+        const titleEl = formEl.elements.namedItem('title') as HTMLInputElement | null;
+        titleEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        titleEl?.focus();
+      } else if (newFieldErrors.description) {
+        const descEl = formEl.elements.namedItem('description') as HTMLTextAreaElement | null;
+        descEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        descEl?.focus();
+      }
       return;
     }
 
@@ -246,12 +301,18 @@ export default function SubmitForm({
         const result = await updateApp(initialData.id, fd);
         if (result?.error) {
           setError(result.error);
+          setTimeout(() => {
+            errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 0);
         }
         // 성공 시 updateApp이 redirect를 호출
       } else {
         const result = await submitApp(fd);
         if (result?.error) {
           setError(result.error);
+          setTimeout(() => {
+            errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 0);
         }
         // 성공 시 submitApp이 redirect를 호출
       }
@@ -330,8 +391,16 @@ export default function SubmitForm({
         placeholder="MemoFlow"
         value={titleValue}
         onChange={(e) => setTitleValue(e.target.value)}
-        style={inputStyle}
+        style={{
+          ...inputStyle,
+          ...(fieldErrors.title ? { border: '1px solid #ff6b6b' } : {}),
+        }}
       />
+      {fieldErrors.title && (
+        <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
+          {fieldErrors.title}
+        </p>
+      )}
 
       {/* 한줄 소개 */}
       <label style={labelStyle} htmlFor="tagline">
@@ -364,8 +433,14 @@ export default function SubmitForm({
           ...inputStyle,
           resize: 'vertical',
           minHeight: 120,
+          ...(fieldErrors.description ? { border: '1px solid #ff6b6b' } : {}),
         }}
       />
+      {fieldErrors.description && (
+        <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
+          {fieldErrors.description}
+        </p>
+      )}
 
       {/* Live URL */}
       {(appType === 'webapp' || appType === 'link') && (
@@ -377,10 +452,20 @@ export default function SubmitForm({
             id="live_url"
             name="live_url"
             type="url"
+            required
+            ref={liveUrlRef}
             placeholder="https://my-app.com"
             defaultValue={initialData?.live_url ?? ''}
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              ...(fieldErrors.live_url ? { border: '1px solid #ff6b6b' } : {}),
+            }}
           />
+          {fieldErrors.live_url && (
+            <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
+              {fieldErrors.live_url}
+            </p>
+          )}
         </>
       )}
 
@@ -429,8 +514,8 @@ export default function SubmitForm({
       </div>
 
       {/* 카테고리 다중 선택 */}
-      <label style={labelStyle}>카테고리 (복수 선택 가능)</label>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <label style={labelStyle}>카테고리 * (1개 이상 선택)</label>
+      <div ref={categoryRef} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {categories.map((c) => (
           <button
             key={c.slug}
@@ -455,6 +540,11 @@ export default function SubmitForm({
           </button>
         ))}
       </div>
+      {fieldErrors.categories && (
+        <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
+          {fieldErrors.categories}
+        </p>
+      )}
 
       {/* 기술 스택 */}
       <label style={labelStyle}>기술 스택 (Enter 또는 쉼표로 추가, 최대 10개)</label>
@@ -741,6 +831,8 @@ export default function SubmitForm({
       {/* 에러 */}
       {error && (
         <div
+          ref={errorRef}
+          role="alert"
           style={{
             background: 'rgba(255,107,107,.12)',
             border: '1px solid rgba(255,107,107,.3)',

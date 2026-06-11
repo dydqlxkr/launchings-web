@@ -100,9 +100,14 @@ export default function TermsPage() {
             }}
           >
             <p>시행일: 2026년 5월 28일</p>
+            <p>최종 수정일: 2026년 6월 11일</p>
             <p>운영자: 런칭스 운영자</p>
             <p>
               연락처:{' '}
+              <a href="mailto:tuktuk.app.dev@gmail.com" style={{ color: 'var(--brand)' }}>
+                tuktuk.app.dev@gmail.com
+              </a>
+              {' '}또는{' '}
               <Link href="/ko/contact" style={{ color: 'var(--brand)' }}>
                 문의하기 폼(/ko/contact)
               </Link>
@@ -325,6 +330,7 @@ export default function TermsPage() {
             <p>
               본 약관은 <strong>2026년 5월 28일</strong>부터 시행됩니다.
               이전 약관은 본 약관 시행일부터 효력을 상실합니다.
+              최종 수정일: <strong>2026년 6월 11일</strong>.
             </p>
           </LegalSection>
 
