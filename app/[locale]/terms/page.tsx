@@ -1,7 +1,5 @@
 /**
  * 이용약관 페이지 — /ko/terms
- *
- * 본 문서는 일반 템플릿이며 실제 적용 전 법률 전문가 검토를 권장합니다.
  */
 
 import type { Metadata } from 'next';
@@ -75,21 +73,6 @@ export default function TermsPage() {
             이용약관
           </h1>
 
-          {/* 법적 효력 고지 */}
-          <div
-            style={{
-              background: 'rgba(255,180,0,.08)',
-              border: '1px solid rgba(255,180,0,.25)',
-              borderRadius: 10,
-              padding: '12px 16px',
-              fontSize: 13,
-              color: '#c8a000',
-              marginBottom: 28,
-              lineHeight: 1.6,
-            }}
-          >
-            본 문서는 일반 템플릿이며 실제 적용 전 법률 전문가 검토를 권장합니다.
-          </div>
 
           <div
             style={{
