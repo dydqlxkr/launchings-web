@@ -71,35 +71,10 @@ export default function LocaleNotFound() {
           flexWrap: 'wrap',
         }}
       >
-        <Link
-          href="/ko"
-          style={{
-            background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-            color: '#fff',
-            borderRadius: 12,
-            padding: '13px 24px',
-            fontSize: 15,
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-block',
-          }}
-        >
+        <Link href="/ko" className="lp-btn lp-btn-primary" style={{ fontSize: 15 }}>
           홈으로
         </Link>
-        <Link
-          href="/ko/apps"
-          style={{
-            background: 'transparent',
-            color: 'var(--ink)',
-            border: '1px solid var(--line)',
-            borderRadius: 12,
-            padding: '13px 24px',
-            fontSize: 15,
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-block',
-          }}
-        >
+        <Link href="/ko/apps" className="lp-btn lp-btn-ghost" style={{ fontSize: 15 }}>
           앱 둘러보기
         </Link>
       </div>

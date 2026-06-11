@@ -207,19 +207,6 @@ export default function LoginModal({ isOpen, onClose, reason }: Props) {
     }
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'rgba(255,255,255,.05)',
-    border: '1px solid var(--line)',
-    borderRadius: 10,
-    padding: '12px 14px',
-    fontSize: 14,
-    color: 'var(--ink)',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box',
-    outline: 'none',
-  };
-
   const labelStyle: React.CSSProperties = {
     fontSize: 12,
     fontWeight: 700,
@@ -478,7 +465,7 @@ export default function LoginModal({ isOpen, onClose, reason }: Props) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  style={inputStyle}
+                  className="lp-input"
                 />
 
                 {/* 비밀번호 필드 — 비밀번호 찾기 모드에서는 숨김 */}
@@ -493,7 +480,7 @@ export default function LoginModal({ isOpen, onClose, reason }: Props) {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-                      style={inputStyle}
+                      className="lp-input"
                     />
                     {tab === 'signup' && (
                       <input
@@ -504,7 +491,7 @@ export default function LoginModal({ isOpen, onClose, reason }: Props) {
                         onChange={(e) => setPasswordConfirm(e.target.value)}
                         required
                         autoComplete="new-password"
-                        style={inputStyle}
+                        className="lp-input"
                       />
                     )}
 
@@ -531,8 +518,8 @@ export default function LoginModal({ isOpen, onClose, reason }: Props) {
                           autoComplete="username"
                           aria-invalid={handleStatus.state === 'unavailable' || handleConflict}
                           aria-describedby={handleDescId}
+                          className="lp-input"
                           style={{
-                            ...inputStyle,
                             borderColor:
                               handleConflict || handleStatus.state === 'unavailable'
                                 ? '#ff6b6b'

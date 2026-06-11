@@ -10,8 +10,10 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { submitReview, deleteReview } from '@/lib/actions/review';
 import { useToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { ReviewWithAuthor, ReviewStats } from '@/lib/types';
 
 interface Props {
@@ -95,11 +97,13 @@ export default function ReviewSection({
 }: Props) {
   const router = useRouter();
   const toast = useToast();
+  const t = useTranslations('review');
   const [isPending, startTransition] = useTransition();
   const [rating, setRating] = useState(myReview?.rating ?? 0);
   const [body, setBody] = useState(myReview?.body ?? '');
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // 현재 표시할 리뷰 목록 (낙관적 업데이트 없이 서버 데이터 사용)
   const displayReviews = reviews;
@@ -109,11 +113,11 @@ export default function ReviewSection({
     setError(null);
 
     if (rating === 0) {
-      setError('별점을 선택해 주세요.');
+      setError(t('selectRating'));
       return;
     }
     if (!body.trim()) {
-      setError('리뷰 내용을 입력해 주세요.');
+      setError(t('placeholder'));
       return;
     }
 
@@ -130,14 +134,19 @@ export default function ReviewSection({
         return;
       }
       setSubmitted(true);
-      toast.show(myReview ? '리뷰가 수정됐습니다.' : '리뷰가 등록됐습니다.', 'success');
+      toast.show(myReview ? t('toastUpdated') : t('toastSubmitted'), 'success');
       router.refresh();
     });
   }
 
   function handleDelete() {
     if (!myReview) return;
-    if (!window.confirm('리뷰를 삭제하시겠습니까?')) return;
+    setConfirmDeleteOpen(true);
+  }
+
+  function handleDeleteConfirmed() {
+    setConfirmDeleteOpen(false);
+    if (!myReview) return;
 
     startTransition(async () => {
       const result = await deleteReview(myReview.id, appSlug);
@@ -145,7 +154,7 @@ export default function ReviewSection({
         setError(result.error);
         return;
       }
-      toast.show('리뷰가 삭제됐습니다.', 'info');
+      toast.show(t('toastDeleted'), 'info');
       router.refresh();
     });
   }
@@ -191,7 +200,7 @@ export default function ReviewSection({
             margin: 0,
           }}
         >
-          리뷰
+          {t('sectionTitle')}
         </h2>
 
         {stats.review_count > 0 && (
@@ -208,7 +217,7 @@ export default function ReviewSection({
 
         {stats.review_count === 0 && (
           <span style={{ color: 'var(--muted)', fontSize: 13 }}>
-            아직 리뷰가 없습니다. 첫 리뷰를 남겨보세요!
+            {t('noReviews')}
           </span>
         )}
       </div>
@@ -230,7 +239,7 @@ export default function ReviewSection({
           }}
         >
           <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>
-            리뷰를 남기려면 로그인이 필요합니다.
+            {t('loginToReview')}
           </p>
           <button
             onClick={onLoginRequest}
@@ -247,7 +256,7 @@ export default function ReviewSection({
               flexShrink: 0,
             }}
           >
-            로그인하고 리뷰 쓰기
+            {t('loginButton')}
           </button>
         </div>
       ) : (
@@ -261,11 +270,11 @@ export default function ReviewSection({
           }}
         >
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, marginTop: 0 }}>
-            {myReview ? '내 리뷰 수정' : '리뷰 작성'}
+            {myReview ? t('editReview') : t('writeReview')}
           </h3>
 
           {submitted ? (
-            <p style={{ color: 'var(--muted)', fontSize: 14 }}>리뷰가 저장됐습니다.</p>
+            <p style={{ color: 'var(--muted)', fontSize: 14 }}>{t('saved')}</p>
           ) : (
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 12 }}>
@@ -275,7 +284,7 @@ export default function ReviewSection({
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder="이 앱을 사용해본 경험을 공유해 주세요. (최대 1000자)"
+                placeholder={t('placeholder')}
                 maxLength={1000}
                 style={inputStyle as React.CSSProperties}
               />
@@ -314,7 +323,7 @@ export default function ReviewSection({
                     fontFamily: 'inherit',
                   }}
                 >
-                  {isPending ? '저장 중...' : myReview ? '수정 완료' : '리뷰 등록'}
+                  {isPending ? '저장 중...' : myReview ? t('update') : t('submit')}
                 </button>
 
                 {myReview && (
@@ -334,7 +343,7 @@ export default function ReviewSection({
                       fontFamily: 'inherit',
                     }}
                   >
-                    삭제
+                    {t('delete')}
                   </button>
                 )}
               </div>
@@ -342,6 +351,16 @@ export default function ReviewSection({
           )}
         </div>
       )}
+
+      {/* 리뷰 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title={t('confirmDelete')}
+        confirmLabel={t('delete')}
+        danger
+        onConfirm={handleDeleteConfirmed}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
 
       {/* 리뷰 목록 */}
       {displayReviews.length > 0 && (

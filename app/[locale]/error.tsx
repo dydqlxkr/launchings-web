@@ -72,32 +72,15 @@ export default function LocaleError({ error, unstable_retry }: ErrorPageProps) {
       >
         <button
           onClick={unstable_retry}
-          style={{
-            background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-            color: '#fff',
-            borderRadius: 12,
-            padding: '13px 24px',
-            fontSize: 15,
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          className="lp-btn lp-btn-primary"
+          style={{ fontSize: 15 }}
         >
           다시 시도
         </button>
         <Link
           href="/ko"
-          style={{
-            background: 'transparent',
-            color: 'var(--ink)',
-            border: '1px solid var(--line)',
-            borderRadius: 12,
-            padding: '13px 24px',
-            fontSize: 15,
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-block',
-          }}
+          className="lp-btn lp-btn-ghost"
+          style={{ fontSize: 15 }}
         >
           홈으로
         </Link>

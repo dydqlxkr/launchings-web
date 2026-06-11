@@ -10,12 +10,14 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   addFeatureRequest,
   toggleFeatureVote,
   deleteFeatureRequest,
 } from '@/lib/actions/featureRequest';
 import { useToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { FeatureRequestWithAuthor } from '@/lib/types';
 
 interface Props {
@@ -45,7 +47,9 @@ export default function FeatureRequestSection({
 }: Props) {
   const router = useRouter();
   const toast = useToast();
+  const t = useTranslations('featureRequest');
   const [isPending, startTransition] = useTransition();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // 낙관적 목록 상태
   const [requests, setRequests] =
@@ -171,7 +175,7 @@ export default function FeatureRequestSection({
       );
 
       setBody('');
-      toast.show('기능 요청이 등록됐습니다.', 'success');
+      toast.show(t('toastSubmitted'), 'success');
       // 서버 데이터(작성자 프로필 등)로 정확히 동기화
       router.refresh();
     });
@@ -179,7 +183,13 @@ export default function FeatureRequestSection({
 
   // ── 삭제 ────────────────────────────────────
   function handleDelete(requestId: string) {
-    if (!window.confirm('기능 요청을 삭제하시겠습니까?')) return;
+    setConfirmDeleteId(requestId);
+  }
+
+  function handleDeleteConfirmed() {
+    const requestId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (!requestId) return;
 
     // 낙관적 삭제
     setRequests((prev) => prev.filter((r) => r.id !== requestId));
@@ -190,7 +200,7 @@ export default function FeatureRequestSection({
         // 롤백: 서버 데이터로 갱신
         router.refresh();
       } else {
-        toast.show('기능 요청이 삭제됐습니다.', 'info');
+        toast.show(t('toastDeleted'), 'info');
       }
     });
   }
@@ -211,6 +221,15 @@ export default function FeatureRequestSection({
   };
 
   return (
+    <>
+    <ConfirmDialog
+      open={confirmDeleteId !== null}
+      title={t('confirmDelete')}
+      confirmLabel={t('delete')}
+      danger
+      onConfirm={handleDeleteConfirmed}
+      onCancel={() => setConfirmDeleteId(null)}
+    />
     <section
       style={{
         marginTop: 40,
@@ -490,7 +509,7 @@ export default function FeatureRequestSection({
                             fontFamily: 'inherit',
                           }}
                         >
-                          삭제
+                          {t('delete')}
                         </button>
                       )}
                     </div>
@@ -502,5 +521,6 @@ export default function FeatureRequestSection({
         </div>
       )}
     </section>
+    </>
   );
 }

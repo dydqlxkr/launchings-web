@@ -65,16 +65,8 @@ export default function AppNotFound() {
       {/* CTA 버튼 */}
       <Link
         href="/ko/apps"
-        style={{
-          background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-          color: '#fff',
-          borderRadius: 12,
-          padding: '13px 28px',
-          fontSize: 15,
-          fontWeight: 700,
-          textDecoration: 'none',
-          display: 'inline-block',
-        }}
+        className="lp-btn lp-btn-primary"
+        style={{ fontSize: 15, padding: '13px 28px' }}
       >
         앱 목록으로
       </Link>

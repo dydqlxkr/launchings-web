@@ -255,7 +255,10 @@
     "placeholder": "이 앱을 사용해본 경험을 공유해 주세요. (최대 1000자)",
     "selectRating": "별점을 선택해 주세요.",
     "saved": "리뷰가 저장됐습니다.",
-    "confirmDelete": "리뷰를 삭제하시겠습니까?"
+    "confirmDelete": "리뷰를 삭제하시겠습니까?",
+    "toastSubmitted": "리뷰가 등록됐습니다.",
+    "toastUpdated": "리뷰가 수정됐습니다.",
+    "toastDeleted": "리뷰가 삭제됐습니다."
   },
   "submit": {
     "title": "제품 등록",
@@ -357,7 +360,9 @@
     "delete": "삭제",
     "confirmDelete": "기능 요청을 삭제하시겠습니까?",
     "upvote": "추천",
-    "upvoted": "추천됨"
+    "upvoted": "추천됨",
+    "toastSubmitted": "기능 요청이 등록됐습니다.",
+    "toastDeleted": "기능 요청이 삭제됐습니다."
   },
   "follow": {
     "follow": "팔로우",
@@ -374,6 +379,16 @@
     "newApp": "{actor}님이 새 앱을 등록했습니다",
     "bellLabel": "알림",
     "backToHome": "홈으로"
+  },
+  "common": {
+    "cancel": "취소"
+  },
+  "bookmark": {
+    "ariaSave": "북마크 저장",
+    "ariaRemove": "북마크 해제",
+    "toastSaved": "북마크에 저장했어요",
+    "toastRemoved": "북마크에서 제거했어요",
+    "toastError": "잠시 후 다시 시도해 주세요"
   },
   "settings": {
     "title": "프로필 설정",

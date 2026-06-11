@@ -8,6 +8,7 @@
  */
 
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { toggleBookmark } from '@/lib/actions/bookmark';
 import LoginModal from './LoginModal';
 import { useToast } from './Toast';
@@ -29,6 +30,7 @@ export default function BookmarkButton({
   onLoginRequest,
   size = 'md',
 }: Props) {
+  const t = useTranslations('bookmark');
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [showLogin, setShowLogin] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -53,14 +55,14 @@ export default function BookmarkButton({
       if (result.error) {
         // 롤백
         setBookmarked((prev) => !prev);
-        toast.show('잠시 후 다시 시도해 주세요', 'error');
+        toast.show(t('toastError'), 'error');
       } else {
         const finalBookmarked = result.bookmarked !== undefined ? result.bookmarked : nextBookmarked;
         setBookmarked(finalBookmarked);
         if (finalBookmarked) {
-          toast.show('북마크에 저장했어요', 'success');
+          toast.show(t('toastSaved'), 'success');
         } else {
-          toast.show('북마크에서 제거했어요', 'info');
+          toast.show(t('toastRemoved'), 'info');
         }
       }
     });
@@ -75,8 +77,8 @@ export default function BookmarkButton({
       <button
         onClick={handleBookmark}
         disabled={isPending}
-        aria-label={bookmarked ? '북마크 해제' : '북마크 저장'}
-        title={bookmarked ? '북마크 해제' : '북마크 저장'}
+        aria-label={bookmarked ? t('ariaRemove') : t('ariaSave')}
+        title={bookmarked ? t('ariaRemove') : t('ariaSave')}
         style={{
           display: 'flex',
           alignItems: 'center',

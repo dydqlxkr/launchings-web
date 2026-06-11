@@ -538,7 +538,22 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
                 textDecoration: 'none',
               }}
             >
-              ↗ {t('openInTab')}
+              <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+            {t('openInTab')}
             </a>
           )}
         </div>
@@ -608,7 +623,22 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
                       textDecoration: 'none',
                     }}
                   >
-                    ↗ {t('openInTab')}
+                    <svg
+                      width={13}
+                      height={13}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    {t('openInTab')}
                   </a>
                 </div>
               )}
@@ -739,7 +769,22 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
             gap: 4,
           }}
         >
-          ↗ {t('openInTab')}
+          <svg
+            width={11}
+            height={11}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          {t('openInTab')}
         </a>
       )}
     </div>
@@ -795,7 +840,23 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
               whiteSpace: 'nowrap',
             }}
           >
-            새 탭에서 열기 ↗
+            새 탭에서 열기
+            <svg
+              width={11}
+              height={11}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              style={{ marginLeft: 4 }}
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
           </a>
         </div>
       )}
@@ -878,8 +939,22 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
                 {displayUrl}
               </div>
               {app.live_url && isSafeHttpUrl(app.live_url) && (
-                <a href={app.live_url} target="_blank" rel="noopener noreferrer" aria-label={t('openInTab')} style={{ color: 'var(--muted)', fontSize: 14, textDecoration: 'none' }}>
-                  ↗
+                <a href={app.live_url} target="_blank" rel="noopener noreferrer" aria-label={t('openInTab')} style={{ color: 'var(--muted)', display: 'inline-flex', alignItems: 'center' }}>
+                  <svg
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
                 </a>
               )}
             </div>

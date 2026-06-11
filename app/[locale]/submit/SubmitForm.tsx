@@ -328,19 +328,6 @@ export default function SubmitForm({
     marginTop: 20,
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'rgba(255,255,255,.05)',
-    border: '1px solid var(--line)',
-    borderRadius: 10,
-    padding: '12px 14px',
-    fontSize: 14,
-    color: 'var(--ink)',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box',
-    outline: 'none',
-  };
-
   return (
     <form onSubmit={handleSubmit}>
       {/* 앱 타입 */}
@@ -391,10 +378,8 @@ export default function SubmitForm({
         placeholder="MemoFlow"
         value={titleValue}
         onChange={(e) => setTitleValue(e.target.value)}
-        style={{
-          ...inputStyle,
-          ...(fieldErrors.title ? { border: '1px solid #ff6b6b' } : {}),
-        }}
+        className="lp-input"
+        style={fieldErrors.title ? { border: '1px solid #ff6b6b' } : undefined}
       />
       {fieldErrors.title && (
         <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
@@ -413,7 +398,7 @@ export default function SubmitForm({
         maxLength={80}
         placeholder="AI가 회의 메모를 읽고 할 일을 자동 정리해주는 앱"
         defaultValue={initialData?.tagline ?? ''}
-        style={inputStyle}
+        className="lp-input"
       />
 
       {/* 설명 */}
@@ -429,8 +414,8 @@ export default function SubmitForm({
         rows={5}
         value={descValue}
         onChange={(e) => setDescValue(e.target.value)}
+        className="lp-input"
         style={{
-          ...inputStyle,
           resize: 'vertical',
           minHeight: 120,
           ...(fieldErrors.description ? { border: '1px solid #ff6b6b' } : {}),
@@ -456,10 +441,8 @@ export default function SubmitForm({
             ref={liveUrlRef}
             placeholder="https://my-app.com"
             defaultValue={initialData?.live_url ?? ''}
-            style={{
-              ...inputStyle,
-              ...(fieldErrors.live_url ? { border: '1px solid #ff6b6b' } : {}),
-            }}
+            className="lp-input"
+            style={fieldErrors.live_url ? { border: '1px solid #ff6b6b' } : undefined}
           />
           {fieldErrors.live_url && (
             <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
@@ -481,7 +464,7 @@ export default function SubmitForm({
             type="url"
             placeholder="https://apps.apple.com/..."
             defaultValue={initialData?.store_url_ios ?? ''}
-            style={inputStyle}
+            className="lp-input"
           />
           <label style={labelStyle} htmlFor="store_url_android">
             Google Play URL
@@ -492,7 +475,8 @@ export default function SubmitForm({
             type="url"
             placeholder="https://play.google.com/store/apps/..."
             defaultValue={initialData?.store_url_android ?? ''}
-            style={{ ...inputStyle, marginTop: 8 }}
+            className="lp-input"
+            style={{ marginTop: 8 }}
           />
         </>
       )}
@@ -507,7 +491,7 @@ export default function SubmitForm({
         type="url"
         placeholder="https://www.youtube.com/watch?v=... 또는 https://vimeo.com/..."
         defaultValue={initialData?.demo_video_url ?? ''}
-        style={inputStyle}
+        className="lp-input"
       />
       <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
         유튜브(youtube.com, youtu.be, Shorts) 또는 Vimeo 링크만 지원합니다. 네이티브 앱의 경우 폰 프레임 안에서 재생됩니다.

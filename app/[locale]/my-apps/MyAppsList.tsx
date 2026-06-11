@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { deleteApp } from '@/lib/actions/app';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { AppWithRelations } from '@/lib/types';
 
 interface Props {
@@ -23,10 +24,16 @@ export default function MyAppsList({ apps }: Props) {
   const [isPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [confirmApp, setConfirmApp] = useState<AppWithRelations | null>(null);
 
   function handleDelete(app: AppWithRelations) {
-    const confirmed = window.confirm(t('deleteConfirm'));
-    if (!confirmed) return;
+    setConfirmApp(app);
+  }
+
+  function handleDeleteConfirmed() {
+    const app = confirmApp;
+    setConfirmApp(null);
+    if (!app) return;
 
     setDeletingId(app.id);
     setErrorMsg(null);
@@ -66,6 +73,15 @@ export default function MyAppsList({ apps }: Props) {
 
   return (
     <>
+      <ConfirmDialog
+        open={confirmApp !== null}
+        title={t('deleteConfirm')}
+        confirmLabel={t('delete')}
+        danger
+        onConfirm={handleDeleteConfirmed}
+        onCancel={() => setConfirmApp(null)}
+      />
+
       {errorMsg && (
         <div
           style={{

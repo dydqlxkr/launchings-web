@@ -110,20 +110,8 @@ export default async function AppsIndexPage() {
 
             <Link
               href="/ko/submit"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                background: 'linear-gradient(135deg,var(--brand),var(--brand2))',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 14,
-                padding: '10px 20px',
-                borderRadius: 12,
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
+              className="lp-btn lp-btn-primary lp-btn-sm"
+              style={{ flexShrink: 0, fontSize: 14, padding: '10px 20px' }}
             >
               {t('submitCta')}
             </Link>

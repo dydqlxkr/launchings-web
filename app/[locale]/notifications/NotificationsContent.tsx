@@ -33,20 +33,23 @@ export default function NotificationsContent({ title, initialNotifications }: Pr
   const t = useTranslations('notifications');
   const [notifications, setNotifications] = useState(initialNotifications);
 
+  // 진입 시점의 unread id 스냅샷 — 이번 세션에서는 시각 강조 유지
+  const [sessionUnreadIds] = useState<Set<string>>(
+    () => new Set(initialNotifications.filter((n) => !n.is_read).map((n) => n.id))
+  );
+
   const handleMarkAllRead = useCallback(async () => {
     await markAllRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   }, []);
 
-  // 페이지 진입 시 전체 읽음 처리 (배지 제거를 위해) — setState 없이 async 함수만 호출
+  // 페이지 진입 시 전체 읽음 처리 (배지 카운트 0) — 화면 시각 강조는 sessionUnreadIds로 유지
   useEffect(() => {
     const hasUnread = initialNotifications.some((n) => !n.is_read);
     if (hasUnread) {
-      // markAllRead는 Server Action이므로 외부 시스템 동기화에 해당
-      // 로컬 state 갱신은 promise 콜백에서 수행
-      markAllRead().then(() => {
-        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      });
+      // markAllRead는 Server Action이므로 외부 시스템(배지) 동기화에 해당
+      // 로컬 state는 갱신하지 않아 이번 세션 강조가 유지됨
+      markAllRead();
     }
     // 초기 마운트 시 1회만 실행
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,7 +123,7 @@ export default function NotificationsContent({ title, initialNotifications }: Pr
             color: 'var(--muted)',
           }}
         >
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🔔</div>
+          <div style={{ fontSize: 40, marginBottom: 16 }} aria-hidden="true">🔔</div>
           <h2
             style={{
               fontSize: 20,
@@ -151,7 +154,11 @@ export default function NotificationsContent({ title, initialNotifications }: Pr
           }}
         >
           {notifications.map((n) => (
-            <NotificationItem key={n.id} notification={n} />
+            <NotificationItem
+              key={n.id}
+              notification={n}
+              isSessionUnread={sessionUnreadIds.has(n.id)}
+            />
           ))}
         </div>
       )}
@@ -159,7 +166,13 @@ export default function NotificationsContent({ title, initialNotifications }: Pr
   );
 }
 
-function NotificationItem({ notification: n }: { notification: Notification }) {
+function NotificationItem({
+  notification: n,
+  isSessionUnread,
+}: {
+  notification: Notification;
+  isSessionUnread: boolean;
+}) {
   const t = useTranslations('notifications');
 
   const actorName = n.actor?.display_name ?? n.actor?.handle ?? '알 수 없는 메이커';
@@ -176,8 +189,8 @@ function NotificationItem({ notification: n }: { notification: Notification }) {
         gap: 14,
         padding: '14px 16px',
         borderRadius: 12,
-        background: n.is_read ? 'var(--card)' : 'rgba(108,140,255,.06)',
-        border: n.is_read ? '1px solid var(--line)' : '1px solid rgba(108,140,255,.25)',
+        background: isSessionUnread ? 'rgba(108,140,255,.06)' : 'var(--card)',
+        border: isSessionUnread ? '1px solid rgba(108,140,255,.25)' : '1px solid var(--line)',
         transition: 'background .15s, border-color .15s',
         cursor: n.app ? 'pointer' : 'default',
       }}
@@ -204,7 +217,7 @@ function NotificationItem({ notification: n }: { notification: Notification }) {
         <div
           style={{
             fontSize: 14,
-            fontWeight: n.is_read ? 500 : 700,
+            fontWeight: isSessionUnread ? 700 : 500,
             color: 'var(--ink)',
             lineHeight: 1.4,
             overflow: 'hidden',
@@ -245,7 +258,7 @@ function NotificationItem({ notification: n }: { notification: Notification }) {
         <span style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
           {formatRelativeTime(n.created_at)}
         </span>
-        {!n.is_read && (
+        {isSessionUnread && (
           <span
             style={{
               width: 7,

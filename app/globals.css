@@ -246,3 +246,83 @@ button {
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome/Safari/Edge */
 }
+
+/* ── 공용 버튼 ────────────────────────────────────────────────
+   사용법: className="lp-btn lp-btn-primary" 또는 "lp-btn lp-btn-ghost"
+   추가 고유 스타일(마진·너비 등)은 인라인 style로 병용.
+   ─────────────────────────────────────────────────────────── */
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: var(--r-md); /* 12px */
+  padding: 13px 24px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  font-family: inherit;
+  transition: filter 0.15s, transform 0.1s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.lp-btn:hover {
+  filter: brightness(1.1);
+}
+
+.lp-btn:active {
+  transform: scale(0.97);
+}
+
+.lp-btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand2));
+  color: #fff;
+}
+
+.lp-btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+/* 작은 버튼 변형 — 목록 헤더·인라인 액션 등 */
+.lp-btn-sm {
+  font-size: 13px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm); /* 8px → 사양은 9px이나 토큰과 일치 */
+  border-radius: 9px;
+}
+
+/* reduced-motion: hover/active 효과 비활성 */
+@media (prefers-reduced-motion: reduce) {
+  .lp-btn {
+    transition: none;
+  }
+  .lp-btn:hover {
+    filter: none;
+  }
+  .lp-btn:active {
+    transform: none;
+  }
+}
+
+/* ── 공용 텍스트 입력 ──────────────────────────────────────────
+   LoginModal·SubmitForm의 inputStyle과 동일 기준.
+   :focus-visible 링은 전역 포커스 정책(globals 상단)과 동일하게
+   border-color + box-shadow 방식으로 적용.
+   ─────────────────────────────────────────────────────────── */
+.lp-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--ink);
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+}
