@@ -29,6 +29,9 @@ export interface IAppRepo {
 
   /** 모든 앱 슬러그 목록 (정적 경로 생성용) */
   listAppSlugs(): Promise<string[]>;
+
+  /** ID 배열로 앱 일괄 조회 (비교 페이지용). published 여부 무관하게 id 기준으로 반환 */
+  getAppsByIds(ids: string[]): Promise<AppWithRelations[]>;
 }
 
 export interface IProfileRepo {

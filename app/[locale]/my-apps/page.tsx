@@ -34,7 +34,10 @@ export default async function MyAppsPage() {
           {user ? (
             <MyAppsContent userId={user.id} />
           ) : (
-            <LoginPrompt />
+            <LoginPrompt
+              title="내 등록 제품을 관리하려면 로그인이 필요해요"
+              description="로그인하고 등록한 제품을 수정·삭제할 수 있습니다."
+            />
           )}
         </div>
       </main>

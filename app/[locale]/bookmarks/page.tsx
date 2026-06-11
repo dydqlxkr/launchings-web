@@ -38,7 +38,10 @@ export default async function BookmarksPage() {
           {user ? (
             <BookmarksContent userId={user.id} />
           ) : (
-            <LoginPrompt />
+            <LoginPrompt
+              title="북마크를 보려면 로그인이 필요해요"
+              description="로그인하고 관심 있는 앱을 북마크해 보세요."
+            />
           )}
         </div>
       </main>
@@ -103,7 +106,7 @@ async function BookmarksContent({ userId }: { userId: string }) {
           </p>
         </div>
       ) : (
-        <CompareProvider>
+        <CompareProvider totalApps={apps.length}>
           <div
             style={{
               display: 'grid',

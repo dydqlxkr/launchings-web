@@ -10,6 +10,9 @@
 import { ImageResponse } from 'next/og';
 import { getRepo } from '@/lib/repo';
 
+// 앱 정보가 바뀔 수 있으므로 1시간 주기 재검증
+export const revalidate = 3600;
+
 export const alt = 'Launchings App';
 
 export const size = {

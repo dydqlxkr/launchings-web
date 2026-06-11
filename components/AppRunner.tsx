@@ -325,6 +325,9 @@ function FullscreenOverlay({
   );
 }
 
+/** iframe 로드 완료 후 상단 힌트 바 자동 페이드 아웃 시간 (ms) */
+const HINT_FADE_MS = 5000;
+
 function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | null }) {
   const t = useTranslations('appRunner');
   const [embedFailed, setEmbedFailed] = useState(false);
@@ -332,9 +335,12 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   const [slowLoad, setSlowLoad] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [useOverlay, setUseOverlay] = useState(false);
+  /** 로드 완료 후 힌트 바 표시 여부 (HINT_FADE_MS 후 자동 숨김) */
+  const [showHintBar, setShowHintBar] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasExternalUrl = !srcDoc && !!app.live_url;
 
@@ -404,11 +410,23 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
     }
   }, [isFullscreen, useOverlay]);
 
+  // 힌트 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    };
+  }, []);
+
   function handleLoad() {
     if (!hasExternalUrl) return;
     setIframeLoaded(true);
     setSlowLoad(false);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // 로드 완료 후 힌트 바 표시 → HINT_FADE_MS 뒤 자동 숨김
+    setShowHintBar(true);
+    hintTimerRef.current = setTimeout(() => {
+      setShowHintBar(false);
+    }, HINT_FADE_MS);
   }
 
   const displayUrl = app.live_url ?? `https://${app.slug}.launchings.app`;
@@ -657,7 +675,7 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
         {isFullscreen ? '⊡ ' : '⊞ '}
         {isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
       </button>
-      {/* 외부 URL 폴백 버튼 — C-1 렌더 가드 */}
+      {/* 새 탭에서 열기 — 임베드 차단 대비, 항상 표시 (C-1 렌더 가드) */}
       {app.live_url && isSafeHttpUrl(app.live_url) && (
         <a
           href={app.live_url}
@@ -667,13 +685,20 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
           aria-label={t('openInTab')}
           style={{
             color: 'var(--muted)',
-            fontSize: 14,
+            fontSize: 11,
             textDecoration: 'none',
             flexShrink: 0,
-            lineHeight: 1,
+            lineHeight: 1.4,
+            border: '1px solid var(--line)',
+            borderRadius: 6,
+            padding: '3px 8px',
+            whiteSpace: 'nowrap',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          ↗
+          ↗ {t('openInTab')}
         </a>
       )}
     </div>
@@ -699,6 +724,38 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
         >
           ⚠️ {t('externalSiteNotice')}
           <span style={{ color: 'var(--muted)', marginLeft: 4 }}>· {displayUrl}</span>
+        </div>
+      )}
+
+      {/* 로드 완료 후 힌트 바 — 임베드 차단 시 사용자 안내, HINT_FADE_MS 후 자동 페이드 */}
+      {hasExternalUrl && showHintBar && app.live_url && isSafeHttpUrl(app.live_url) && (
+        <div
+          style={{
+            background: 'rgba(46,230,166,.07)',
+            borderBottom: '1px solid rgba(46,230,166,.18)',
+            padding: '5px 14px',
+            fontSize: 11,
+            color: 'var(--accent)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'opacity .5s',
+          }}
+        >
+          <span style={{ flex: 1 }}>화면이 안 보이면</span>
+          <a
+            href={app.live_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--accent)',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            새 탭에서 열기 ↗
+          </a>
         </div>
       )}
 

@@ -15,10 +15,13 @@ interface Props {
 
 export default function CompareToggle({ appId }: Props) {
   const t = useTranslations('appCard');
-  const { toggle, isSelected, isFull } = useCompare();
+  const { toggle, isSelected, isFull, showCompare } = useCompare();
 
   const selected = isSelected(appId);
   const disabled = !selected && isFull;
+
+  // 앱 수 임계치 미만 — 콜드스타트에서 비교 UI 숨김
+  if (!showCompare) return null;
 
   return (
     <button

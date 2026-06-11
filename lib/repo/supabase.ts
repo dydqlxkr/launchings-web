@@ -26,17 +26,31 @@ class SupabaseRepo implements IRepo {
   async listApps(filters: AppFilters): Promise<AppWithRelations[]> {
     const supabase = await createClient();
 
+    // 카드 렌더에 필요한 apps 컬럼만 명시 (확신 없는 필드 포함)
+    const APP_COLS = [
+      'id', 'author_id', 'slug', 'title', 'tagline', 'description',
+      'app_type', 'live_url', 'store_url_ios', 'store_url_android',
+      'demo_video_url', 'thumbnail_path', 'thumbnail_emoji',
+      'thumbnail_gradient', 'embed_status', 'status',
+      'vote_count', 'view_count', 'created_at', 'updated_at',
+    ].join(', ');
+
+    // 카테고리 필터가 있으면 !inner 조인으로 DB 측 필터링
+    const catJoin = (filters.cat && filters.cat !== 'all')
+      ? 'app_categories!inner(category_slug)'
+      : 'app_categories(category_slug)';
+
     let query = supabase
       .from('apps')
       .select(`
-        *,
+        ${APP_COLS},
         author:profiles!author_id(*),
-        app_categories(category_slug),
+        ${catJoin},
         app_stacks(stack)
       `)
       .eq('status', 'published');
 
-    // 카테고리 필터
+    // 카테고리 필터 — !inner 조인 시 eq()로 DB 측에서 처리
     if (filters.cat && filters.cat !== 'all') {
       query = query.eq('app_categories.category_slug', filters.cat);
     }
@@ -73,12 +87,44 @@ class SupabaseRepo implements IRepo {
       });
     }
 
-    // 카테고리 필터를 앱 레벨에서도 적용 (조인 null 행 제거)
-    if (filters.cat && filters.cat !== 'all') {
-      apps = apps.filter((a) => a.categories.includes(filters.cat!));
+    return apps;
+  }
+
+  async getAppsByIds(ids: string[]): Promise<AppWithRelations[]> {
+    if (ids.length === 0) return [];
+
+    const supabase = await createClient();
+
+    // compare 페이지가 쓰는 필드 + mapApp에 필요한 최소 컬럼
+    const COMPARE_COLS = [
+      'id', 'author_id', 'slug', 'title', 'tagline', 'description',
+      'app_type', 'live_url', 'store_url_ios', 'store_url_android',
+      'demo_video_url', 'thumbnail_path', 'thumbnail_emoji',
+      'thumbnail_gradient', 'embed_status', 'status',
+      'vote_count', 'view_count', 'created_at', 'updated_at',
+    ].join(', ');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .select(`
+        ${COMPARE_COLS},
+        author:profiles!author_id(*),
+        app_categories(category_slug),
+        app_stacks(stack)
+      `)
+      .in('id', ids)
+      .eq('status', 'published');
+
+    if (error || !data) {
+      console.error('[SupabaseRepo] getAppsByIds error:', error?.message);
+      return [];
     }
 
-    return apps;
+    const mapped = (data ?? []).map(mapApp);
+
+    // ids 순서 유지
+    const byId = new Map(mapped.map((a) => [a.id, a]));
+    return ids.map((id) => byId.get(id)).filter(Boolean) as AppWithRelations[];
   }
 
   async getAppBySlug(slug: string): Promise<AppWithRelations | null> {

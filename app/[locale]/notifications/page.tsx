@@ -38,7 +38,10 @@ export default async function NotificationsPage() {
           {user ? (
             <NotificationsPageContent title={t('title')} />
           ) : (
-            <LoginPrompt />
+            <LoginPrompt
+              title="알림을 확인하려면 로그인이 필요해요"
+              description="로그인하고 팔로우한 메이커의 새 앱 소식을 받아보세요."
+            />
           )}
         </div>
       </main>

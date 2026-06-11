@@ -8,6 +8,9 @@
 
 import { ImageResponse } from 'next/og';
 
+// 홈 OG 이미지는 정적 콘텐츠이므로 하루 주기 재검증으로 충분
+export const revalidate = 86400;
+
 export const alt = 'Launchings — Korean Builder Showcase';
 
 export const size = {

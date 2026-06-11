@@ -76,17 +76,12 @@ export default async function ComparePage({ searchParams }: PageProps) {
     .filter(Boolean)
     .slice(0, 3);
 
-  const [allApps, allCategories] = await Promise.all([
-    repo.listApps({ sort: 'votes' }),
+  const [apps, allCategories] = await Promise.all([
+    ids.length > 0 ? repo.getAppsByIds(ids) : Promise.resolve([] as AppWithRelations[]),
     repo.listCategories(),
   ]);
   // slug → {label_ko, emoji} 맵 (DB 기반)
   const catMap = new Map(allCategories.map((c) => [c.slug, c]));
-
-  // ids 순서 유지
-  const apps: AppWithRelations[] = ids
-    .map((id) => allApps.find((a) => a.id === id))
-    .filter(Boolean) as AppWithRelations[];
 
   const colWidth = apps.length === 0 ? '100%' : `${Math.floor(100 / apps.length)}%`;
 

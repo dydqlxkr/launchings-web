@@ -335,7 +335,7 @@ function AppsPageInner({ apps, categories, isLoggedIn }: Props) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AppsPageClient(props: Props) {
   return (
-    <CompareProvider>
+    <CompareProvider totalApps={props.apps.length}>
       <AppsPageInner {...props} />
     </CompareProvider>
   );

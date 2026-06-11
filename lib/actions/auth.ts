@@ -74,8 +74,8 @@ export async function signUpWithPassword(formData: FormData) {
   if (!email || !email.includes('@')) {
     return { error: '올바른 이메일 주소를 입력해 주세요.' };
   }
-  if (!password || password.length < 6) {
-    return { error: '비밀번호는 6자 이상이어야 합니다.' };
+  if (!password || password.length < 8) {
+    return { error: '비밀번호는 8자 이상이어야 합니다.' };
   }
   if (password !== passwordConfirm) {
     return { error: '비밀번호가 일치하지 않습니다.' };

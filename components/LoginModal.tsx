@@ -17,9 +17,18 @@ import { checkHandleAvailable } from '@/lib/actions/profile';
 import { createClient } from '@/lib/supabase/client';
 import Modal from './Modal';
 
+/**
+ * reason: 로그인 모달을 띄우는 컨텍스트. 해당 문구를 모달 상단에 표시.
+ * - 'upvote': "로그인하면 이 앱을 추천할 수 있어요"
+ * - 'bookmark': "로그인하면 이 앱을 북마크할 수 있어요"
+ * - undefined: 기본 문구 없음
+ */
+type LoginReason = 'upvote' | 'bookmark';
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  reason?: LoginReason;
 }
 
 type Tab = 'login' | 'signup';
@@ -35,7 +44,12 @@ type HandleStatus =
 
 const DEBOUNCE_MS = 400;
 
-export default function LoginModal({ isOpen, onClose }: Props) {
+const REASON_MESSAGES: Record<LoginReason, string> = {
+  upvote: '로그인하면 이 앱을 추천할 수 있어요',
+  bookmark: '로그인하면 이 앱을 북마크할 수 있어요',
+};
+
+export default function LoginModal({ isOpen, onClose, reason }: Props) {
   const t = useTranslations();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('login');
@@ -251,6 +265,25 @@ export default function LoginModal({ isOpen, onClose }: Props) {
           <span id="login-modal-title" style={{ fontWeight: 800, fontSize: 16 }}>런칭스</span>
         </div>
 
+        {/* 컨텍스트 문구 — reason이 있을 때만 표시 (confirmSent/forgotSent 화면에선 숨김) */}
+        {reason && !confirmSent && !forgotSent && (
+          <div
+            style={{
+              background: 'rgba(108,140,255,.08)',
+              border: '1px solid rgba(108,140,255,.25)',
+              borderRadius: 10,
+              padding: '10px 14px',
+              fontSize: 13,
+              color: 'var(--brand)',
+              fontWeight: 600,
+              marginBottom: 16,
+              lineHeight: 1.5,
+            }}
+          >
+            {REASON_MESSAGES[reason]}
+          </div>
+        )}
+
         {/* 이메일 확인 화면 (이메일 확인 ON 가입 후) */}
         {confirmSent ? (
           <div style={{ textAlign: 'center' }}>
@@ -454,7 +487,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                     <input
                       type="password"
                       name="password"
-                      placeholder="비밀번호 (6자 이상)"
+                      placeholder="비밀번호 (8자 이상)"
+                      minLength={8}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

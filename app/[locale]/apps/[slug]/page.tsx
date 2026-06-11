@@ -262,6 +262,10 @@ export default async function AppDetailPage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* App runner (Phase 3 구현) — 제목/메이커/액션버튼 바로 아래, 설명보다 위
+              데모가 있는 webapp(live_url 또는 srcDoc)만 표시. native는 NativeDemoView(내부 폴백)로 처리. */}
+          <AppRunner app={app} srcDoc={srcDoc} screenshotUrls={screenshotUrls} />
+
           {/* Description */}
           <div
             style={{
@@ -270,6 +274,7 @@ export default async function AppDetailPage({ params }: PageProps) {
               borderRadius: 12,
               padding: '18px 20px',
               marginBottom: 28,
+              marginTop: 28,
             }}
           >
             <div
@@ -418,9 +423,6 @@ export default async function AppDetailPage({ params }: PageProps) {
             label={t('screenshots')}
             alts={screenshotUrls.map((_, i) => t('screenshotAlt', { n: i + 1 }))}
           />
-
-          {/* App runner (Phase 3 구현) */}
-          <AppRunner app={app} srcDoc={srcDoc} screenshotUrls={screenshotUrls} />
 
           {/* 리뷰 + 기능 요청 섹션 */}
           <AppDetailClient

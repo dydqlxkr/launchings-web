@@ -54,6 +54,9 @@ function MakerMiniCard({
       ? `${(totalVotes / 1000).toFixed(1)}k`
       : String(totalVotes);
 
+  // 작동 데모 배지: live_url 또는 demo_video_url이 있는 앱이 1개 이상이면 표시
+  const hasLiveDemo = apps.some((a) => a.live_url || a.demo_video_url);
+
   return (
     <Link
       href={`/ko/makers/${profile.handle}`}
@@ -99,27 +102,47 @@ function MakerMiniCard({
         </div>
       )}
 
-      {/* 검증 배지 — 호버/포커스 시 검증 기준 설명 (P1-6) */}
-      <div
-        title={t('verifiedTooltip')}
-        aria-label={`${t('verified')}: ${t('verifiedTooltip')}`}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          fontSize: 11,
-          fontWeight: 700,
-          color: 'var(--accent)',
-          background: 'rgba(46,230,166,.1)',
-          padding: '3px 8px',
-          borderRadius: 6,
-          marginTop: 6,
-          marginBottom: 12,
-          cursor: 'help',
-        }}
-      >
-        ✓ {t('verified')}
-      </div>
+      {/* 객관 라벨: 작동 데모 유무 / 앱 수 */}
+      {hasLiveDemo ? (
+        <div
+          title="live_url 또는 데모 영상이 있는 앱을 보유한 메이커예요"
+          aria-label="작동 데모 보유"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 11,
+            fontWeight: 700,
+            color: 'var(--accent)',
+            background: 'rgba(46,230,166,.1)',
+            padding: '3px 8px',
+            borderRadius: 6,
+            marginTop: 6,
+            marginBottom: 12,
+            cursor: 'help',
+          }}
+        >
+          ⚡ 작동 데모
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 11,
+            fontWeight: 700,
+            color: 'var(--muted-strong)',
+            background: 'var(--chip)',
+            padding: '3px 8px',
+            borderRadius: 6,
+            marginTop: 6,
+            marginBottom: 12,
+          }}
+        >
+          앱 {apps.length}개
+        </div>
+      )}
 
       {/* 통계 */}
       <div
@@ -665,7 +688,7 @@ function HomeInner({
 // ─────────────────────────────────────────────────────────────────────────────
 export default function HomeWrapper(props: Props) {
   return (
-    <CompareProvider>
+    <CompareProvider totalApps={props.apps.length}>
       <HomeInner {...props} />
     </CompareProvider>
   );

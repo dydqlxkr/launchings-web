@@ -242,7 +242,7 @@ export default async function MakerProfilePage({ params }: PageProps) {
               {t('noApps')}
             </div>
           ) : (
-            <CompareProvider>
+            <CompareProvider totalApps={apps.length}>
               <div
                 style={{
                   display: 'grid',

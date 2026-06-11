@@ -3,15 +3,26 @@
 /**
  * 비로그인 사용자에게 로그인 안내 카드를 보여주는 컴포넌트.
  * LoginModal을 내장하여 버튼 클릭 시 바로 모달 오픈.
+ *
+ * title / description prop으로 각 페이지에 맞는 문구를 전달.
+ * 기본값은 submit 페이지용(제품 등록 맥락).
  */
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LoginModal from './LoginModal';
 
-export default function LoginPrompt() {
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+export default function LoginPrompt({ title, description }: Props) {
   const t = useTranslations('submit');
   const [showLogin, setShowLogin] = useState(false);
+
+  const displayTitle = title ?? t('loginRequired');
+  const displayDescription = description ?? t('loginRequiredDesc');
 
   return (
     <>
@@ -53,7 +64,7 @@ export default function LoginPrompt() {
             color: 'var(--ink)',
           }}
         >
-          {t('loginRequired')}
+          {displayTitle}
         </h2>
 
         <p
@@ -65,7 +76,7 @@ export default function LoginPrompt() {
             marginBottom: 28,
           }}
         >
-          {t('loginRequiredDesc')}
+          {displayDescription}
         </p>
 
         <button

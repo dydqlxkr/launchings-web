@@ -66,6 +66,16 @@ class LocalRepo implements IRepo {
     return APPS.filter((a) => a.status === 'published').map((a) => a.slug);
   }
 
+  async getAppsByIds(ids: string[]): Promise<AppWithRelations[]> {
+    if (ids.length === 0) return [];
+    const idSet = new Set(ids);
+    const found = APPS.filter((a) => idSet.has(a.id) && a.status === 'published');
+    // ids 순서 유지
+    return ids
+      .map((id) => found.find((a) => a.id === id))
+      .filter(Boolean) as AppWithRelations[];
+  }
+
   // ── Profile ──────────────────────────────────────────────
 
   async listProfiles(): Promise<Profile[]> {

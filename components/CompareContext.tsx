@@ -12,6 +12,8 @@
  *
  * sessionStorage 영속화: 페이지 이동(홈→상세→apps) 시에도 선택 유지.
  * 브라우저 탭을 닫으면 초기화됨(localStorage와 달리 탭 단위 격리).
+ *
+ * totalApps: 앱 수가 임계치 미만이면 비교 UI를 숨겨 콜드스타트 인지 부하 방지.
  */
 
 import {
@@ -26,6 +28,9 @@ import {
 const MAX_COMPARE = 3;
 const STORAGE_KEY = 'launchings_compare_ids';
 
+/** 비교 기능 노출 최소 앱 수 */
+export const COMPARE_MIN_APPS = 6;
+
 interface CompareContextValue {
   ids: string[];
   toggle: (id: string) => void;
@@ -33,6 +38,8 @@ interface CompareContextValue {
   remove: (id: string) => void;
   isSelected: (id: string) => boolean;
   isFull: boolean;
+  /** 비교 UI를 노출할지 여부 (총 앱 수 기반) */
+  showCompare: boolean;
 }
 
 const CompareContext = createContext<CompareContextValue | null>(null);
@@ -59,7 +66,13 @@ function saveToStorage(ids: string[]): void {
   }
 }
 
-export function CompareProvider({ children }: { children: ReactNode }) {
+interface CompareProviderProps {
+  children: ReactNode;
+  /** 전체 앱 수. COMPARE_MIN_APPS 미만이면 비교 UI 숨김. */
+  totalApps?: number;
+}
+
+export function CompareProvider({ children, totalApps = 0 }: CompareProviderProps) {
   // sessionStorage에서 초기값 복원
   const [ids, setIds] = useState<string[]>(() => loadFromStorage());
 
@@ -86,8 +99,10 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   const isFull = ids.length >= MAX_COMPARE;
 
+  const showCompare = totalApps >= COMPARE_MIN_APPS;
+
   return (
-    <CompareContext.Provider value={{ ids, toggle, clear, remove, isSelected, isFull }}>
+    <CompareContext.Provider value={{ ids, toggle, clear, remove, isSelected, isFull, showCompare }}>
       {children}
     </CompareContext.Provider>
   );

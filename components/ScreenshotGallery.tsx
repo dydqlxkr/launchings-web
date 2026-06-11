@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 
 interface Props {
   urls: string[];
@@ -110,17 +111,12 @@ export default function ScreenshotGallery({ urls, label, alts }: Props) {
                 display: 'block',
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={url}
                 alt={alts[i]}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
+                fill
+                sizes="160px"
+                style={{ objectFit: 'cover' }}
               />
             </button>
           ))}
@@ -238,6 +234,8 @@ export default function ScreenshotGallery({ urls, label, alts }: Props) {
               justifyContent: 'center',
             }}
           >
+            {/* 라이트박스는 의도적으로 raw img — 사용자가 원본 크기로 보려고 연 것이므로
+                next/image 리사이즈를 거치지 않고 원본을 그대로 보여준다. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={urls[openIndex]}

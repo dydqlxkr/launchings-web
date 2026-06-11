@@ -11,6 +11,9 @@ import { getRepo } from '@/lib/repo';
 
 const BASE_URL = 'https://www.launchings.io';
 
+// 1시간마다 재생성 (새 앱·메이커 반영)
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 

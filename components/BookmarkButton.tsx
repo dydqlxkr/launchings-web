@@ -4,11 +4,13 @@
  * 북마크 버튼 — 낙관적 토글.
  * - 비로그인 시 LoginModal 유도.
  * - AppCard / 앱 상세 양쪽 사용 가능.
+ * - 토글 성공 시 토스트 피드백 표시.
  */
 
 import { useState, useTransition } from 'react';
 import { toggleBookmark } from '@/lib/actions/bookmark';
 import LoginModal from './LoginModal';
+import { useToast } from './Toast';
 
 interface Props {
   appId: string;
@@ -30,6 +32,7 @@ export default function BookmarkButton({
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [showLogin, setShowLogin] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const toast = useToast();
 
   function handleBookmark() {
     if (!isLoggedIn) {
@@ -42,15 +45,23 @@ export default function BookmarkButton({
     }
 
     // 낙관적 UI
-    setBookmarked((prev) => !prev);
+    const nextBookmarked = !bookmarked;
+    setBookmarked(nextBookmarked);
 
     startTransition(async () => {
       const result = await toggleBookmark(appId);
       if (result.error) {
         // 롤백
         setBookmarked((prev) => !prev);
-      } else if (result.bookmarked !== undefined) {
-        setBookmarked(result.bookmarked);
+        toast.show('잠시 후 다시 시도해 주세요', 'error');
+      } else {
+        const finalBookmarked = result.bookmarked !== undefined ? result.bookmarked : nextBookmarked;
+        setBookmarked(finalBookmarked);
+        if (finalBookmarked) {
+          toast.show('북마크에 저장했어요', 'success');
+        } else {
+          toast.show('북마크에서 제거했어요', 'info');
+        }
       }
     });
   }
@@ -100,7 +111,11 @@ export default function BookmarkButton({
       </button>
 
       {!onLoginRequest && (
-        <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
+        <LoginModal
+          isOpen={showLogin}
+          onClose={() => setShowLogin(false)}
+          reason="bookmark"
+        />
       )}
     </>
   );
