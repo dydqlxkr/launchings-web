@@ -32,6 +32,7 @@ import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
 import { isSafeHttpUrl } from '@/lib/validations';
 import { getEmbedUrl } from '@/lib/videoEmbed';
+import ScreenshotLightbox from './ScreenshotLightbox';
 
 interface Props {
   app: AppWithRelations;
@@ -44,6 +45,10 @@ interface Props {
 function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; screenshotUrls?: string[] }) {
   const t = useTranslations('appRunner');
 
+  // 스크린샷 라이트박스 — 열려 있는 인덱스 (null = 닫힘)
+  const [shotIndex, setShotIndex] = useState<number | null>(null);
+  const shotAlts = screenshotUrls.map((_, i) => t('screenshotAlt', { n: i + 1 }));
+
   // 스크린샷 플레이스홀더: 실제 스크린샷이 없을 때만 그라디언트로 4개 생성
   const gradColors = app.thumbnail_gradient ?? '135deg, #1e2734, #2a3a5a';
   const placeholderShots = [0, 1, 2, 3];
@@ -53,6 +58,7 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
   const embedUrl = getEmbedUrl(app.demo_video_url);
 
   return (
+    <>
     <div
       style={{
         minHeight: 420,
@@ -158,8 +164,10 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {hasRealScreenshots
             ? screenshotUrls.slice(0, 4).map((url, i) => (
-                <div
+                <button
                   key={url}
+                  onClick={() => setShotIndex(i)}
+                  aria-label={shotAlts[i]}
                   style={{
                     width: 44,
                     height: 76,
@@ -168,16 +176,38 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
                     overflow: 'hidden',
                     position: 'relative',
                     flexShrink: 0,
+                    padding: 0,
+                    background: 'var(--card)',
+                    cursor: 'pointer',
+                    display: 'block',
                   }}
                 >
                   <Image
                     src={url}
-                    alt={t('screenshotAlt', { n: i + 1 })}
+                    alt={shotAlts[i]}
                     fill
                     style={{ objectFit: 'cover' }}
                     sizes="44px"
                   />
-                </div>
+                  {/* 4장 초과분은 마지막 썸네일에 +N 오버레이 */}
+                  {i === 3 && screenshotUrls.length > 4 && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(0,0,0,.55)',
+                        color: '#fff',
+                        fontSize: 13,
+                        fontWeight: 700,
+                      }}
+                    >
+                      +{screenshotUrls.length - 4}
+                    </span>
+                  )}
+                </button>
               ))
             : placeholderShots.map((i) => (
                 <div
@@ -254,6 +284,17 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
         </div>
       </div>
     </div>
+
+    {/* 스크린샷 라이트박스 (전체 urls 네비게이션) */}
+    {shotIndex !== null && (
+      <ScreenshotLightbox
+        urls={screenshotUrls}
+        alts={shotAlts}
+        initialIndex={shotIndex}
+        onClose={() => setShotIndex(null)}
+      />
+    )}
+    </>
   );
 }
 

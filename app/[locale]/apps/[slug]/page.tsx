@@ -417,12 +417,16 @@ export default async function AppDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* 스크린샷 갤러리 — 1장 이상일 때만 표시 (클릭 시 라이트박스) */}
-          <ScreenshotGallery
-            urls={screenshotUrls}
-            label={t('screenshots')}
-            alts={screenshotUrls.map((_, i) => t('screenshotAlt', { n: i + 1 }))}
-          />
+          {/* 스크린샷 갤러리 — 1장 이상일 때만 표시 (클릭 시 라이트박스).
+              native 앱은 상단 데모 영역(NativeDemoView)의 스크린샷 스트립이
+              라이트박스를 겸하므로 하단 갤러리는 중복이라 숨긴다. */}
+          {app.app_type !== 'native' && (
+            <ScreenshotGallery
+              urls={screenshotUrls}
+              label={t('screenshots')}
+              alts={screenshotUrls.map((_, i) => t('screenshotAlt', { n: i + 1 }))}
+            />
+          )}
 
           {/* 리뷰 + 기능 요청 섹션 */}
           <AppDetailClient
