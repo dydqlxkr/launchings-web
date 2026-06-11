@@ -8,7 +8,8 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { rateLimitInteraction, rateLimitVote, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 // ─── addFeatureRequest ─────────────────────────────────────────────────────
@@ -57,6 +58,8 @@ export async function addFeatureRequest(
     return { error: '기능 요청 등록에 실패했습니다. 다시 시도해 주세요.' };
   }
 
+  // 캐시 무효화 — 기능 요청 목록
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko/apps/[slug]', 'page');
 
   return { id: data.id };
@@ -95,6 +98,8 @@ export async function toggleFeatureVote(
 
   const result = data as { voted: boolean; vote_count: number };
 
+  // 캐시 무효화 — 기능 요청 목록(vote_count 순서 변동)
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko/apps/[slug]', 'page');
 
   return { voted: result.voted, vote_count: result.vote_count };
@@ -128,6 +133,8 @@ export async function deleteFeatureRequest(
     return { error: '삭제에 실패했습니다. 다시 시도해 주세요.' };
   }
 
+  // 캐시 무효화 — 기능 요청 목록
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko/apps/[slug]', 'page');
 
   return { ok: true };

@@ -9,7 +9,8 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
 import { isSafeHttpUrl, isPublicHttpUrl } from '@/lib/validations';
 import { isEmbeddableVideoUrl } from '@/lib/videoEmbed';
@@ -236,7 +237,9 @@ export async function submitApp(formData: FormData): Promise<SubmitResult> {
     );
   }
 
-  // 캐시 무효화
+  // 캐시 무효화 — 태그 기반(즉시 만료) + 경로 기반 병행
+  // expire:0 = 즉시 만료, 다음 요청에서 fresh data 보장
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko');
 
   redirect(`/ko/apps/${app.slug}`);

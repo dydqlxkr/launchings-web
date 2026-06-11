@@ -7,7 +7,8 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { rateLimitInteraction, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 export interface ReviewActionResult {
@@ -66,14 +67,21 @@ export async function submitReview(formData: FormData): Promise<ReviewActionResu
     return { error: '리뷰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' };
   }
 
-  if (app_slug) revalidatePath(`/ko/apps/${app_slug}`);
+  // 캐시 무효화 — 리뷰 목록 + 앱 상세(평점 표시)
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
+  if (app_slug) {
+    revalidatePath(`/ko/apps/${app_slug}`);
+  }
   return { success: true };
 }
 
 /**
  * 리뷰 삭제.
  */
-export async function deleteReview(reviewId: string, appSlug: string): Promise<ReviewActionResult> {
+export async function deleteReview(
+  reviewId: string,
+  appSlug: string
+): Promise<ReviewActionResult> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -92,6 +100,8 @@ export async function deleteReview(reviewId: string, appSlug: string): Promise<R
     return { error: '리뷰 삭제에 실패했습니다.' };
   }
 
+  // 캐시 무효화 — 리뷰 목록 + 앱 상세
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath(`/ko/apps/${appSlug}`);
   return { success: true };
 }

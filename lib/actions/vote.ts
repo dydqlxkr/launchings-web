@@ -7,7 +7,8 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { rateLimitVote, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
 
 export type VoteResult =
@@ -42,7 +43,9 @@ export async function toggleVote(appId: string): Promise<VoteResult> {
   // RPC는 { voted: boolean, vote_count: number } 반환
   const result = data as { voted: boolean; vote_count: number };
 
-  // ISR 캐시 무효화 (앱 상세, 홈 목록)
+  // 캐시 무효화 — 태그 기반(즉시 만료) + 경로 기반 병행
+  // vote_count 변경 → apps 목록(정렬 순서 변동) + 해당 앱 상세
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko');
   revalidatePath('/ko/apps/[slug]', 'page');
 

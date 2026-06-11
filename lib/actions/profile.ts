@@ -7,6 +7,8 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { validateHandle, isSafeHttpUrl } from '@/lib/validations';
 
 export interface UpdateProfileInput {
@@ -115,6 +117,9 @@ export async function updateProfile(
 
     return { error: '저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' };
   }
+
+  // 캐시 무효화 — 메이커 프로필 + author 임베드가 포함된 apps 목록
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 }); // author 임베드(display_name, avatar 등) 갱신
 
   return { success: true };
 }

@@ -6,7 +6,8 @@
  */
 
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/repo/supabase';
 import { createClient } from '@/lib/supabase/server';
 import { checkUrlSafety, threatTypeLabel } from '@/lib/safeBrowsing';
 import { isSafeHttpUrl } from '@/lib/validations';
@@ -84,7 +85,8 @@ export async function deleteApp(appId: string): Promise<DeleteResult> {
     return { error: '삭제에 실패했습니다. 다시 시도해 주세요.' };
   }
 
-  // 캐시 무효화
+  // 캐시 무효화 — 태그 기반(즉시 만료) + 경로 기반 병행
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko');
   revalidatePath('/ko/my-apps');
   revalidatePath(`/ko/apps/${app.slug}`);
@@ -260,7 +262,8 @@ export async function updateApp(
     );
   }
 
-  // 캐시 무효화
+  // 캐시 무효화 — 태그 기반(즉시 만료) + 경로 기반 병행
+  revalidateTag(CACHE_TAGS.apps, { expire: 0 });
   revalidatePath('/ko');
   revalidatePath('/ko/my-apps');
   revalidatePath(`/ko/apps/${existing.slug}`);
