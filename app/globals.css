@@ -338,8 +338,9 @@ button {
   flex-wrap: nowrap;
 }
 .lp-feed-phone {
-  width: min(430px, 66vw);
-  max-height: 84vh;
+  /* 쇼츠처럼 피드 영역 높이를 거의 채움 (네비 63px + 상하 여백 제외) */
+  width: min(520px, 70vw);
+  max-height: calc(100dvh - 63px - 48px);
 }
 .lp-feed-rail {
   display: flex;
@@ -352,8 +353,9 @@ button {
     gap: 12px;
   }
   .lp-feed-phone {
-    width: min(400px, 90vw);
-    max-height: 68vh;
+    /* 모바일: 아래 가로 레일(약 90px) 공간만 남기고 최대화 */
+    width: min(440px, 92vw);
+    max-height: calc(100dvh - 63px - 150px);
   }
   .lp-feed-rail {
     flex-direction: row;

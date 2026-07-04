@@ -456,5 +456,12 @@
     "finalCta": "제품 등록하기",
     "progressAria": "{current} / {total} 번째 슬라이드",
     "goToSlideAria": "{n}번째 앱으로 이동"
+  },
+  "sendToPhone": {
+    "open": "폰으로 보기",
+    "railLabel": "폰으로",
+    "title": "폰으로 이어서 보기",
+    "desc": "폰 카메라로 QR 코드를 스캔하면 {title} 페이지가 바로 열려요.",
+    "qrAlt": "이 페이지로 연결되는 QR 코드"
   }
 }

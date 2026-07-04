@@ -28,6 +28,7 @@ import { isSafeHttpUrl, isEmbeddableDemoUrl } from '@/lib/validations';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import { useSession } from './useSession';
 import AvatarCircle from './AvatarCircle';
+import SendToPhoneButton from './SendToPhoneButton';
 import UpvoteButton from './UpvoteButton';
 import BookmarkButton from './BookmarkButton';
 
@@ -370,6 +371,12 @@ function FeedAppSlide({
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>{reviewCount}</span>
         </Link>
+
+        <SendToPhoneButton
+          url={`https://www.launchings.io/ko/apps/${app.slug}`}
+          appTitle={app.title}
+          variant="rail"
+        />
 
         {ctaExternal ? (
           <a href={ctaHref} target="_blank" rel="noopener noreferrer" style={ctaButtonStyle}>

@@ -17,6 +17,7 @@ import AvatarCircle from '@/components/AvatarCircle';
 import UpvoteButton from '@/components/UpvoteButton';
 import BookmarkButton from '@/components/BookmarkButton';
 import ShareButton from '@/components/ShareButton';
+import SendToPhoneButton from '@/components/SendToPhoneButton';
 import ViewCount from '@/components/ViewCount';
 import AppRunner from '@/components/AppRunner';
 import ReportButton from '@/components/ReportButton';
@@ -258,6 +259,10 @@ export default async function AppDetailPage({ params }: PageProps) {
                 isLoggedIn={!!user}
               />
               <ShareButton slug={app.slug} />
+              <SendToPhoneButton
+                url={`https://www.launchings.io/ko/apps/${app.slug}`}
+                appTitle={app.title}
+              />
               <ViewCount count={app.view_count} style={{ marginLeft: 4 }} />
             </div>
           </div>
