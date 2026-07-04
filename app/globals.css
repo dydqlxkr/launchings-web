@@ -364,3 +364,43 @@ button {
     justify-content: center;
   }
 }
+
+/* ── 피드 리뷰 패널(FeedReviewsPanel) ─────────────────────────
+   데스크톱: 슬라이드 flex 행의 형제 — 폰 프레임/레일 옆 사이드 패널.
+   모바일(≤640px): 화면 하단 바텀시트 + 딤 배경. */
+.lp-feed-reviews-backdrop {
+  display: none;
+}
+.lp-feed-reviews-panel {
+  width: 360px;
+  max-height: calc(100dvh - 63px - 48px);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .lp-feed-reviews-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 70;
+  }
+  .lp-feed-reviews-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    max-width: none;
+    height: 62dvh;
+    max-height: 62dvh;
+    border-radius: 16px 16px 0 0;
+    z-index: 71;
+  }
+}

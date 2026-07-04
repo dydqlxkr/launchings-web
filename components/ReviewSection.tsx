@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { submitReview, deleteReview } from '@/lib/actions/review';
 import { useToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { StarDisplay, StarPicker, formatReviewDate } from '@/components/StarRating';
 import type { ReviewWithAuthor, ReviewStats } from '@/lib/types';
 
 interface Props {
@@ -24,66 +25,6 @@ interface Props {
   myReview: ReviewWithAuthor | null;
   isLoggedIn: boolean;
   onLoginRequest: () => void;
-}
-
-function StarDisplay({ rating, size = 16 }: { rating: number; size?: number }) {
-  return (
-    <span style={{ display: 'inline-flex', gap: 2 }} aria-label={`${rating}점`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span
-          key={n}
-          style={{
-            fontSize: size,
-            color: n <= rating ? '#fbbf24' : 'var(--line)',
-            lineHeight: 1,
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </span>
-  );
-}
-
-function StarPicker({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-}) {
-  const [hover, setHover] = useState(0);
-  return (
-    <div style={{ display: 'inline-flex', gap: 4 }} role="group" aria-label="별점 선택">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onChange(n)}
-          onMouseEnter={() => setHover(n)}
-          onMouseLeave={() => setHover(0)}
-          aria-label={`${n}점`}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            fontSize: 26,
-            color: n <= (hover || value) ? '#fbbf24' : 'var(--line)',
-            lineHeight: 1,
-            transition: 'color .08s',
-          }}
-        >
-          ★
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
 }
 
 export default function ReviewSection({
@@ -412,7 +353,7 @@ export default function ReviewSection({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                     <StarDisplay rating={review.rating} size={13} />
                     <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                      {formatDate(review.created_at)}
+                      {formatReviewDate(review.created_at)}
                     </span>
                   </div>
                 </div>

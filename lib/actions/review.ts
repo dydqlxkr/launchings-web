@@ -2,6 +2,7 @@
 
 /**
  * 리뷰 관련 Server Action.
+ * - getAppReviews: 리뷰 목록 + 통계 + (로그인 시) 내 리뷰 조회 — 클라이언트에서 호출(피드 리뷰 패널)
  * - submitReview: 리뷰 작성/수정 (upsert)
  * - deleteReview: 리뷰 삭제
  */
@@ -9,11 +10,55 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { CACHE_TAGS } from '@/lib/repo/supabase';
+import { getRepo } from '@/lib/repo';
 import { rateLimitInteraction, RATE_LIMIT_ERROR } from '@/lib/rateLimit';
+import type { ReviewWithAuthor, ReviewStats } from '@/lib/types';
 
 export interface ReviewActionResult {
   error?: string;
   success?: boolean;
+}
+
+export interface AppReviewsResult {
+  reviews: ReviewWithAuthor[];
+  stats: ReviewStats;
+  myReview: ReviewWithAuthor | null;
+  error?: string;
+}
+
+/**
+ * 리뷰 목록 + 통계 + 내 리뷰 조회.
+ * repo.listReviews/getReviewStats는 unstable_cache로 캐시되므로 비개인화 부분은 저비용.
+ * 개인화(myReview)는 getUser() 성공 시에만 조회 — 실패해도 목록은 정상 반환.
+ */
+export async function getAppReviews(appId: string): Promise<AppReviewsResult> {
+  const repo = getRepo();
+
+  let userId: string | undefined;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id;
+  } catch (error) {
+    console.error('[Review] getAppReviews getUser error:', error);
+  }
+
+  try {
+    const [reviews, stats, myReview] = await Promise.all([
+      repo.listReviews(appId),
+      repo.getReviewStats(appId),
+      userId ? repo.getMyReview(appId, userId) : Promise.resolve(null),
+    ]);
+    return { reviews, stats, myReview };
+  } catch (error) {
+    console.error('[Review] getAppReviews error:', error);
+    return {
+      reviews: [],
+      stats: { avg_rating: 0, review_count: 0 },
+      myReview: null,
+      error: '리뷰를 불러오지 못했습니다.',
+    };
+  }
 }
 
 /**

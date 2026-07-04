@@ -24,13 +24,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
-import { isSafeHttpUrl, isEmbeddableDemoUrl } from '@/lib/validations';
+import { isEmbeddableDemoUrl } from '@/lib/validations';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import { useSession } from './useSession';
 import AvatarCircle from './AvatarCircle';
 import SendToPhoneButton from './SendToPhoneButton';
 import UpvoteButton from './UpvoteButton';
 import BookmarkButton from './BookmarkButton';
+import FeedReviewsPanel from './FeedReviewsPanel';
 
 interface Props {
   apps: AppWithRelations[];
@@ -102,6 +103,8 @@ interface SlideProps {
   isLoggedIn: boolean;
   reviewCount: number;
   screenshotUrl: string | null;
+  isPanelOpen: boolean;
+  onTogglePanel: () => void;
   registerRef: (el: HTMLDivElement | null) => void;
 }
 
@@ -112,11 +115,15 @@ function FeedAppSlide({
   isLoggedIn,
   reviewCount,
   screenshotUrl,
+  isPanelOpen,
+  onTogglePanel,
   registerRef,
 }: SlideProps) {
   const t = useTranslations('feed');
   const isNative = app.app_type === 'native';
   const gradient = app.thumbnail_gradient ?? '135deg, #1e2734, #2a3a5a';
+  // 리뷰 수 — 패널에서 새 리뷰 작성 시 낙관적으로 즉시 갱신(서버 확정치로 동기화)
+  const [count, setCount] = useState(reviewCount);
 
   const hasWebDemo = isEmbeddableDemoUrl(app.live_url);
   const embedUrl = getEmbedUrl(app.demo_video_url);
@@ -138,32 +145,10 @@ function FeedAppSlide({
         : null;
   const badgeBg = hasWebDemo || (!embedUrl && !isNative) ? 'var(--accent)' : 'var(--warm)';
 
-  // CTA 버튼 — native: 스토어(android 우선) 또는 상세 페이지 / 그 외: 상세 페이지
-  // (webapp '바로 써보기'는 상세 페이지 이동으로 변경 — 데모는 폰 프레임에서 이미 체험 가능)
-  let ctaHref: string;
-  let ctaLabel: string;
-  let ctaExternal: boolean;
-  if (isNative) {
-    const storeUrl =
-      app.store_url_android && isSafeHttpUrl(app.store_url_android)
-        ? app.store_url_android
-        : app.store_url_ios && isSafeHttpUrl(app.store_url_ios)
-          ? app.store_url_ios
-          : null;
-    if (storeUrl) {
-      ctaHref = storeUrl;
-      ctaLabel = t('ctaGetStore');
-      ctaExternal = true;
-    } else {
-      ctaHref = `/ko/apps/${app.slug}`;
-      ctaLabel = t('ctaViewDetail');
-      ctaExternal = false;
-    }
-  } else {
-    ctaHref = `/ko/apps/${app.slug}`;
-    ctaLabel = t('ctaViewDetail');
-    ctaExternal = false;
-  }
+  // CTA 버튼 — 모든 앱 공통으로 상세 페이지 내부 이동으로 통일.
+  // (스토어 링크·웹 데모는 상세 페이지에서 이미 제공 — 피드에서는 항상 "자세히 보기")
+  const ctaHref = `/ko/apps/${app.slug}`;
+  const ctaLabel = t('ctaViewDetail');
 
   return (
     <section
@@ -358,16 +343,35 @@ function FeedAppSlide({
           </span>
         </div>
 
-        <Link
-          href={`/ko/apps/${app.slug}#reviews`}
-          aria-label={t('reviewsAria', { n: reviewCount })}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+        <button
+          type="button"
+          onClick={onTogglePanel}
+          aria-label={t('reviewsAria', { n: count })}
+          aria-expanded={isPanelOpen}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
         >
-          <span style={railButtonBase} aria-hidden="true">
+          <span
+            style={{
+              ...railButtonBase,
+              background: isPanelOpen ? 'rgba(108,140,255,.18)' : railButtonBase.background,
+              border: isPanelOpen ? '1px solid var(--brand)' : railButtonBase.border,
+            }}
+            aria-hidden="true"
+          >
             💬
           </span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>{reviewCount}</span>
-        </Link>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>{count}</span>
+        </button>
 
         <SendToPhoneButton
           url={`https://www.launchings.io/ko/apps/${app.slug}`}
@@ -375,16 +379,22 @@ function FeedAppSlide({
           variant="rail"
         />
 
-        {ctaExternal ? (
-          <a href={ctaHref} target="_blank" rel="noopener noreferrer" style={ctaButtonStyle}>
-            {ctaLabel}
-          </a>
-        ) : (
-          <Link href={ctaHref} style={ctaButtonStyle}>
-            {ctaLabel}
-          </Link>
-        )}
+        <Link href={ctaHref} style={ctaButtonStyle}>
+          {ctaLabel}
+        </Link>
       </div>
+
+      {/* 리뷰 패널 — 열릴 때만 마운트(데스크톱: 사이드 패널 / 모바일: 바텀시트) */}
+      {isPanelOpen && (
+        <FeedReviewsPanel
+          appId={app.id}
+          appSlug={app.slug}
+          appTitle={app.title}
+          isLoggedIn={isLoggedIn}
+          onClose={onTogglePanel}
+          onReviewCountChange={setCount}
+        />
+      )}
     </section>
   );
 }
@@ -441,6 +451,11 @@ export default function FeedClient({ apps, reviewCounts, firstScreenshotUrls }: 
   const [activeIndex, setActiveIndex] = useState(0);
   // 힌트 소멸 여부 — HINT_HIDE_MS 경과 또는 사용자가 실제로 스크롤(슬라이드 전환)하면 true
   const [hintDismissed, setHintDismissed] = useState(false);
+
+  // 열려 있는 리뷰 패널의 슬라이드 인덱스(한 번에 1개만 열림). null이면 닫힘.
+  // 실제로 열려 있는지는 activeIndex와 함께 렌더 시점에 파생(derive)한다 —
+  // 슬라이드가 전환되면(activeIndex 변경) 이전에 열려 있던 패널은 자동으로 닫힌 것으로 취급된다.
+  const [openReviewsIndex, setOpenReviewsIndex] = useState<number | null>(null);
 
   // 첫 진입 힌트 — 수초 후 자동 소멸 타이머
   useEffect(() => {
@@ -524,6 +539,10 @@ export default function FeedClient({ apps, reviewCounts, firstScreenshotUrls }: 
             isLoggedIn={isLoggedIn}
             reviewCount={reviewCounts[app.id] ?? 0}
             screenshotUrl={firstScreenshotUrls[app.id] ?? null}
+            isPanelOpen={openReviewsIndex === i && activeIndex === i}
+            onTogglePanel={() =>
+              setOpenReviewsIndex((cur) => (cur === i ? null : i))
+            }
             registerRef={(el) => {
               slideRefs.current[i] = el;
             }}

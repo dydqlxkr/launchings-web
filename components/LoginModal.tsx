@@ -21,9 +21,10 @@ import Modal from './Modal';
  * reason: 로그인 모달을 띄우는 컨텍스트. 해당 문구를 모달 상단에 표시.
  * - 'upvote': "로그인하면 이 앱을 추천할 수 있어요"
  * - 'bookmark': "로그인하면 이 앱을 북마크할 수 있어요"
+ * - 'review': "로그인하면 이 앱에 리뷰를 남길 수 있어요"
  * - undefined: 기본 문구 없음
  */
-type LoginReason = 'upvote' | 'bookmark';
+type LoginReason = 'upvote' | 'bookmark' | 'review';
 
 interface Props {
   isOpen: boolean;
@@ -47,6 +48,7 @@ const DEBOUNCE_MS = 400;
 const REASON_MESSAGES: Record<LoginReason, string> = {
   upvote: '로그인하면 이 앱을 추천할 수 있어요',
   bookmark: '로그인하면 이 앱을 북마크할 수 있어요',
+  review: '로그인하면 이 앱에 리뷰를 남길 수 있어요',
 };
 
 export default function LoginModal({ isOpen, onClose, reason }: Props) {
