@@ -24,7 +24,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
-import { isSafeHttpUrl } from '@/lib/validations';
+import { isSafeHttpUrl, isEmbeddableDemoUrl } from '@/lib/validations';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import { useSession } from './useSession';
 import AvatarCircle from './AvatarCircle';
@@ -44,7 +44,7 @@ const NAV_HEIGHT_PX = 63;
 /** 첫 진입 스크롤 힌트가 자동으로 사라지는 시간(ms) */
 const HINT_HIDE_MS = 4000;
 /** 폰 프레임 안 스크린샷 alt/사이즈 등에 사용하는 고정 폭 */
-const PHONE_IMAGE_SIZES = '(max-width: 640px) 64vw, 300px';
+const PHONE_IMAGE_SIZES = '(max-width: 640px) 88vw, 300px';
 
 const railButtonBase: React.CSSProperties = {
   width: 52,
@@ -117,7 +117,7 @@ function FeedAppSlide({
   const isNative = app.app_type === 'native';
   const gradient = app.thumbnail_gradient ?? '135deg, #1e2734, #2a3a5a';
 
-  const hasWebDemo = isSafeHttpUrl(app.live_url);
+  const hasWebDemo = isEmbeddableDemoUrl(app.live_url);
   const embedUrl = getEmbedUrl(app.demo_video_url);
 
   const contentType: 'webdemo' | 'video' | 'screenshot' | 'emoji' = hasWebDemo
@@ -172,26 +172,21 @@ function FeedAppSlide({
       ref={registerRef}
       data-index={index}
       aria-label={app.title}
+      className="lp-feed-slide"
       style={{
         height: '100%',
         scrollSnapAlign: 'start',
         scrollSnapStop: 'always',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 18,
         position: 'relative',
         padding: '20px 16px',
-        flexWrap: 'wrap',
       }}
     >
       {/* 폰 프레임 */}
       <div
+        className="lp-feed-phone"
         style={{
           position: 'relative',
-          width: 'min(300px, 64vw)',
           aspectRatio: '9 / 17.5',
-          maxHeight: '76vh',
           borderRadius: 38,
           border: '8px solid #20242e',
           background: '#0a0c11',
@@ -244,7 +239,7 @@ function FeedAppSlide({
               <iframe
                 src={app.live_url as string}
                 title={app.title}
-                sandbox="allow-scripts allow-forms allow-popups"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 referrerPolicy="no-referrer"
                 loading="lazy"
                 style={{ width: '100%', height: '100%', border: 0, display: 'block', background: '#fff' }}
@@ -345,7 +340,7 @@ function FeedAppSlide({
       </div>
 
       {/* 우측 액션 레일 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center', flexShrink: 0 }}>
+      <div className="lp-feed-rail" style={{ alignItems: 'center', flexShrink: 0 }}>
         <UpvoteButton
           appId={app.id}
           initialCount={app.vote_count}

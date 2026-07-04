@@ -326,3 +326,39 @@ button {
   box-sizing: border-box;
   outline: none;
 }
+
+/* ── 데모 피드(/feed) 반응형 레이아웃 ─────────────────────────
+   데스크톱: 폰 프레임 옆에 세로 액션 레일.
+   모바일(≤640px): 폰 프레임을 크게, 레일은 아래 가로 배치. */
+.lp-feed-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: nowrap;
+}
+.lp-feed-phone {
+  width: min(300px, 64vw);
+  max-height: 76vh;
+}
+.lp-feed-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .lp-feed-slide {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lp-feed-phone {
+    width: min(380px, 88vw);
+    max-height: 64vh;
+  }
+  .lp-feed-rail {
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

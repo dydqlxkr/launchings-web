@@ -23,6 +23,26 @@ export function isSafeHttpUrl(url: string | null | undefined): boolean {
 }
 
 /**
+ * iframe 데모로 임베드해도 되는 URL인지 검증 (렌더 가드).
+ *
+ * 데모 iframe은 sandbox에 allow-same-origin을 부여한다(웹앱 데모의
+ * IndexedDB/localStorage 동작에 필수 — ADR-0004 개정). cross-origin
+ * 콘텐츠에는 일반 iframe과 동등한 격리가 유지되지만, 만약 우리 자신의
+ * 도메인을 임베드하면 same-origin이 되어 sandbox 해제·부모 DOM 접근이
+ * 가능해지므로 자기 도메인은 반드시 차단한다.
+ */
+export function isEmbeddableDemoUrl(url: string | null | undefined): boolean {
+  if (!isSafeHttpUrl(url)) return false;
+  try {
+    const host = new URL(url as string).hostname.toLowerCase();
+    if (host === 'launchings.io' || host.endsWith('.launchings.io')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 외부에서 접속 가능한 "공개" http(s) URL인지 검증 (제출 모더레이션용, P2-8).
  *
  * isSafeHttpUrl(스킴 검증)에 더해 localhost·사설/예약 IP·내부망 호스트를 차단한다.

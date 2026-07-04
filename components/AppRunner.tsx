@@ -14,7 +14,7 @@
  *
  * 보안 (ADR-0004):
  *   - srcdoc(우리 통제): sandbox="allow-scripts allow-same-origin allow-modals"
- *   - 외부 URL: sandbox="allow-scripts allow-forms allow-popups"
+ *   - 외부 URL: sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
  *     (allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여, referrerpolicy="no-referrer")
  *   - 임베드 실패 감지: onLoad 후 blank 여부 → 폴백 버튼 표시
  *
@@ -31,7 +31,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations } from '@/lib/types';
-import { isSafeHttpUrl } from '@/lib/validations';
+import { isSafeHttpUrl, isEmbeddableDemoUrl } from '@/lib/validations';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import ScreenshotLightbox from './ScreenshotLightbox';
 
@@ -60,7 +60,7 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
 
   // 웹 데모 URL(live_url 재활용) — 안전한 스킴만 폰 스크린에 iframe으로 실행.
   // 우선순위: ① 웹 데모 → ② 데모 영상 → ③ 이모지 플레이스홀더
-  const hasWebDemo = !!app.live_url && isSafeHttpUrl(app.live_url);
+  const hasWebDemo = !!app.live_url && isEmbeddableDemoUrl(app.live_url);
   const [webDemoLoaded, setWebDemoLoaded] = useState(false);
 
   return (
@@ -142,7 +142,7 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
                 <iframe
                   src={app.live_url as string}
                   title={t('webDemoTitle', { title: app.title })}
-                  sandbox="allow-scripts allow-forms allow-popups"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   referrerPolicy="no-referrer"
                   loading="lazy"
                   onLoad={() => setWebDemoLoaded(true)}
@@ -467,12 +467,14 @@ function WebAppView({ app, srcDoc }: { app: AppWithRelations; srcDoc: string | n
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const hasExternalUrl = !srcDoc && !!app.live_url;
+  const hasExternalUrl = !srcDoc && !!app.live_url && isEmbeddableDemoUrl(app.live_url);
 
   // srcdoc(우리 코드)용 sandbox: allow-same-origin 허용 (우리 코드이므로 안전)
   const srcdocSandbox = 'allow-scripts allow-same-origin allow-modals';
-  // 외부 URL용 sandbox: allow-same-origin 미부여, allow-popups-to-escape-sandbox 미부여 (M-3, ADR-0004)
-  const externalSandbox = 'allow-scripts allow-forms allow-popups';
+  // 외부 URL용 sandbox (ADR-0004 개정): allow-same-origin 부여 — cross-origin 콘텐츠에는
+  // 일반 iframe과 동등한 격리가 유지되며, 웹앱 데모의 IndexedDB/localStorage 동작에 필수.
+  // 자기 도메인 임베드는 isEmbeddableDemoUrl 가드로 차단(그 경우에만 sandbox 해제 위험).
+  const externalSandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
 
   // 외부 URL 경로: 로딩이 오래 걸리면 "새 탭" 안내만 표시(iframe은 계속 로딩 — 느린 사이트도 결국 임베드됨)
   useEffect(() => {
