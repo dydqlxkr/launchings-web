@@ -55,6 +55,11 @@ function validateSubmit(data: {
     if (!isPublicHttpUrl(data.live_url)) {
       return 'Live URL은 외부에서 접속 가능한 공개 https:// 또는 http:// 주소여야 합니다. (localhost·사설 IP는 사용할 수 없어요)';
     }
+  } else if (data.app_type === 'native' && data.live_url) {
+    // native의 live_url은 "웹 데모 URL"로 재활용 — 선택 입력이지만, 값이 있으면 동일하게 검증
+    if (!isPublicHttpUrl(data.live_url)) {
+      return '웹 데모 URL은 외부에서 접속 가능한 공개 https:// 또는 http:// 주소여야 합니다. (localhost·사설 IP는 사용할 수 없어요)';
+    }
   }
   return null;
 }

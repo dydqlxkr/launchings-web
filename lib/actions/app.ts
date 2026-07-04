@@ -40,6 +40,11 @@ function validateAppFields(data: {
     if (!isSafeHttpUrl(data.live_url)) {
       return 'Live URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.';
     }
+  } else if (data.app_type === 'native' && data.live_url) {
+    // native의 live_url은 "웹 데모 URL"로 재활용 — 선택 입력이지만, 값이 있으면 동일하게 검증
+    if (!isSafeHttpUrl(data.live_url)) {
+      return '웹 데모 URL은 https:// 또는 http://로 시작하는 올바른 URL이어야 합니다.';
+    }
   }
   return null;
 }

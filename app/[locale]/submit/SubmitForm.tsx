@@ -427,23 +427,30 @@ export default function SubmitForm({
         </p>
       )}
 
-      {/* Live URL */}
-      {(appType === 'webapp' || appType === 'link') && (
+      {/* Live URL — webapp/link는 필수, native는 "웹 데모 URL"(선택)로 재활용 */}
+      {(appType === 'webapp' || appType === 'link' || appType === 'native') && (
         <>
           <label style={labelStyle} htmlFor="live_url">
-            Live URL * (https://...)
+            {appType === 'native' ? '웹 데모 URL (선택)' : 'Live URL * (https://...)'}
           </label>
           <input
             id="live_url"
             name="live_url"
             type="url"
-            required
+            required={appType !== 'native'}
             ref={liveUrlRef}
-            placeholder="https://my-app.com"
+            placeholder={
+              appType === 'native' ? 'https://my-app.vercel.app' : 'https://my-app.com'
+            }
             defaultValue={initialData?.live_url ?? ''}
             className="lp-input"
             style={fieldErrors.live_url ? { border: '1px solid #ff6b6b' } : undefined}
           />
+          {appType === 'native' && (
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
+              Flutter 웹 빌드 등을 Vercel·GitHub Pages 같은 무료 호스팅에 올리면 상세 페이지 폰 화면에서 바로 실행돼요.
+            </div>
+          )}
           {fieldErrors.live_url && (
             <p style={{ fontSize: 12, color: '#ff6b6b', marginTop: 4 }}>
               {fieldErrors.live_url}

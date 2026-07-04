@@ -392,6 +392,42 @@ export default async function AppDetailPage({ params }: PageProps) {
                     🤖 {t('playStore')}
                   </a>
                 )}
+                {/* 웹 데모 URL(live_url 재활용) — 상세 페이지 폰 프레임 위 데모 안내 링크 */}
+                {app.live_url && isSafeHttpUrl(app.live_url) && (
+                  <a
+                    href={app.live_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      border: '1px solid var(--line)',
+                      color: 'var(--ink)',
+                      padding: '11px 20px',
+                      borderRadius: 10,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <svg
+                      width={14}
+                      height={14}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    {t('openWebDemo')}
+                  </a>
+                )}
               </>
             ) : (
               app.live_url && isSafeHttpUrl(app.live_url) && (

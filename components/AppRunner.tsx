@@ -9,7 +9,8 @@
  *   - 둘 다 없으면 → 안내 메시지
  *
  * native (type === 'native'):
- *   - 폰 프레임 + 30초 영상 placeholder + 스크린샷 스트립 + 스토어 버튼 + MVP 안내
+ *   - 폰 프레임 안 콘텐츠 우선순위: ① live_url(웹 데모, apps.live_url 재활용) → ② 데모 영상 → ③ 이모지 플레이스홀더
+ *   - 우측 정보: 설명 + (웹 데모＋영상 모두 있을 때) 영상 새 탭 링크 + 스크린샷 스트립 + 스토어 버튼 + MVP 안내(웹 데모 없을 때만)
  *
  * 보안 (ADR-0004):
  *   - srcdoc(우리 통제): sandbox="allow-scripts allow-same-origin allow-modals"
@@ -57,6 +58,11 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
   // 데모 영상 임베드 URL 계산 (null이면 영상 없음)
   const embedUrl = getEmbedUrl(app.demo_video_url);
 
+  // 웹 데모 URL(live_url 재활용) — 안전한 스킴만 폰 스크린에 iframe으로 실행.
+  // 우선순위: ① 웹 데모 → ② 데모 영상 → ③ 이모지 플레이스홀더
+  const hasWebDemo = !!app.live_url && isSafeHttpUrl(app.live_url);
+  const [webDemoLoaded, setWebDemoLoaded] = useState(false);
+
   return (
     <>
     <div
@@ -73,79 +79,135 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
         overflow: 'auto',
       }}
     >
-      {/* 폰 프레임 */}
-      <div
-        style={{
-          width: 220,
-          height: 440,
-          background: '#0a0c11',
-          border: '7px solid #20242e',
-          borderRadius: 34,
-          position: 'relative',
-          flexShrink: 0,
-          boxShadow: '0 20px 60px rgba(0,0,0,.5)',
-        }}
-      >
-        {/* 노치 */}
+      {/* 폰 프레임 + (웹 데모일 때) 하단 새 탭 링크 */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <div
           style={{
-            position: 'absolute',
-            top: 10,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 80,
-            height: 16,
-            background: '#20242e',
-            borderRadius: '0 0 10px 10px',
-          }}
-        />
-        {/* 스크린 */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 10,
-            borderRadius: 26,
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: embedUrl ? '#000' : `linear-gradient(${gradColors})`,
+            width: 220,
+            height: 440,
+            background: '#0a0c11',
+            border: '7px solid #20242e',
+            borderRadius: 34,
+            position: 'relative',
+            flexShrink: 0,
+            boxShadow: '0 20px 60px rgba(0,0,0,.5)',
           }}
         >
-          {embedUrl ? (
-            /* 데모 영상 임베드 */
-            <iframe
-              src={embedUrl}
-              title={t('playDemo')}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-              style={{
-                width: '100%',
-                height: '100%',
-                border: 0,
-                display: 'block',
-              }}
-              loading="lazy"
-            />
-          ) : (
-            /* 영상 없음 — 이모지/썸네일만 표시, 가짜 재생 버튼 없음 */
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                padding: 20,
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: 44 }}>{app.thumbnail_emoji}</div>
-            </div>
-          )}
+          {/* 노치 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 10,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 80,
+              height: 16,
+              background: '#20242e',
+              borderRadius: '0 0 10px 10px',
+              zIndex: 2,
+            }}
+          />
+          {/* 스크린 */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 10,
+              borderRadius: 26,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: hasWebDemo ? '#fff' : embedUrl ? '#000' : `linear-gradient(${gradColors})`,
+            }}
+          >
+            {hasWebDemo ? (
+              /* 웹 데모 iframe — 외부 URL이므로 WebAppView와 동일한 sandbox 보안 적용 (ADR-0004) */
+              <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                {!webDemoLoaded && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 1,
+                      background: `linear-gradient(${gradColors})`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div className="lp-skeleton" style={{ width: '60%', height: 14, borderRadius: 7 }} />
+                  </div>
+                )}
+                <iframe
+                  src={app.live_url as string}
+                  title={t('webDemoTitle', { title: app.title })}
+                  sandbox="allow-scripts allow-forms allow-popups"
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  onLoad={() => setWebDemoLoaded(true)}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 0,
+                    display: 'block',
+                    position: 'relative',
+                    zIndex: 0,
+                    opacity: webDemoLoaded ? 1 : 0,
+                    transition: 'opacity .3s',
+                  }}
+                />
+              </div>
+            ) : embedUrl ? (
+              /* 데모 영상 임베드 */
+              <iframe
+                src={embedUrl}
+                title={t('playDemo')}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 0,
+                  display: 'block',
+                }}
+                loading="lazy"
+              />
+            ) : (
+              /* 영상 없음 — 이모지/썸네일만 표시, 가짜 재생 버튼 없음 */
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: 20,
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: 44 }}>{app.thumbnail_emoji}</div>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* X-Frame-Options 등으로 iframe이 차단될 수 있으므로 새 탭 링크를 상시 노출 */}
+        {hasWebDemo && (
+          <a
+            href={app.live_url as string}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: 11,
+              color: 'var(--muted)',
+              textDecoration: 'underline',
+            }}
+          >
+            {t('webDemoOpenInTabHint')} ↗
+          </a>
+        )}
       </div>
 
       {/* 우측 정보 */}
@@ -156,6 +218,26 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
         <p style={{ color: 'var(--muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
           {app.tagline ?? app.description}
         </p>
+
+        {/* 웹 데모가 폰 프레임을 차지할 때, 데모 영상이 있으면 새 탭 링크로 안내 */}
+        {hasWebDemo && embedUrl && app.demo_video_url && isSafeHttpUrl(app.demo_video_url) && (
+          <a
+            href={app.demo_video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12.5,
+              color: 'var(--brand)',
+              marginBottom: 14,
+              textDecoration: 'underline',
+            }}
+          >
+            🎬 {t('watchDemoVideo')}
+          </a>
+        )}
 
         {/* 스크린샷 스트립 */}
         <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 7 }}>
@@ -268,20 +350,22 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
           )}
         </div>
 
-        {/* MVP 안내 */}
-        <div
-          style={{
-            background: 'rgba(255,180,84,.08)',
-            border: '1px solid rgba(255,180,84,.3)',
-            borderRadius: 9,
-            padding: '9px 12px',
-            fontSize: 11.5,
-            color: 'var(--warm)',
-            marginTop: 14,
-          }}
-        >
-          ⓘ {t('nativeDemoMvpNote')}
-        </div>
+        {/* MVP 안내 — 웹 데모가 없을 때만 표시 (웹 데모가 있으면 실제로 폰 프레임에서 구동되므로 불필요) */}
+        {!hasWebDemo && (
+          <div
+            style={{
+              background: 'rgba(255,180,84,.08)',
+              border: '1px solid rgba(255,180,84,.3)',
+              borderRadius: 9,
+              padding: '9px 12px',
+              fontSize: 11.5,
+              color: 'var(--warm)',
+              marginTop: 14,
+            }}
+          >
+            ⓘ {t('nativeDemoMvpNote')}
+          </div>
+        )}
       </div>
     </div>
 
