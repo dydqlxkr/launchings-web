@@ -43,6 +43,19 @@ interface Props {
   screenshotUrls?: string[];
 }
 
+// ── NativeDemoView 폰 프레임 치수 ────────────────────────────
+// 웹 데모는 실제 모바일 논리 폭(390px)으로 렌더한 뒤 폰 스크린 크기로 축소(scale)해
+// 앱이 220~260px 초협소 폭으로 렌더되며 비율이 깨지는 문제를 방지한다.
+const PHONE_W = 260;
+const PHONE_H = 520;
+const PHONE_BORDER = 7; // 프레임 테두리
+const SCREEN_INSET = 10; // 스크린 여백
+const DEMO_LOGICAL_W = 390; // 웹 데모 렌더 논리 폭 (일반 스마트폰 기준)
+// box-sizing: border-box(Tailwind preflight) — 테두리·여백을 빼면 실제 스크린 크기
+const SCREEN_W = PHONE_W - 2 * (PHONE_BORDER + SCREEN_INSET);
+const SCREEN_H = PHONE_H - 2 * (PHONE_BORDER + SCREEN_INSET);
+const DEMO_SCALE = SCREEN_W / DEMO_LOGICAL_W;
+
 function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; screenshotUrls?: string[] }) {
   const t = useTranslations('appRunner');
 
@@ -83,10 +96,10 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <div
           style={{
-            width: 220,
-            height: 440,
+            width: PHONE_W,
+            height: PHONE_H,
             background: '#0a0c11',
-            border: '7px solid #20242e',
+            border: `${PHONE_BORDER}px solid #20242e`,
             borderRadius: 34,
             position: 'relative',
             flexShrink: 0,
@@ -147,11 +160,15 @@ function NativeDemoView({ app, screenshotUrls = [] }: { app: AppWithRelations; s
                   loading="lazy"
                   onLoad={() => setWebDemoLoaded(true)}
                   style={{
-                    width: '100%',
-                    height: '100%',
+                    width: DEMO_LOGICAL_W,
+                    height: SCREEN_H / DEMO_SCALE,
+                    transform: `scale(${DEMO_SCALE})`,
+                    transformOrigin: '0 0',
                     border: 0,
                     display: 'block',
-                    position: 'relative',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
                     zIndex: 0,
                     opacity: webDemoLoaded ? 1 : 0,
                     transition: 'opacity .3s',

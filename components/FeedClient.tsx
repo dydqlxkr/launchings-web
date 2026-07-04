@@ -278,7 +278,9 @@ function FeedAppSlide({
           )}
         </div>
 
-        {/* 하단 정보 오버레이 */}
+        {/* 하단 정보 오버레이 — pointerEvents:none으로 클릭을 데모 iframe에 통과시키고,
+            링크(제목·메이커)만 pointerEvents:auto로 클릭 가능하게 한다.
+            웹데모(인터랙티브)일 땐 태그라인을 숨겨 앱 하단 버튼 가림을 최소화. */}
         <div
           style={{
             position: 'absolute',
@@ -288,6 +290,7 @@ function FeedAppSlide({
             zIndex: 5,
             maxWidth: '82%',
             textShadow: '0 2px 12px rgba(0,0,0,.8)',
+            pointerEvents: 'none',
           }}
         >
           <Link
@@ -301,11 +304,12 @@ function FeedAppSlide({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              pointerEvents: 'auto',
             }}
           >
             <span aria-hidden="true">{app.thumbnail_emoji}</span> {app.title}
           </Link>
-          {(app.tagline ?? app.description) && (
+          {contentType !== 'webdemo' && (app.tagline ?? app.description) && (
             <div
               style={{
                 fontSize: 12.5,
@@ -330,6 +334,7 @@ function FeedAppSlide({
                 gap: 6,
                 fontSize: 11.5,
                 color: 'rgba(255,255,255,.75)',
+                pointerEvents: 'auto',
               }}
             >
               <AvatarCircle profile={app.author} size={20} fontSize={10} />
