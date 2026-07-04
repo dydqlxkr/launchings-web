@@ -44,7 +44,7 @@ const NAV_HEIGHT_PX = 63;
 /** 첫 진입 스크롤 힌트가 자동으로 사라지는 시간(ms) */
 const HINT_HIDE_MS = 4000;
 /** 폰 프레임 안 스크린샷 alt/사이즈 등에 사용하는 고정 폭 */
-const PHONE_IMAGE_SIZES = '(max-width: 640px) 88vw, 300px';
+const PHONE_IMAGE_SIZES = '(max-width: 640px) 90vw, 430px';
 
 const railButtonBase: React.CSSProperties = {
   width: 52,

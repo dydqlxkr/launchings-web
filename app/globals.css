@@ -338,8 +338,8 @@ button {
   flex-wrap: nowrap;
 }
 .lp-feed-phone {
-  width: min(300px, 64vw);
-  max-height: 76vh;
+  width: min(430px, 66vw);
+  max-height: 84vh;
 }
 .lp-feed-rail {
   display: flex;
@@ -352,8 +352,8 @@ button {
     gap: 12px;
   }
   .lp-feed-phone {
-    width: min(380px, 88vw);
-    max-height: 64vh;
+    width: min(400px, 90vw);
+    max-height: 68vh;
   }
   .lp-feed-rail {
     flex-direction: row;
