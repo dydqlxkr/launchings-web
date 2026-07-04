@@ -138,15 +138,12 @@ function FeedAppSlide({
         : null;
   const badgeBg = hasWebDemo || (!embedUrl && !isNative) ? 'var(--accent)' : 'var(--warm)';
 
-  // CTA 버튼 — webapp: 바로 써보기(새 탭) / native: 스토어(android 우선) 또는 상세 페이지
+  // CTA 버튼 — native: 스토어(android 우선) 또는 상세 페이지 / 그 외: 상세 페이지
+  // (webapp '바로 써보기'는 상세 페이지 이동으로 변경 — 데모는 폰 프레임에서 이미 체험 가능)
   let ctaHref: string;
   let ctaLabel: string;
   let ctaExternal: boolean;
-  if (!isNative && hasWebDemo) {
-    ctaHref = app.live_url as string;
-    ctaLabel = t('ctaTryNow');
-    ctaExternal = true;
-  } else if (isNative) {
+  if (isNative) {
     const storeUrl =
       app.store_url_android && isSafeHttpUrl(app.store_url_android)
         ? app.store_url_android
