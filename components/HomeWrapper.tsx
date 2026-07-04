@@ -532,8 +532,16 @@ function HomeInner({
                 ))}
               </div>
 
-              {/* 전체 둘러보기 링크 */}
-              <div style={{ textAlign: 'center', marginTop: 32 }}>
+              {/* 전체 둘러보기 + 피드 링크 */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 12,
+                  marginTop: 32,
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Link
                   href="/ko/apps"
                   style={{
@@ -553,6 +561,26 @@ function HomeInner({
                   className="hover:border-[var(--brand)] hover:text-[var(--brand)]"
                 >
                   {td('viewAll')}
+                </Link>
+                <Link
+                  href="/ko/feed"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: 'transparent',
+                    border: '1px solid var(--line)',
+                    color: 'var(--muted)',
+                    padding: '11px 24px',
+                    borderRadius: 12,
+                    fontWeight: 700,
+                    fontSize: 15,
+                    textDecoration: 'none',
+                    transition: 'border-color .15s, color .15s',
+                  }}
+                  className="hover:border-[var(--brand2)] hover:text-[var(--brand2)]"
+                >
+                  {td('viewFeed')}
                 </Link>
               </div>
             </>

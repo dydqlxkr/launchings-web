@@ -17,6 +17,8 @@ interface Props {
   initialCount: number;
   initialVoted?: boolean;
   isLoggedIn?: boolean;
+  /** 'chip'(기본, 카드/상세) | 'rail'(세로 피드 액션 레일 — 원형 버튼 + 하단 카운트) */
+  variant?: 'chip' | 'rail';
 }
 
 export default function UpvoteButton({
@@ -24,6 +26,7 @@ export default function UpvoteButton({
   initialCount,
   initialVoted = false,
   isLoggedIn = false,
+  variant = 'chip',
 }: Props) {
   const t = useTranslations('appCard');
   const [voted, setVoted] = useState(initialVoted);
@@ -54,6 +57,46 @@ export default function UpvoteButton({
         if (result.vote_count !== undefined) setCount(result.vote_count);
       }
     });
+  }
+
+  if (variant === 'rail') {
+    return (
+      <>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <button
+            onClick={handleVote}
+            disabled={isPending}
+            aria-label={voted ? t('upvoted') : t('upvote')}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: voted ? 'rgba(46,230,166,.18)' : 'rgba(255,255,255,.08)',
+              border: `1px solid ${voted ? 'var(--accent)' : 'var(--line)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+              color: 'var(--accent)',
+              cursor: isPending ? 'not-allowed' : 'pointer',
+              transition: 'transform .12s',
+              opacity: isPending ? 0.7 : 1,
+              flexShrink: 0,
+            }}
+            className="active:scale-90"
+          >
+            ▲
+          </button>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>{count}</span>
+        </div>
+
+        <LoginModal
+          isOpen={showLogin}
+          onClose={() => setShowLogin(false)}
+          reason="upvote"
+        />
+      </>
+    );
   }
 
   return (

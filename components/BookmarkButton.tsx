@@ -21,6 +21,8 @@ interface Props {
   onLoginRequest?: () => void;
   /** 버튼 크기 변형 */
   size?: 'sm' | 'md';
+  /** 'chip'(기본) | 'rail'(세로 피드 액션 레일 — 원형 버튼) */
+  variant?: 'chip' | 'rail';
 }
 
 export default function BookmarkButton({
@@ -29,6 +31,7 @@ export default function BookmarkButton({
   isLoggedIn = false,
   onLoginRequest,
   size = 'md',
+  variant = 'chip',
 }: Props) {
   const t = useTranslations('bookmark');
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
@@ -71,6 +74,57 @@ export default function BookmarkButton({
   const iconSize = size === 'sm' ? 14 : 16;
   const padding = size === 'sm' ? '5px 9px' : '6px 11px';
   const fontSize = size === 'sm' ? 12 : 13;
+
+  if (variant === 'rail') {
+    return (
+      <>
+        <button
+          onClick={handleBookmark}
+          disabled={isPending}
+          aria-label={bookmarked ? t('ariaRemove') : t('ariaSave')}
+          title={bookmarked ? t('ariaRemove') : t('ariaSave')}
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: bookmarked ? 'rgba(108,140,255,.18)' : 'rgba(255,255,255,.08)',
+            border: `1px solid ${bookmarked ? 'var(--brand)' : 'var(--line)'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: isPending ? 'not-allowed' : 'pointer',
+            transition: 'transform .12s',
+            color: bookmarked ? 'var(--brand)' : 'var(--muted)',
+            opacity: isPending ? 0.7 : 1,
+            flexShrink: 0,
+          }}
+          className="active:scale-90"
+        >
+          <svg
+            width={22}
+            height={22}
+            viewBox="0 0 24 24"
+            fill={bookmarked ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+
+        {!onLoginRequest && (
+          <LoginModal
+            isOpen={showLogin}
+            onClose={() => setShowLogin(false)}
+            reason="bookmark"
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>

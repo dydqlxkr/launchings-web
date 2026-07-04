@@ -176,6 +176,7 @@ export default function ReviewSection({
 
   return (
     <section
+      id="reviews"
       style={{
         marginTop: 40,
         paddingTop: 32,
