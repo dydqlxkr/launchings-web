@@ -351,9 +351,11 @@ function AppsPageInner({ apps, categories }: Props) {
 // 외부 export — CompareProvider 래퍼
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AppsPageClient(props: Props) {
+  // 업보트 시 RSC 갱신으로 보는 중 순서가 바뀌지 않게 첫 렌더 순서 고정 (FeedClient와 동일 정책)
+  const [apps] = useState(props.apps);
   return (
-    <CompareProvider totalApps={props.apps.length}>
-      <AppsPageInner apps={props.apps} categories={props.categories} />
+    <CompareProvider totalApps={apps.length}>
+      <AppsPageInner apps={apps} categories={props.categories} />
     </CompareProvider>
   );
 }

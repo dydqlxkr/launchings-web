@@ -441,7 +441,11 @@ function FeedFinalSlide({
   );
 }
 
-export default function FeedClient({ apps, reviewCounts, firstScreenshotUrls }: Props) {
+export default function FeedClient({ apps: appsProp, reviewCounts, firstScreenshotUrls }: Props) {
+  // 업보트 → revalidateTag → 현재 라우트 RSC 갱신으로 투표순 재정렬이 즉시 내려오는데,
+  // 보는 중에 슬라이드 순서가 바뀌면 혼란스러움 → 첫 렌더 시점의 순서로 고정.
+  // (카운트는 낙관적 UI로 갱신, 새 순서는 다음 방문/새로고침 때 반영)
+  const [apps] = useState(appsProp);
   const t = useTranslations('feed');
   const { isLoggedIn } = useSession();
 

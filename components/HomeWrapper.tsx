@@ -10,7 +10,7 @@
  *   3. 채용 CTA 밴드 (#recruit)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { AppWithRelations, Profile, Category } from '@/lib/types';
@@ -715,10 +715,12 @@ function HomeInner({
 // HomeWrapper — CompareProvider 래퍼
 // ─────────────────────────────────────────────────────────────────────────────
 export default function HomeWrapper(props: Props) {
+  // 업보트 시 RSC 갱신으로 보는 중 순서가 바뀌지 않게 첫 렌더 순서 고정 (FeedClient와 동일 정책)
+  const [apps] = useState(props.apps);
   return (
-    <CompareProvider totalApps={props.apps.length}>
+    <CompareProvider totalApps={apps.length}>
       <HomeInner
-        apps={props.apps}
+        apps={apps}
         profiles={props.profiles}
         makerApps={props.makerApps}
       />
